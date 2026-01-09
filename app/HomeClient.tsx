@@ -19,7 +19,10 @@ export default function HomeClient({ initialMarkets }: HomeClientProps) {
   const [activeCategory, setActiveCategory] = useState<Category | 'ALL'>('ALL');
   const [activeStatus, setActiveStatus] = useState<PredictionStatus | 'ALL'>('ALL');
   const [viewMode, setViewMode] = useState<'hourly' | 'daily'>('hourly');
+  const [brushStartIndex, setBrushStartIndex] = useState<number>(0);
+  const [brushEndIndex, setBrushEndIndex] = useState<number>(0);
   const mouseFollowRef = useRef<HTMLDivElement>(null);
+  const ribbonTriggerRef = useRef<HTMLSpanElement>(null);
   
   // Verified Logic Results 卡片的橙黄色光效（增强可见度）
   const { cardRef: verifiedCardRef } = useLightCard({
@@ -34,6 +37,81 @@ export default function HomeClient({ initialMarkets }: HomeClientProps) {
   const handleMarketClick = (id: string) => {
     router.push(`/market/${id}`);
   };
+
+  // Confetti effect for Verified Success tag
+  const createConfetti = () => {
+    if (!ribbonTriggerRef.current) return;
+    
+    const trigger = ribbonTriggerRef.current;
+    const colors = ['#ff6b6b', '#ffd93d', '#6bcf7f', '#4ecdc4', '#45b7d1', '#96ceb4', '#ffeaa7', '#fab1a0', '#6b9fff', '#a29bfe', '#74b9ff', '#55efc4', '#00b894', '#81ecec', '#0984e3', '#6c5ce7'];
+    
+    // Create confetti pieces around the border (16 pieces)
+    const positions = [
+      // Top edge
+      { x: 0, y: 0, angle: -45 },
+      { x: 25, y: 0, angle: -30 },
+      { x: 50, y: 0, angle: 0 },
+      { x: 75, y: 0, angle: 30 },
+      { x: 100, y: 0, angle: 45 },
+      // Right edge
+      { x: 100, y: 25, angle: 60 },
+      { x: 100, y: 50, angle: 90 },
+      { x: 100, y: 75, angle: 120 },
+      { x: 100, y: 100, angle: 135 },
+      // Bottom edge
+      { x: 75, y: 100, angle: 150 },
+      { x: 50, y: 100, angle: 180 },
+      { x: 25, y: 100, angle: 210 },
+      { x: 0, y: 100, angle: 225 },
+      // Left edge
+      { x: 0, y: 75, angle: 240 },
+      { x: 0, y: 50, angle: 270 },
+      { x: 0, y: 25, angle: 300 },
+    ];
+    
+    positions.forEach((pos, index) => {
+      const confetti = document.createElement('div');
+      confetti.className = 'confetti-piece';
+      confetti.style.backgroundColor = colors[index % colors.length];
+      confetti.style.left = `${pos.x}%`;
+      confetti.style.top = `${pos.y}%`;
+      
+      // Calculate random direction based on angle
+      const angle = (pos.angle + (Math.random() - 0.5) * 30) * (Math.PI / 180);
+      const distance = 60 + Math.random() * 40;
+      const x = Math.cos(angle) * distance;
+      const y = Math.sin(angle) * distance;
+      
+      confetti.style.setProperty('--confetti-x', `${x}px`);
+      confetti.style.setProperty('--confetti-y', `${y}px`);
+      confetti.style.animationDelay = `${index * 0.05}s`;
+      
+      trigger.appendChild(confetti);
+      
+      setTimeout(() => {
+        confetti.classList.add('active');
+      }, 10);
+      
+      setTimeout(() => {
+        confetti.remove();
+      }, 2100);
+    });
+  };
+
+  useEffect(() => {
+    const container = verifiedCardRef.current;
+    if (!container || !ribbonTriggerRef.current) return;
+    
+    const handleMouseEnter = () => {
+      createConfetti();
+    };
+    
+    container.addEventListener('mouseenter', handleMouseEnter);
+    
+    return () => {
+      container.removeEventListener('mouseenter', handleMouseEnter);
+    };
+  }, [verifiedCardRef]);
 
   // 鼠标跟随背景效果（带滞后平滑 Lerp 动画）
   useEffect(() => {
@@ -182,8 +260,8 @@ export default function HomeClient({ initialMarkets }: HomeClientProps) {
 
   const allProfitData = generateProfitData();
   
-  // 根据视图模式过滤数据
-  const profitData = useMemo(() => {
+  // 根据视图模式过滤数据（用于 Brush 显示所有可选数据）
+  const allFilteredData = useMemo(() => {
     if (viewMode === 'daily') {
       // 只显示每天最后一个小时的数据点（即每天结束时的值）
       return allProfitData.filter((item, index) => {
@@ -192,6 +270,25 @@ export default function HomeClient({ initialMarkets }: HomeClientProps) {
     }
     return allProfitData;
   }, [viewMode, allProfitData]);
+
+  // 初始化 Brush 的结束索引
+  useEffect(() => {
+    if (allFilteredData.length > 0) {
+      const initialEndIndex = viewMode === 'hourly' 
+        ? Math.min(47, allFilteredData.length - 1) // 显示前2天的数据
+        : Math.min(6, allFilteredData.length - 1); // 显示前7天的数据
+      setBrushStartIndex(0);
+      setBrushEndIndex(initialEndIndex);
+    }
+  }, [allFilteredData.length, viewMode]);
+
+  // 根据 Brush 选择过滤显示的数据
+  const profitData = useMemo(() => {
+    if (brushStartIndex >= 0 && brushEndIndex >= brushStartIndex && brushEndIndex < allFilteredData.length) {
+      return allFilteredData.slice(brushStartIndex, brushEndIndex + 1);
+    }
+    return allFilteredData;
+  }, [allFilteredData, brushStartIndex, brushEndIndex]);
 
   return (
     <div className="max-w-7xl mx-auto px-6 pb-40 relative">
@@ -202,30 +299,30 @@ export default function HomeClient({ initialMarkets }: HomeClientProps) {
         style={{ left: '50%', top: '50%' }}
       />
       {/* Hero Section */}
-      <section className="pt-32 pb-24 text-center relative z-10">
+      <section className="pt-32 pb-24 text-center relative z-50">
         <div className="max-w-4xl mx-auto space-y-8">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/[0.05] border border-white/10 text-white/60 text-[10px] font-bold uppercase tracking-[0.2em]">
              AI Predictive Infrastructure v4.2
           </div>
 
-          <div className="relative z-10">
-            <h1 className="text-6xl md:text-8xl font-black tracking-tighter leading-[0.95]">
-              <span className="text-white">Intelligence</span>
+          <div className="relative z-50">
+            <h1 className="text-6xl md:text-8xl font-black tracking-tighter leading-[0.95] relative z-50">
+              <span className="text-white relative z-50">Intelligence</span>
               <br />
-              <span className="bg-gradient-to-t from-gray-500 to-white bg-clip-text text-transparent">Beyond Guess.</span>
+              <span className="bg-gradient-to-t from-gray-500 to-white bg-clip-text text-transparent relative z-50">Beyond Guess.</span>
             </h1>
           </div>
 
           <p className="font-gothic text-muted text-lg md:text-xl max-w-2xl mx-auto font-medium leading-relaxed mt-12">
-            Neural networks analyzing factual volatility to provide <br className="hidden md:block" /> objective market foresight with mathematical precision.
+            An experiment in using prediction to understand how intelligence meets uncertainty.
           </p>
         </div>
       </section>
 
       {/* Stats Section */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-24 max-w-5xl mx-auto">
-        <StatCard label="Active Matrix Nodes" value={stats.active} />
-        <StatCard label="Successful Resolves" value={stats.success} hoverEffect="orange-glow" />
+        <StatCard label="Active Matrix Nodes" value={stats.active} hoverEffect="blue-ring" />
+        <StatCard label="Successful Resolves" value={stats.success} hoverEffect="blue-ring" />
         <StatCard label="Model Precision" value={stats.precision + '%'} hoverEffect="blue-ring" />
       </div>
 
@@ -252,9 +349,9 @@ export default function HomeClient({ initialMarkets }: HomeClientProps) {
               </p>
             </div>
             <div className="flex items-center gap-3">
-              <div className="flex items-center gap-1.5 p-2 bg-white/5 rounded-lg">
-                <div className="w-3 h-3 rounded-full bg-primary"></div>
-                <span className="text-xs text-white font-medium">+42% Total Return</span>
+            <div className="flex items-center gap-1.5 p-2 bg-white/5 rounded-lg">
+              <div className="w-3 h-3 rounded-full bg-primary"></div>
+              <span className="text-xs text-white font-medium">+42% Total Return</span>
               </div>
               <div className="flex items-center gap-1.5 p-1.5 bg-white/5 rounded-lg border border-white/10">
                 <button
@@ -289,7 +386,7 @@ export default function HomeClient({ initialMarkets }: HomeClientProps) {
                   top: 5,
                   right: 20,
                   left: 0,
-                  bottom: 50,
+                  bottom: 70,
                 }}
               >
                 <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
@@ -301,7 +398,7 @@ export default function HomeClient({ initialMarkets }: HomeClientProps) {
                   label={{ value: viewMode === 'hourly' ? 'Date & Time' : 'Date', position: 'insideBottom', offset: -5, fill: '#666', style: { fontSize: '10px' } }}
                   angle={viewMode === 'hourly' ? -45 : 0}
                   textAnchor={viewMode === 'hourly' ? 'end' : 'middle'}
-                  height={viewMode === 'hourly' ? 60 : 30}
+                  height={viewMode === 'hourly' ? 40 : 20}
                 />
                 <YAxis stroke="#666" tick={{ fontSize: 10 }} />
                 <Tooltip
@@ -360,10 +457,10 @@ export default function HomeClient({ initialMarkets }: HomeClientProps) {
                 <Line 
                   type="monotone" 
                   dataKey="dailyTotal" 
-                  stroke="#E91E63" 
+                  stroke="#4CAF50" 
                   strokeWidth={2}
                   dot={false}
-                  activeDot={{ r: 7, fill: '#E91E63', stroke: '#fff', strokeWidth: 2 }}
+                  activeDot={{ r: 7, fill: '#4CAF50', stroke: '#fff', strokeWidth: 2 }}
                   name="Daily Total"
                 />
                 <Line 
@@ -378,12 +475,36 @@ export default function HomeClient({ initialMarkets }: HomeClientProps) {
                 <Brush
                   dataKey={viewMode === 'hourly' ? 'dateTime' : 'date'}
                   height={30}
-                  stroke="#666"
+                  stroke="rgba(255,255,255,0.3)"
                   fill="rgba(255,255,255,0.05)"
+                  data={allFilteredData}
+                  startIndex={brushStartIndex}
+                  endIndex={brushEndIndex}
+                  onChange={(props) => {
+                    if (props && typeof props.startIndex === 'number' && typeof props.endIndex === 'number') {
+                      // 确保索引有效，防止乱跳
+                      const maxIndex = allFilteredData.length - 1;
+                      const validStart = Math.max(0, Math.min(Math.floor(props.startIndex), maxIndex));
+                      const validEnd = Math.max(validStart, Math.min(Math.ceil(props.endIndex), maxIndex));
+                      // 只有当索引真正改变时才更新，避免不必要的重渲染
+                      if (validStart !== brushStartIndex || validEnd !== brushEndIndex) {
+                        setBrushStartIndex(validStart);
+                        setBrushEndIndex(validEnd);
+                      }
+                    }
+                  }}
                   tickFormatter={(value) => {
                     if (viewMode === 'hourly') {
+                      // 格式化日期时间，只显示日期部分（更简洁）
+                      if (typeof value === 'string') {
+                        const parts = value.split(' ');
+                        if (parts.length > 0) {
+                          return parts[0]; // 只显示日期部分，如 "1/9"
+                        }
+                      }
                       return value;
                     }
+                    // 按天模式时直接返回日期
                     return value;
                   }}
                 />
@@ -475,7 +596,7 @@ export default function HomeClient({ initialMarkets }: HomeClientProps) {
             <div className="w-6 h-6 rounded-lg bg-primary/10 flex items-center justify-center border border-primary/20">
               <CheckCircle2 className="text-primary w-3.5 h-3.5" />
             </div>
-            <h2 className="text-lg font-bold tracking-tight">Verified Logic Results</h2>
+            <h2 className="text-lg font-bold tracking-tight">Featured Analysis</h2>
           </div>
           <button className="flex items-center gap-1 text-[10px] font-bold text-muted uppercase tracking-widest hover:text-white hidden">
             Full History <ChevronRight className="w-3.5 h-3.5" />
@@ -484,24 +605,24 @@ export default function HomeClient({ initialMarkets }: HomeClientProps) {
 
         <div className="grid grid-cols-1 gap-6">
           {/* Mock Verified Logic Results - 详细分析结果 */}
-          <div ref={verifiedCardRef} className="group cursor-pointer glass-panel spotlight-card rounded-xl transition-all duration-300 hover:border-white/20 p-6">
+          <div ref={verifiedCardRef} className="group cursor-pointer glass-panel spotlight-card rounded-xl transition-all duration-300 hover:border-white/20 p-6 ribbon-container relative overflow-hidden">
                 <div className="flex items-start justify-between mb-4">
                   <div>
                     <div className="flex flex-wrap items-center gap-2 mb-3">
                   <span className="px-3 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider border border-white/20 bg-white/5 text-white">
-                    Tech
+                    Politics
                       </span>
-                  <span className="px-3 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider border border-primary/30 bg-primary/5 text-primary">
-                        Verified Success
+                  <span ref={ribbonTriggerRef} className="px-3 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider border border-primary/30 bg-primary/5 text-primary group-hover:text-red-400 group-hover:border-red-400/30 group-hover:bg-red-400/5 transition-colors ribbon-trigger">
+                        Featured Case
                       </span>
                     </div>
 
                 <h3 className="text-xl font-bold text-white leading-tight mb-2">
-                  Will the Los Angeles Lakers win the 2024 NBA Championship?
+                  Who will be the next Federal Reserve Chair?
                     </h3>
 
                 <p className="text-sm text-white/70 mb-4">
-                  Analysis of team performance metrics, player statistics, and historical championship patterns.
+                  Comprehensive competitive analysis across five dimensions—economic philosophy, political alignment, market recognition, central bank operational experience, and policy credibility—evaluating the nomination probability and market impact of three candidates: Kevin Hassett, Kevin Warsh, and Christopher Waller. Analysis conducted January 2026.
                     </p>
                   </div>
 
@@ -512,12 +633,12 @@ export default function HomeClient({ initialMarkets }: HomeClientProps) {
               <div className="bg-white/[0.03] rounded-lg p-4 border border-white/10">
                   <div className="flex items-center gap-2 mb-3">
                     <Zap className="w-4 h-4 text-primary" />
-                    <div className="text-sm font-bold text-primary">Atypica Analysis & Prediction</div>
+                    <div className="text-sm font-black text-primary">Atypica Analysis & Prediction</div>
                   </div>
 
                   <div className="mb-4">
                   <p className="text-sm text-white/80 italic mb-3">
-                    &quot;Based on comprehensive analysis of team performance metrics, player statistics, and historical championship patterns, the Los Angeles Lakers demonstrate strong potential for championship success.&quot;
+                    &quot;Through a five-dimensional competitive scoring matrix, integration of market prediction data, and expert simulation interviews, our model indicates Kevin Hassett is most likely to be nominated (70-80% probability). His close relationship with the president and shared focus on economic growth constitute a significant 'political premium,' making him the political first choice. However, this choice carries core risks: Hassett is a staunch dove advocate, has zero monetary policy operational experience, and his independence is questionable. If inflation rekindles, market skepticism about his independence could trigger a 'political-market' negative feedback spiral. In contrast, while Christopher Waller lacks political capital, his data-driven, stable approach has won the highest market recognition, viewed as the 'safe bet' that best provides certainty.&quot;
                     </p>
                   </div>
 
@@ -525,7 +646,7 @@ export default function HomeClient({ initialMarkets }: HomeClientProps) {
                     <div>
                       <div className="text-[10px] text-white/50 mb-1">Atypica&apos;s Choice</div>
                     <div className="flex items-end gap-3">
-                      <div className="text-2xl font-bold text-white">Yes</div>
+                      <div className="text-2xl font-black text-primary">Kevin Hassett</div>
                       <div className="flex flex-col">
                         <div className="text-xs text-white/70 mb-1">
                           Confidence
@@ -540,9 +661,9 @@ export default function HomeClient({ initialMarkets }: HomeClientProps) {
                     </div>
 
                     <div className="text-right">
-                      <div className="text-[10px] text-white/50 mb-1">Market Consensus</div>
+                      <div className="text-[10px] text-white/50 mb-1">Polymarket</div>
                       <div className="text-base font-medium text-white flex items-center gap-2">
-                      72% Probability
+                      37%
                     </div>
                   </div>
                 </div>
@@ -554,27 +675,27 @@ export default function HomeClient({ initialMarkets }: HomeClientProps) {
                 
                 <div className="space-y-3">
                   <div className="border-l-2 border-primary/30 pl-3">
-                    <div className="text-[10px] font-bold text-primary mb-1">Key Factors</div>
+                    <div className="text-[10px] font-black text-primary mb-1">Competitive Scoring Matrix</div>
                     <ul className="text-xs text-white/70 space-y-1 list-disc list-inside">
-                      <li>Team performance metrics: 8.5/10 average rating</li>
-                      <li>Player statistics: LeBron James averaging 28.5 PPG</li>
-                      <li>Historical patterns: 65% win rate in playoffs</li>
+                      <li>Kevin Hassett: Political alignment 5/5 (core White House decision-maker), economic philosophy clarity 4/5 (clear dovish stance), but central bank operational experience only 1/5, policy credibility 2/5 (independence questionable)</li>
+                      <li>Christopher Waller: Market recognition 5/5 (most trusted &apos;safe bet&apos;), central bank operational experience 5/5 (current board member), policy credibility 5/5 (rule-based transparent approach), but political alignment only 2/5</li>
+                      <li>Kevin Warsh: Central bank operational experience 4/5 (board member 2006-2011), but economic philosophy clarity 2/5 (position swing), policy credibility 2/5 (recent shift from hawkish to dovish raises concerns)</li>
                     </ul>
                   </div>
 
                   <div className="border-l-2 border-primary/30 pl-3">
-                    <div className="text-[10px] font-bold text-primary mb-1">Risk Assessment</div>
+                    <div className="text-[10px] font-black text-primary mb-1">Scenario Analysis & Risk Pathways</div>
                     <p className="text-xs text-white/70">
-                      Moderate risk due to competitive Western Conference. Key players&apos; health status is critical factor.
+                      If Kevin Hassett is nominated: Short-term stock market rises on expected rate cuts, but long-term faces &apos;political-market&apos; negative feedback spiral risk. If inflation rekindles, market skepticism about his independence will trigger dollar and bond sell-offs. If Christopher Waller is nominated: Market views as major positive, expects 6-12 months of policy certainty premium, but must overcome political capital disadvantage. If Kevin Warsh is nominated: Must prioritize resolving credibility issues from policy position swings, otherwise faces policy anchoring failure risk.
                     </p>
                   </div>
 
                   <div className="border-l-2 border-primary/30 pl-3">
-                    <div className="text-[10px] font-bold text-primary mb-1">Confidence Rationale</div>
+                    <div className="text-[10px] font-black text-primary mb-1">Core Strategic Assessment</div>
                     <p className="text-xs text-white/70">
-                      High confidence based on consistent performance patterns and strong statistical indicators. Model accuracy validated against historical data.
+                      Nomination decision essentially represents a trade-off between &apos;political loyalty&apos; and &apos;policy credibility.&apos; Kevin Hassett maximizes political loyalty but sacrifices policy independence; Christopher Waller maximizes policy credibility but needs to overcome political resistance; Kevin Warsh attempts to balance both but position swings weaken effectiveness. Model shows that in current political environment, Hassett is most likely to be nominated (70-80%) due to political advantages, but Waller, if nominated, would provide the most stable anchor for financial markets. Key insight: Regardless of choice, the real challenge lies in finding a sustainable balance point between political pressure and market expectations.
                     </p>
-                  </div>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -587,10 +708,10 @@ export default function HomeClient({ initialMarkets }: HomeClientProps) {
                 <div className="space-y-2">
               <div className="flex items-center justify-between p-2 rounded bg-primary/10 border border-primary/20">
                       <div className="flex items-center gap-2">
-                  <span className="text-sm font-medium text-primary">
-                    Yes
+                  <span className="text-sm font-black text-primary">
+                    Kevin Hassett
                         </span>
-                          <span className="text-[9px] bg-primary/20 text-primary px-1.5 py-0.5 rounded">
+                          <span className="text-[9px] bg-primary/20 text-primary px-1.5 py-0.5 rounded font-bold">
                             Atypica Pick
                           </span>
                       </div>
@@ -598,14 +719,10 @@ export default function HomeClient({ initialMarkets }: HomeClientProps) {
                       <div className="flex items-center gap-3 text-sm">
                         <div className="flex items-center">
                           <span className="text-[9px] mr-1 text-muted">Market:</span>
-                    <span className="text-xs font-medium text-white">72%</span>
+                    <span className="text-xs font-bold text-white">37%</span>
                         </div>
                           <div className="flex items-center">
-                    <span className="text-xs font-medium text-primary">High</span>
-                          </div>
-                          <div className="flex items-center gap-1">
-                            <CheckCircle2 className="w-4 h-4 text-green-400" />
-                            <span className="text-xs font-bold text-green-400">Winner</span>
+                    <span className="text-xs font-bold text-primary">High</span>
                           </div>
                       </div>
                     </div>
@@ -613,17 +730,35 @@ export default function HomeClient({ initialMarkets }: HomeClientProps) {
               <div className="flex items-center justify-between p-2 rounded bg-white/5">
                 <div className="flex items-center gap-2">
                   <span className="text-sm font-medium text-white">
-                    No
+                    Christopher Waller
                   </span>
                 </div>
 
                 <div className="flex items-center gap-3 text-sm">
                   <div className="flex items-center">
                     <span className="text-[9px] mr-1 text-muted">Market:</span>
-                    <span className="text-xs font-medium text-white">28%</span>
+                    <span className="text-xs font-bold text-white">12%</span>
                   </div>
                   <div className="flex items-center">
-                    <span className="text-xs font-medium text-primary">Low</span>
+                    <span className="text-xs font-bold text-white/50">Medium</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between p-2 rounded bg-white/5">
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-medium text-white">
+                    Kevin Warsh
+                  </span>
+                </div>
+
+                <div className="flex items-center gap-3 text-sm">
+                  <div className="flex items-center">
+                    <span className="text-[9px] mr-1 text-muted">Market:</span>
+                    <span className="text-xs font-bold text-white">42%</span>
+                  </div>
+                  <div className="flex items-center">
+                    <span className="text-xs font-bold text-white/50">Medium</span>
                   </div>
                 </div>
               </div>
@@ -632,25 +767,16 @@ export default function HomeClient({ initialMarkets }: HomeClientProps) {
                 <div className="flex items-center justify-between mt-4 pt-4 border-t border-white/10">
                   <div className="flex items-center gap-3">
                     <div className="text-xs text-white/50">
-                  12/15/2024
+                      End: Dec 31, 2026
                     </div>
                     <div className="text-xs text-white/50">
-                      <span className="font-medium">Volume:</span>{' '}
-                  2,450,000
+                      <span className="font-medium">Vol.:</span>{' '}
+                      $155,679,905
                     </div>
-                  </div>
-
-                  <div className="flex items-center text-white/50 group-hover:text-primary transition-all gap-1 font-bold uppercase tracking-widest text-[9px]">
-                    View Full Report <ArrowRight className="w-3.5 h-3.5 translate-x-1 group-hover:translate-x-2 transition-transform" />
                   </div>
                 </div>
               </div>
 
-          {successfulMarkets.length === 0 && (
-            <div className="col-span-full py-10 text-center glass-panel rounded-xl">
-              <p className="text-muted font-bold tracking-widest uppercase text-xs">No verified results available yet.</p>
-            </div>
-          )}
         </div>
       </div>
     </div>

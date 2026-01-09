@@ -1,11 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { fetchWalletPositions } from '@/lib/polymarket';
 import { syncPositionsToMarkets } from '@/services/nftPositionService';
+import { setProxy } from '@/lib/proxy';
 
 // POST /api/markets/sync-positions - 手动触发同步钱包持仓
 export async function POST(request: NextRequest) {
   try {
-    // 1. 获取钱包持仓
+    // 1. 确保代理设置完成
+    await setProxy();
+    
+    // 2. 获取钱包持仓
     const positions = await fetchWalletPositions();
 
     if (positions.length === 0) {

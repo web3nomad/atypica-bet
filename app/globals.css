@@ -2,6 +2,62 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Brush 组件样式优化 */
+.recharts-brush {
+  margin-top: 40px !important;
+  padding-top: 8px;
+}
+
+.recharts-brush-slide {
+  fill: rgba(255, 255, 255, 0.08);
+  stroke: rgba(255, 255, 255, 0.3);
+  stroke-width: 1;
+  rx: 6;
+  ry: 6;
+}
+
+.recharts-brush-traveller {
+  fill: rgba(255, 255, 255, 0.2);
+  stroke: rgba(255, 255, 255, 0.5);
+  stroke-width: 2;
+  cursor: grab;
+  rx: 4;
+  ry: 4;
+  transition: all 0.2s ease;
+}
+
+.recharts-brush-traveller:hover {
+  fill: rgba(255, 255, 255, 0.3);
+  stroke: rgba(255, 255, 255, 0.7);
+  transform: scale(1.1);
+}
+
+.recharts-brush-traveller:active {
+  cursor: grabbing;
+  fill: rgba(255, 255, 255, 0.4);
+  stroke: rgba(255, 255, 255, 0.9);
+}
+
+.recharts-brush-texts {
+  font-size: 9px !important;
+  fill: rgba(255, 255, 255, 0.6) !important;
+  font-weight: 500;
+}
+
+.recharts-brush-texts text {
+  font-size: 9px !important;
+  fill: rgba(255, 255, 255, 0.6) !important;
+  font-weight: 500;
+}
+
+/* 确保 Brush 文本不会太大，限制最大字体 */
+.recharts-brush-texts .recharts-brush-text-start,
+.recharts-brush-texts .recharts-brush-text-end {
+  font-size: 9px !important;
+  fill: rgba(255, 255, 255, 0.7) !important;
+  font-weight: 600;
+}
+
 /* 自定义动画样式 */
 
 /* 毛玻璃效果 - Enhanced for better glassmorphism */
@@ -58,25 +114,25 @@
 }
 
 
-/* End 和时间的发光效果 */
+/* End 和时间的发光效果 - 缩小羽化区域 */
 .glow-text {
-  text-shadow: 0 0 8px rgba(255, 165, 0, 0.6), 0 0 12px rgba(255, 165, 0, 0.4);
+  text-shadow: 0 0 3px rgba(255, 165, 0, 0.5), 0 0 5px rgba(255, 165, 0, 0.3);
   animation: pulse-glow 2s ease-in-out infinite;
 }
 
 .glow-icon {
-  filter: drop-shadow(0 0 4px rgba(255, 165, 0, 0.8));
+  filter: drop-shadow(0 0 2px rgba(255, 165, 0, 0.6));
   animation: pulse-glow 2s ease-in-out infinite;
 }
 
 @keyframes pulse-glow {
   0%, 100% {
     opacity: 1;
-    filter: drop-shadow(0 0 4px rgba(255, 165, 0, 0.8));
+    filter: drop-shadow(0 0 2px rgba(255, 165, 0, 0.6));
   }
   50% {
     opacity: 0.8;
-    filter: drop-shadow(0 0 8px rgba(255, 165, 0, 1));
+    filter: drop-shadow(0 0 4px rgba(255, 165, 0, 0.8));
   }
 }
 
@@ -199,23 +255,59 @@
 
 .stat-blue-ring-cursor {
   position: absolute;
-  width: 120px;
-  height: 120px;
+  width: 60px;
+  height: 60px;
   border-radius: 50%;
-  border: 5px solid rgba(0, 191, 255, 1);
+  border: 4px solid #18FF19;
   opacity: 0;
   pointer-events: none;
   z-index: 100;
-  box-shadow: 0 0 30px rgba(0, 191, 255, 0.8), inset 0 0 20px rgba(0, 191, 255, 0.4);
+  box-shadow: 0 0 15px rgba(24, 255, 25, 0.8), inset 0 0 10px rgba(24, 255, 25, 0.4);
   transform: translate(-50%, -50%);
   transition: opacity 0.2s ease-out;
   top: 0;
   left: 0;
-  background: radial-gradient(circle, rgba(0, 191, 255, 0.1) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(24, 255, 25, 0.1) 0%, transparent 70%);
 }
 
 .stat-blue-ring:hover .stat-blue-ring-cursor {
   opacity: 1;
+}
+
+/* Confetti Celebration Effect - Multiple confetti pieces falling from Verified Success border */
+.ribbon-container {
+  position: relative;
+  overflow: visible;
+}
+
+.ribbon-trigger {
+  position: relative;
+}
+
+.confetti-piece {
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  pointer-events: none;
+  z-index: 100;
+  border-radius: 50%;
+  opacity: 0;
+}
+
+.confetti-piece.active {
+  opacity: 1;
+  animation: confetti-fall 2s ease-out forwards;
+}
+
+@keyframes confetti-fall {
+  0% {
+    transform: translate(0, 0) rotate(0deg) scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(var(--confetti-x, 50px), var(--confetti-y, 100px)) rotate(720deg) scale(0);
+    opacity: 0;
+  }
 }
 
 /* Accessibility: Prefers Reduced Motion Support */
@@ -239,5 +331,11 @@
   .card-layer-4 {
     transform: none !important;
     transition: none !important;
+  }
+
+  .ribbon-container::before,
+  .ribbon-container::after {
+    animation: none !important;
+    opacity: 0 !important;
   }
 }

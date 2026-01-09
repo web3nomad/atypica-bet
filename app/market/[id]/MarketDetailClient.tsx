@@ -8,7 +8,7 @@ import { AccuracyMeter } from '@/components/AccuracyMeter';
 import {
   ChevronLeft, Share2, ShieldCheck, Copy,
   Check, ChevronDown, ChevronUp, Clock,
-  RefreshCw, MessageSquare, Heart
+  RefreshCw, MessageSquare, Heart, ArrowRight
 } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 
@@ -20,10 +20,11 @@ export default function MarketDetailClient({ market }: MarketDetailClientProps) 
   const router = useRouter();
   const [expandedSection, setExpandedSection] = useState<string | null>('overview');
   const [copied, setCopied] = useState(false);
-  const [lastUpdated, setLastUpdated] = useState<string>("1 min ago");
+  const [lastUpdated, setLastUpdated] = useState<string>("");
   const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
   const [countdown, setCountdown] = useState<string>("");
   const [isNearDeadline, setIsNearDeadline] = useState<boolean>(false);
+  const [priceChange, setPriceChange] = useState<number>(0); // 波动比例（占位数据）
 
   useEffect(() => {
     if (market.status !== PredictionStatus.ACTIVE) return;
@@ -47,8 +48,10 @@ export default function MarketDetailClient({ market }: MarketDetailClientProps) 
 
       if (days > 0) {
         setCountdown(`${days}d ${hours}h`);
-      } else {
+      } else if (hours > 0) {
         setCountdown(`${hours}h ${minutes}m`);
+      } else {
+        setCountdown(`${minutes}m`);
       }
     };
 
@@ -73,13 +76,50 @@ export default function MarketDetailClient({ market }: MarketDetailClientProps) 
     }
   };
 
+  // 格式化更新时间
+  useEffect(() => {
+    const formatUpdateTime = () => {
+      const now = new Date();
+      const month = now.getMonth() + 1;
+      const day = now.getDate();
+      const hours = now.getHours();
+      const minutes = now.getMinutes();
+      const formattedMinutes = minutes.toString().padStart(2, '0');
+      return `${month}/${day} ${hours}:${formattedMinutes}`;
+    };
+    
+    setLastUpdated(formatUpdateTime());
+  }, [isRefreshing]);
+
+  // 占位数据：波动比例（后续会联动后端）
+  useEffect(() => {
+    // TODO: 联动后端接入实际数据
+    setPriceChange(5.2); // 占位数据：+5.2%
+  }, [market.id]);
+
   const handleRefresh = () => {
     setIsRefreshing(true);
     setTimeout(() => {
       setIsRefreshing(false);
-      setLastUpdated("Just now");
+      const now = new Date();
+      const month = now.getMonth() + 1;
+      const day = now.getDate();
+      const hours = now.getHours();
+      const minutes = now.getMinutes();
+      const formattedMinutes = minutes.toString().padStart(2, '0');
+      setLastUpdated(`${month}/${day} ${hours}:${formattedMinutes}`);
     }, 800);
   };
+
+  // 计算 Model Confidence 等级（0-3，对应0-3条横线）
+  const getConfidenceLevel = (score: number): number => {
+    if (score >= 0.85) return 3;
+    if (score >= 0.65) return 2;
+    if (score >= 0.45) return 1;
+    return 0;
+  };
+
+  const confidenceLevel = getConfidenceLevel(market.accuracyScore || 0);
 
   const pickedOption = market.options.find(o => o.id === market.atypicaPickId);
 
@@ -96,41 +136,51 @@ export default function MarketDetailClient({ market }: MarketDetailClientProps) 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
         <div className="lg:col-span-8 space-y-12">
           <div className="space-y-6">
-            <div className="flex flex-wrap items-center justify-between">
-              <div className="flex items-center gap-3 mb-3">
-                <span className="tag-atypica">{CATEGORY_LABELS[market.category]}</span>
-                <span className={`tag-atypica ${market.status === PredictionStatus.ACTIVE && isNearDeadline ? 'text-amber-400 border-amber-500/30 bg-amber-500/5' : market.status === PredictionStatus.SUCCESSFUL ? 'text-primary' : 'text-white'}`}>
-                  {market.status === PredictionStatus.ACTIVE && isNearDeadline ? 'Ending Soon' : STATUS_LABELS[market.status]}
+            <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/[0.05] border border-white/10 text-white/60 text-[10px] font-bold uppercase tracking-[0.2em]">
+                  {CATEGORY_LABELS[market.category]}
                 </span>
+                {market.status === PredictionStatus.ACTIVE && isNearDeadline && (
+                  <>
+                    <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/5 border border-amber-500/30 text-amber-400 text-[10px] font-bold uppercase tracking-[0.2em]">
+                      Ending Soon
+                    </span>
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/[0.05] border border-white/10 text-amber-400 text-[10px] font-bold">
+                      <Clock className="w-3 h-3" />
+                      {countdown}
+                    </span>
+                  </>
+                )}
+                {market.status !== PredictionStatus.ACTIVE || !isNearDeadline ? (
+                  <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/[0.05] border border-white/10 text-white/60 text-[10px] font-bold uppercase tracking-[0.2em]">
+                    {STATUS_LABELS[market.status]}
+                  </span>
+                ) : null}
               </div>
 
-              <div className="flex gap-3 mb-3">
-                <div className="flex items-center gap-3">
-                  {market.status === PredictionStatus.ACTIVE && (
-                    <div className="flex items-center bg-white/[0.03] px-3 py-1.5 rounded-full">
-                      <Clock className={`w-3.5 h-3.5 mr-2 ${isNearDeadline ? 'text-amber-400' : 'text-muted'}`} />
-                      <span className={`text-[10px] font-bold ${isNearDeadline ? 'text-amber-400' : 'text-white'}`}>
-                        {countdown}
-                      </span>
-                    </div>
-                  )}
-
-                  <div className="flex items-center bg-white/[0.03] px-3 py-1.5 rounded-full">
-                    <button
-                      onClick={handleRefresh}
-                      className="flex items-center hover:text-white transition-colors"
-                    >
-                      <RefreshCw className={`w-3.5 h-3.5 mr-2 text-muted ${isRefreshing ? 'animate-spin' : ''}`} />
-                      <span className="text-[10px] font-bold text-white">{isRefreshing ? "Refreshing..." : `Updated ${lastUpdated}`}</span>
-                    </button>
-                  </div>
-                </div>
+              <div className="flex items-center bg-white/[0.03] px-3 py-1.5 rounded-full">
+                <RefreshCw className={`w-3.5 h-3.5 mr-2 text-muted ${isRefreshing ? 'animate-spin' : ''}`} />
+                <span className="text-[10px] font-bold text-white/80">
+                  Updated {isRefreshing ? "now" : lastUpdated}
+                </span>
               </div>
             </div>
 
-            <h1 className="text-4xl md:text-6xl font-black text-white tracking-tighter leading-[1.1] text-header">
-              {market.title}
-            </h1>
+            <div className="relative">
+              <h1 className="text-4xl md:text-6xl font-black text-white tracking-tighter leading-[1.1] text-header">
+                {market.title}
+              </h1>
+              <a
+                href={market.externalSource || '#'}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="absolute bottom-0 right-0 flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-white/60 hover:text-white transition-colors group"
+              >
+                View Research
+                <ArrowRight className="w-3 h-3 translate-x-0 group-hover:translate-x-1 transition-transform" />
+              </a>
+            </div>
             <p className="text-muted text-xl font-medium leading-relaxed">
               {market.description}
             </p>
@@ -180,34 +230,49 @@ export default function MarketDetailClient({ market }: MarketDetailClientProps) 
 
         <div className="lg:col-span-4 space-y-6">
           <div className="glass-panel rounded-2xl p-6 border-primary/20">
-            <div className="flex flex-col items-center text-center space-y-6">
-              <div className="text-[9px] text-primary font-bold uppercase tracking-[0.3em] mb-2">Validated Logical Choice</div>
-              <div className="text-2xl font-black text-white leading-tight mb-4">
-                {pickedOption?.text}
+            <div className="flex flex-col space-y-6">
+              {/* Atypical 的选择 */}
+              <div className="text-center mb-6">
+                <div className="text-[9px] text-muted font-bold uppercase tracking-[0.3em] mb-2">Atypica Choice</div>
+                <div className="text-2xl font-black text-primary leading-tight bg-primary/10 px-4 py-3 rounded-lg border border-primary/30">
+                  {pickedOption?.text || 'N/A'}
+                </div>
               </div>
 
-              <div className="mb-4">
+              {/* Market 比例圆环 */}
+              <div className="flex justify-center mb-6">
                 <AccuracyMeter
-                  value={market.accuracyScore || 0}
+                  value={pickedOption?.externalProb || 0}
                   size="lg"
-                  showDualRing={true}
-                  marketPercentage={pickedOption?.externalProb || 0}
+                  showDualRing={false}
+                  showLabel={true}
+                  labelPrefix="Market"
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-2 w-full text-center border-t border-white/5 pt-4">
-                <div>
-                  <div className="text-[8px] text-muted font-bold uppercase tracking-widest mb-1">Model Confidence</div>
-                  <div className="text-primary font-bold text-sm">{Math.round((market.accuracyScore || 0) * 100)}%</div>
-                </div>
-                <div>
-                  <div className="text-[8px] text-muted font-bold uppercase tracking-widest mb-1">Market Consensus</div>
-                  <div className="text-white font-bold text-sm">{Math.round((pickedOption?.externalProb || 0) * 100)}%</div>
+              {/* 波动比例 */}
+              <div className="text-center mb-6">
+                <div className="text-[8px] text-muted font-bold uppercase tracking-widest mb-2">Price Change</div>
+                <div className={`text-2xl font-black ${priceChange >= 0 ? 'text-primary' : 'text-red-400'} leading-tight`}>
+                  {priceChange >= 0 ? '+' : ''}{priceChange.toFixed(1)}%
                 </div>
               </div>
 
-              <div className="flex items-center gap-2 text-muted text-[9px] font-bold uppercase tracking-widest">
-                <ShieldCheck className="w-3.5 h-3.5 text-primary" /> Model Confidence High
+              {/* Model Confidence - 三个短横线 */}
+              <div className="text-center border-t border-white/10 pt-6">
+                <div className="text-[8px] text-muted font-bold uppercase tracking-widest mb-3">Model Confidence</div>
+                <div className="flex items-center justify-center gap-2">
+                  {[0, 1, 2].map((index) => (
+                    <div
+                      key={index}
+                      className={`h-1 rounded-full transition-all ${
+                        index < confidenceLevel
+                          ? 'bg-primary w-8'
+                          : 'bg-white/20 w-8'
+                      }`}
+                    />
+                  ))}
+                </div>
               </div>
             </div>
           </div>

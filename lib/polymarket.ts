@@ -8,7 +8,7 @@ import {
   PolymarketPosition,
 } from '@/types';
 import { setProxy } from './proxy';
-
+import 'dotenv/config';
 /**
  * 服务端调用 Polymarket API（直接调用外部 API）
  */
@@ -194,28 +194,42 @@ export function extractSlugFromUrl(input: string): string {
 /**
  * 获取钱包持仓（服务端调用）
  */
-export async function fetchWalletPositions(): Promise<PolymarketPosition[]> {
+export async function 好fetchWalletPositions(): Promise<PolymarketPosition[]> {
   const walletAddress = process.env.POLYMARKET_WALLET_ADDRESS;
+  
+
+  console.log(walletAddress)
   
   if (!walletAddress) {
     throw new Error('钱包地址未配置，请在环境变量中设置 POLYMARKET_WALLET_ADDRESS');
   }
-
-  const apiUrl = `https://data-api.polymarket.com/positions?user=${walletAddress}`;
+  
+  // 确保代理设置完成
+  await setProxy();
+  
+  // 将钱包地址转换为小写（以太坊地址通常需要小写）
+  const normalizedAddress = walletAddress.toLowerCase();
+  const apiUrl = `https://data-api.polymarket.com/positions?user=${normalizedAddress}`;
 
   try {
-    console.log('[Polymarket] 正在获取钱包持仓:', walletAddress);
+    console.log('[Polymarket] 正在获取钱包持仓:', normalizedAddress);
+    console.log('[Polymarket] API URL:', apiUrl);
 
     const response = await fetch(apiUrl, {
       method: 'GET',
       headers: {
         'Accept': 'application/json',
+        'Content-Type': 'application/json',
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
       },
     });
 
     if (!response.ok) {
-      console.log(await response.text())
-      throw new Error(`获取持仓失败: ${response.status} ${response.statusText}`);
+      // 读取错误响应的 body 来获取详细错误信息
+      const errorText = await response.text();
+      console.error('[Polymarket] API 错误响应:', errorText);
+      console.error('[Polymarket] 响应状态:', response.status, response.statusText);
+      throw new Error(`获取持仓失败: ${response.status} ${response.statusText} - ${errorText}`);
     }
 
     const positions: PolymarketPosition[] = await response.json();
