@@ -156,7 +156,13 @@ export default function AdminPage() {
                     </span>
                   </td>
                   <td className="px-6 py-4 text-sm text-white/60 font-medium">
-                    {new Date(m.closeDate).toLocaleDateString()}
+                    {(() => {
+                      const date = new Date(m.closeDate);
+                      const month = date.getMonth() + 1;
+                      const day = date.getDate();
+                      const year = date.getFullYear();
+                      return `${month}/${day}/${year}`;
+                    })()}
                   </td>
                   <td className="px-6 py-4 text-right">
                     <div className="flex items-center justify-end gap-2">

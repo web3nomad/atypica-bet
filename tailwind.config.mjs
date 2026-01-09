@@ -10,6 +10,9 @@ export default {
         primary: '#18FF19',
         muted: '#666',
       },
+      fontFamily: {
+        gothic: ['Central Gothic', 'sans-serif'],
+      },
     },
   },
   plugins: [],

@@ -183,8 +183,9 @@ export const PredictionCard: React.FC<PredictionCardProps> = ({ market, onClick,
     <div
       ref={lightCardRef}
       onClick={() => onClick(market.id)}
-      className={`group cursor-pointer glass-panel glass-effect spotlight-card rounded-xl transition-all duration-300 hover:border-white/20 p-5 cursor-follow card-layered ${isNearDeadline ? 'deadline-glow' : ''
-        } ${market.status === PredictionStatus.SUCCESSFUL ? 'success-glow' : ''}`}
+      className={`group cursor-pointer glass-panel glass-effect spotlight-card rounded-xl transition-all duration-300 hover:border-white/20 p-5 cursor-follow card-layered relative overflow-hidden ${
+        market.status === PredictionStatus.SUCCESSFUL ? 'success-glow' : ''
+      }`}
     >
       {/* 防误解锚点 - Header with AI prediction disclaimer */}
       <div className="mb-3">
@@ -192,7 +193,7 @@ export const PredictionCard: React.FC<PredictionCardProps> = ({ market, onClick,
           <div className="flex items-center gap-1.5">
             {/* Market Label (A, B, C) - 细绿色边框+白色字母居中，闪电图标在右下角 */}
             {marketLabel && (
-              <div className="relative w-7 h-7 rounded-md border border-primary flex items-center justify-center bg-transparent">
+              <div className="relative w-7 h-7 rounded-md border-[0.5px] border-primary flex items-center justify-center bg-transparent">
                 <span className="text-[11px] font-bold text-white">{marketLabel}</span>
                 <Zap className="absolute -bottom-1 -right-1 w-3 h-3 text-primary" />
               </div>
@@ -327,9 +328,20 @@ export const PredictionCard: React.FC<PredictionCardProps> = ({ market, onClick,
             </div>
           </div>
 
-          <div className="flex items-center text-white/50 group-hover:text-primary transition-all gap-1 font-bold card-layer-1 px-2 py-1 rounded-full hover:bg-white/5">
-            View analysis <ArrowRight className="w-3 h-3 translate-x-1 group-hover:translate-x-2 transition-transform" />
-          </div>
+          <a
+            href={market.externalSource || '#'}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={(e) => {
+              e.stopPropagation(); // 阻止事件冒泡到卡片
+              if (!market.externalSource) {
+                e.preventDefault();
+              }
+            }}
+            className="flex items-center text-white/50 group-hover:text-primary transition-all gap-1 font-bold card-layer-1 px-2 py-1 rounded-full hover:bg-white/5"
+          >
+            View Analysis Report <ArrowRight className="w-3 h-3 translate-x-1 group-hover:translate-x-2 transition-transform" />
+          </a>
         </div>
 
         {formattedPoolAmount && (

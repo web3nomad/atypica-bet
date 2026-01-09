@@ -1,33 +1,45 @@
+'use client';
+
 import React from 'react';
-import DiceHexagon from './DiceHexagon';
+import Image from 'next/image';
+import { ArrowRight } from 'lucide-react';
 
 export const Footer: React.FC = () => {
   return (
     <footer className="bg-black border-t border-white/5 py-24">
       <div className="max-w-7xl mx-auto px-6">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-16 mb-20">
-          <div className="col-span-2 md:col-span-1 space-y-6">
-            <div className="flex items-center gap-2">
-              <div className="w-5 h-5 bg-white rounded flex items-center justify-center">
-                <DiceHexagon className="text-black w-3 h-3 fill-current" />
-              </div>
-              <span className="font-bold text-white uppercase tracking-tighter text-xs">Atypica Bet</span>
+        {/* Logo, Description, and CTA in one row */}
+        <div className="flex flex-row items-center justify-between gap-8 mb-20 flex-wrap">
+          <div className="flex items-center gap-4 flex-shrink-0 min-w-0">
+            <div className="w-8 h-8 relative transition-all flex-shrink-0">
+              <Image
+                src="/images/logoicon.jpg"
+                alt="Atypica Bet Logo"
+                fill
+                className="object-contain rounded-lg"
+                priority
+              />
             </div>
-            <p className="text-[11px] text-muted leading-relaxed font-medium uppercase tracking-widest max-w-xs">
-              Objective predictive intelligence <br /> Powered by mathematical certainty.
-            </p>
+            <div className="flex flex-col min-w-0">
+              <span className="font-bold text-white uppercase tracking-tighter text-sm whitespace-nowrap">Atypica Bet</span>
+              <p className="text-[11px] text-muted leading-relaxed font-medium uppercase tracking-widest max-w-xs mt-1">
+                Atypica builds AI systems that simulate real human decisions to study markets, behavior, and uncertainty.
+              </p>
+            </div>
           </div>
-          {['Engine', 'Network', 'Connect'].map((title, idx) => (
-            <div key={idx}>
-              <h4 className="text-[10px] font-black text-white uppercase tracking-[0.2em] mb-6">{title}</h4>
-              <ul className="space-y-3 text-[10px] text-muted font-bold uppercase tracking-widest">
-                <li><a href="#" className="hover:text-white transition-colors">Core API</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Documentation</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Research Paper</a></li>
-              </ul>
-            </div>
-          ))}
+          
+          {/* CTA Button */}
+          <a
+            href="https://atypica.ai/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="group relative inline-flex items-center justify-center gap-4 text-white font-black text-lg md:text-2xl uppercase tracking-wider transition-all duration-300 hover:scale-110 flex-shrink-0"
+          >
+            <span>See how Atypica studies prediction</span>
+            <ArrowRight className="w-6 h-6 md:w-8 md:h-8 translate-x-0 group-hover:translate-x-2 transition-transform" />
+          </a>
         </div>
+        
         <div className="pt-8 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-6">
           <span className="text-[9px] text-muted font-bold uppercase tracking-widest">© 2024 ATYPICA SYSTEM. NO RIGHTS RESERVED BY MACHINES.</span>
           <div className="flex gap-8">
