@@ -1,7 +1,7 @@
 import { notFound } from 'next/navigation';
 import { Metadata } from 'next';
 import { prisma } from '@/lib/prisma';
-import { PredictionMarket, PredictionStatus } from '@/types';
+import { PredictionMarket, PredictionStatus, Category } from '@/types';
 import MarketDetailClient from './MarketDetailClient';
 
 async function getMarket(id: string): Promise<PredictionMarket | null> {
@@ -24,7 +24,7 @@ async function getMarket(id: string): Promise<PredictionMarket | null> {
       id: market.id,
       title: market.title,
       description: market.description || '',
-      category: market.category as any,
+      category: market.category as Category,
       createdAt: market.createdAt.toISOString(),
       updatedAt: market.updatedAt.toISOString(),
       closeDate: market.closeDate.toISOString(),
@@ -53,8 +53,9 @@ async function getMarket(id: string): Promise<PredictionMarket | null> {
   }
 }
 
-export async function generateMetadata({ params }: { params: { id: string } }): Promise<Metadata> {
-  const market = await getMarket(params.id);
+export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
+  const { id } = await params;
+  const market = await getMarket(id);
 
   if (!market) {
     return {
@@ -78,8 +79,9 @@ export async function generateMetadata({ params }: { params: { id: string } }): 
   };
 }
 
-export default async function MarketDetailPage({ params }: { params: { id: string } }) {
-  const market = await getMarket(params.id);
+export default async function MarketDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  const market = await getMarket(id);
 
   if (!market) {
     notFound();

@@ -1,13 +1,13 @@
 import { prisma } from '@/lib/prisma';
 import { MarketEditClient } from './MarketEditClient';
-import { PredictionMarket } from '@/types';
+import { PredictionMarket, Category, PredictionStatus } from '@/types';
 
 interface PageProps {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }
 
 export default async function AdminMarketEditPage({ params }: PageProps) {
-  const { id } = params;
+  const { id } = await params;
 
   const market = await prisma.market.findUnique({
     where: { id },
@@ -26,12 +26,12 @@ export default async function AdminMarketEditPage({ params }: PageProps) {
     id: market.id,
     title: market.title,
     description: market.description,
-    category: market.category as any,
+    category: market.category as Category,
     createdAt: market.createdAt.toISOString(),
     updatedAt: market.updatedAt.toISOString(),
     closeDate: market.closeDate.toISOString(),
     resolveDate: market.resolveDate?.toISOString(),
-    status: market.status as any,
+    status: market.status as PredictionStatus,
     options: market.options.map((o) => ({
       id: o.id,
       text: o.text,

@@ -412,7 +412,7 @@ export default function HomeClient({ initialMarkets }: HomeClientProps) {
                   labelStyle={{ color: '#fff', fontSize: '11px', fontWeight: 'bold', marginBottom: '4px' }}
                   cursor={{ stroke: 'rgba(255,255,255,0.5)', strokeWidth: 2, strokeDasharray: '3 3' }}
                   formatter={(value: any) => value}
-                  labelFormatter={(label: string, payload: any[]) => {
+                  labelFormatter={(label: string, payload: readonly any[]) => {
                     if (payload && payload[0] && payload[0].payload && payload[0].payload.dateTime) {
                       return `Time: ${payload[0].payload.dateTime}`;
                     }
@@ -477,7 +477,6 @@ export default function HomeClient({ initialMarkets }: HomeClientProps) {
                   height={30}
                   stroke="rgba(255,255,255,0.3)"
                   fill="rgba(255,255,255,0.05)"
-                  data={allFilteredData}
                   startIndex={brushStartIndex}
                   endIndex={brushEndIndex}
                   onChange={(props) => {

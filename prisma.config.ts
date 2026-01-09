@@ -9,8 +9,8 @@ export default defineConfig({
   },
   datasource: {
     // Transaction Pooler - 用于应用查询
-    url: process.env["DATABASE_URL"],
+    url: process.env["DATABASE_URL"]!,
     // Direct Connection - 用于数据库迁移
-    directUrl: process.env["DIRECT_URL"],
+    directUrl: process.env["DIRECT_URL"]!,
   },
 });

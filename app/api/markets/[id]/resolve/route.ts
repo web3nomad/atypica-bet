@@ -4,10 +4,10 @@ import { prisma } from '@/lib/prisma';
 // POST /api/markets/[id]/resolve
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = params;
+    const { id } = await params;
     const { winnerOptionId } = await request.json();
 
     const market = await prisma.market.findUnique({
