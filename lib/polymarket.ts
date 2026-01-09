@@ -195,7 +195,7 @@ export function extractSlugFromUrl(input: string): string {
 /**
  * 获取钱包持仓（服务端调用）
  */
-export async function 好fetchWalletPositions(): Promise<PolymarketPosition[]> {
+export async function fetchWalletPositions(): Promise<PolymarketPosition[]> {
   const walletAddress = process.env.POLYMARKET_WALLET_ADDRESS;
   
 

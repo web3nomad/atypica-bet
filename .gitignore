@@ -39,3 +39,4 @@ nul
 result.json
 temp_output.html
 .next
+next-env.d.ts
