@@ -34,7 +34,6 @@ main.jsx
 
 # Prisma
 /generated/prisma
-/prisma/migrations
 .claude/
 nul
 result.json
