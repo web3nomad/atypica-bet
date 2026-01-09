@@ -67,7 +67,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
             ))}
           </div>
           <div className="pt-8 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-6">
-            <span className="text-[9px] text-muted font-bold uppercase tracking-widest">© 2024 ATYPICA SYSTEM. NO RIGHTS RESERVED BY MACHINES.</span>
+            <span className="text-[9px] text-muted font-bold uppercase tracking-widest">© 2026 ATYPICA SYSTEM. NO RIGHTS RESERVED BY MACHINES.</span>
             <div className="flex gap-8">
               <a href="#" className="text-[9px] text-muted font-bold uppercase tracking-widest hover:text-white">Security</a>
               <a href="#" className="text-[9px] text-muted font-bold uppercase tracking-widest hover:text-white">Privacy</a>

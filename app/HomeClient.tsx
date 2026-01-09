@@ -302,7 +302,7 @@ export default function HomeClient({ initialMarkets }: HomeClientProps) {
       <section className="pt-32 pb-24 text-center relative z-50">
         <div className="max-w-4xl mx-auto space-y-8">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/[0.05] border border-white/10 text-white/60 text-[10px] font-bold uppercase tracking-[0.2em]">
-             AI Predictive Infrastructure v4.2
+             AI Predictive Infrastructure 
           </div>
 
           <div className="relative z-50">
@@ -535,17 +535,19 @@ export default function HomeClient({ initialMarkets }: HomeClientProps) {
           >
             All Segments
           </button>
-          {Object.entries(CATEGORY_LABELS)
-            .filter(([key]) => key !== Category.SPORTS)
-            .map(([key, label]) => (
-            <button
-              key={key}
-              onClick={() => setActiveCategory(key as Category)}
-              className={`px-5 py-2 rounded-full text-[11px] font-bold uppercase tracking-wider transition-all whitespace-nowrap ${activeCategory === key ? 'bg-white text-black' : 'text-muted hover:text-white'}`}
-            >
-              {label}
-            </button>
-          ))}
+          {(() => {
+            // 从当前 board 中获取所有唯一的 category
+            const availableCategories = Array.from(new Set(initialMarkets.map(m => m.category)));
+            return availableCategories.map((category) => (
+              <button
+                key={category}
+                onClick={() => setActiveCategory(category)}
+                className={`px-5 py-2 rounded-full text-[11px] font-bold uppercase tracking-wider transition-all whitespace-nowrap ${activeCategory === category ? 'bg-white text-black' : 'text-muted hover:text-white'}`}
+              >
+                {CATEGORY_LABELS[category]}
+              </button>
+            ));
+          })()}
         </div>
 
         <div className="flex items-center gap-4">
@@ -654,7 +656,7 @@ export default function HomeClient({ initialMarkets }: HomeClientProps) {
                         <div className="flex gap-1.5 items-center">
                           <div className="w-6 h-1 bg-primary rounded-sm"></div>
                           <div className="w-6 h-1 bg-primary rounded-sm"></div>
-                          <div className="w-6 h-1 bg-white/30 rounded-sm"></div>
+                          <div className="w-6 h-1 bg-primary rounded-sm"></div>
                         </div>
                       </div>
                       </div>
@@ -721,8 +723,10 @@ export default function HomeClient({ initialMarkets }: HomeClientProps) {
                           <span className="text-[9px] mr-1 text-muted">Market:</span>
                     <span className="text-xs font-bold text-white">37%</span>
                         </div>
-                          <div className="flex items-center">
-                    <span className="text-xs font-bold text-primary">High</span>
+                          <div className="flex items-center gap-1.5">
+                            <div className="h-2 w-7 rounded-sm bg-primary" />
+                            <div className="h-2 w-7 rounded-sm bg-primary" />
+                            <div className="h-2 w-7 rounded-sm bg-primary" />
                           </div>
                       </div>
                     </div>

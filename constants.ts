@@ -5,7 +5,10 @@ export const CATEGORY_LABELS: Record<Category, string> = {
   [Category.TECH]: 'Tech',
   [Category.FINANCE]: 'Finance',
   [Category.SPORTS]: 'Sports',
-  [Category.ENTERTAINMENT]: 'Entertainment'
+  [Category.ENTERTAINMENT]: 'Entertainment',
+  [Category.CULTURE]: 'Culture',
+  [Category.POLITICS]: 'Politics',
+  [Category.CRYPTO]: 'Crypto'
 };
 
 export const STATUS_LABELS: Record<PredictionStatus, string> = {

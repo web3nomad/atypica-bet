@@ -3,7 +3,10 @@ export enum Category {
   TECH = 'TECH',
   FINANCE = 'FINANCE',
   SPORTS = 'SPORTS',
-  ENTERTAINMENT = 'ENTERTAINMENT'
+  ENTERTAINMENT = 'ENTERTAINMENT',
+  CULTURE = 'CULTURE',
+  POLITICS = 'POLITICS',
+  CRYPTO = 'CRYPTO'
 }
 
 export enum PredictionStatus {
@@ -37,6 +40,7 @@ export interface PredictionMarket {
   atypicaAnalysisUrl?: string; // Atypica 分析报告链接
   accuracyScore?: number; // 0-1
   externalSource?: string;
+  icon?: string; // Event icon URL
   shareCount: number;
   viewCount: number;
   poolAmount?: number; // 池子总金额

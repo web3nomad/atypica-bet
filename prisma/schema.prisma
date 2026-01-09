@@ -15,7 +15,7 @@ model Market {
   id          String   @id @default(cuid())
   title       String
   description String   @db.Text
-  category    String   // TECH, FINANCE, SPORTS, ENTERTAINMENT
+  category    String   // TECH, FINANCE, SPORTS, ENTERTAINMENT, CULTURE, POLITICS, CRYPTO
   status      String   // ACTIVE, CLOSED, SUCCESSFUL, FAILED
 
   // 时间字段

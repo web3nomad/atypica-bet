@@ -45,38 +45,48 @@ export async function GET(request: NextRequest) {
       },
     });
 
-    const results: PredictionMarket[] = markets.map(market => ({
-      id: market.id,
-      title: market.title,
-      description: market.description,
-      category: market.category as any,
-      createdAt: market.createdAt.toISOString(),
-      updatedAt: market.updatedAt.toISOString(),
-      closeDate: market.closeDate.toISOString(),
-      resolveDate: market.resolveDate?.toISOString(),
-      status: market.status as any,
-      options: market.options.map((option: { id: string; text: string; externalProb: number | null; atypicaProb: number | null; isWinner: boolean }) => ({
-        id: option.id,
-        text: option.text,
-        externalProb: option.externalProb ?? undefined,
-        atypicaProb: option.atypicaProb ?? undefined,
-        isWinner: option.isWinner,
-      })),
-      atypicaPickId: market.atypicaPickId ?? undefined,
-      atypicaAnalysis: market.atypicaAnalysis ?? undefined,
-      atypicaAnalysisUrl: market.atypicaAnalysisUrl ?? undefined,
-      accuracyScore: market.accuracyScore ?? undefined,
-      externalSource: market.externalSource ?? undefined,
-      shareCount: market.shareCount,
-      viewCount: market.viewCount,
-      poolAmount: market.poolAmount ?? undefined,
-      poolCurrency: market.poolCurrency ?? undefined,
-      // 暂时排除 NFT 字段
-      // nftPercentRealizedPnl: market.nftPercentRealizedPnl ?? undefined,
-      // nftCurrentValue: market.nftCurrentValue ?? undefined,
-      // nftWinValue: market.nftWinValue ?? undefined,
-      // nftLastSynced: market.nftLastSynced?.toISOString(),
-    }));
+    const results: PredictionMarket[] = markets.map(market => {
+      // 从 externalData 中提取 icon
+      let icon: string | undefined = undefined;
+      if (market.externalData && typeof market.externalData === 'object') {
+        const data = market.externalData as any;
+        icon = data.icon || data.subMarket?.icon || data.eventGroup?.icon;
+      }
+
+      return {
+        id: market.id,
+        title: market.title,
+        description: market.description,
+        category: market.category as any,
+        createdAt: market.createdAt.toISOString(),
+        updatedAt: market.updatedAt.toISOString(),
+        closeDate: market.closeDate.toISOString(),
+        resolveDate: market.resolveDate?.toISOString(),
+        status: market.status as any,
+        options: market.options.map((option: { id: string; text: string; externalProb: number | null; atypicaProb: number | null; isWinner: boolean }) => ({
+          id: option.id,
+          text: option.text,
+          externalProb: option.externalProb ?? undefined,
+          atypicaProb: option.atypicaProb ?? undefined,
+          isWinner: option.isWinner,
+        })),
+        atypicaPickId: market.atypicaPickId ?? undefined,
+        atypicaAnalysis: market.atypicaAnalysis ?? undefined,
+        atypicaAnalysisUrl: market.atypicaAnalysisUrl ?? undefined,
+        accuracyScore: market.accuracyScore ?? undefined,
+        externalSource: market.externalSource ?? undefined,
+        icon: icon,
+        shareCount: market.shareCount,
+        viewCount: market.viewCount,
+        poolAmount: market.poolAmount ?? undefined,
+        poolCurrency: market.poolCurrency ?? undefined,
+        // 暂时排除 NFT 字段
+        // nftPercentRealizedPnl: market.nftPercentRealizedPnl ?? undefined,
+        // nftCurrentValue: market.nftCurrentValue ?? undefined,
+        // nftWinValue: market.nftWinValue ?? undefined,
+        // nftLastSynced: market.nftLastSynced?.toISOString(),
+      };
+    });
 
     return NextResponse.json(results);
   } catch (error) {
@@ -130,6 +140,9 @@ export async function POST(request: NextRequest) {
         externalData: market.externalSource ? {
           source: market.externalSource,
           originalId: market.id,
+          icon: market.icon,
+        } : market.icon ? {
+          icon: market.icon,
         } : undefined,
         viewCount: market.viewCount,
         shareCount: market.shareCount,
@@ -149,6 +162,13 @@ export async function POST(request: NextRequest) {
         options: true,
       },
     });
+
+    // 从 externalData 中提取 icon
+    let icon: string | undefined = undefined;
+    if (savedMarket.externalData && typeof savedMarket.externalData === 'object') {
+      const data = savedMarket.externalData as any;
+      icon = data.icon || data.subMarket?.icon || data.eventGroup?.icon;
+    }
 
     const result: PredictionMarket = {
       id: savedMarket.id,
@@ -172,6 +192,7 @@ export async function POST(request: NextRequest) {
       atypicaAnalysisUrl: savedMarket.atypicaAnalysisUrl ?? undefined,
       accuracyScore: savedMarket.accuracyScore ?? undefined,
       externalSource: savedMarket.externalSource ?? undefined,
+      icon: icon,
       shareCount: savedMarket.shareCount,
       viewCount: savedMarket.viewCount,
       poolAmount: savedMarket.poolAmount ?? undefined,

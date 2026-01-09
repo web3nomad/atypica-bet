@@ -91,11 +91,12 @@ export default function MarketDetailClient({ market }: MarketDetailClientProps) 
     setLastUpdated(formatUpdateTime());
   }, [isRefreshing]);
 
-  // 占位数据：波动比例（后续会联动后端）
+  // Price Change 从数据库获取（nftPercentRealizedPnl）
   useEffect(() => {
-    // TODO: 联动后端接入实际数据
-    setPriceChange(5.2); // 占位数据：+5.2%
-  }, [market.id]);
+    if (market.nftPercentRealizedPnl !== undefined) {
+      setPriceChange(market.nftPercentRealizedPnl);
+    }
+  }, [market.nftPercentRealizedPnl]);
 
   const handleRefresh = () => {
     setIsRefreshing(true);
@@ -111,12 +112,12 @@ export default function MarketDetailClient({ market }: MarketDetailClientProps) 
     }, 800);
   };
 
-  // 计算 Model Confidence 等级（0-3，对应0-3条横线）
+  // 计算 Model Confidence 等级（1-3，对应1-3条横线），与 PredictionCard 逻辑一致
   const getConfidenceLevel = (score: number): number => {
-    if (score >= 0.85) return 3;
-    if (score >= 0.65) return 2;
-    if (score >= 0.45) return 1;
-    return 0;
+    const percent = score * 100;
+    if (percent >= 70) return 3;
+    if (percent >= 40) return 2;
+    return 1;
   };
 
   const confidenceLevel = getConfidenceLevel(market.accuracyScore || 0);
@@ -181,49 +182,89 @@ export default function MarketDetailClient({ market }: MarketDetailClientProps) 
                 <ArrowRight className="w-3 h-3 translate-x-0 group-hover:translate-x-1 transition-transform" />
               </a>
             </div>
-            <p className="text-muted text-xl font-medium leading-relaxed">
-              {market.atypicaAnalysis}
+            <p className="text-muted text-lg font-medium leading-relaxed">
+              {market.atypicaAnalysis ? (() => {
+                const text = market.atypicaAnalysis;
+                // 处理双引号内的内容：斜体显示，并在双引号后换行
+                const parts = text.split(/"([^"]*)"/g);
+                return parts.map((part, index) => {
+                  if (index % 2 === 1) {
+                    // 双引号内的内容
+                    return (
+                      <React.Fragment key={index}>
+                        <em className="italic">"{part}"</em>
+                        <br />
+                      </React.Fragment>
+                    );
+                  } else {
+                    // 双引号外的内容
+                    return <span key={index}>{part}</span>;
+                  }
+                });
+              })() : ''}
             </p>
-
-            <div className="flex items-center gap-6 pt-2">
-              <div className="flex items-center gap-2 text-[11px] text-muted">
-                <MessageSquare className="w-4 h-4" />
-                <span>{market.viewCount} Views</span>
-              </div>
-              <div className="flex items-center gap-2 text-[11px] text-muted">
-                <Heart className="w-4 h-4" />
-                <span>{Math.floor(market.shareCount / 2)} Likes</span>
-              </div>
-              <div className="flex items-center gap-2 text-[11px] text-muted">
-                <Share2 className="w-4 h-4" />
-                <span>{market.shareCount} Shares</span>
-              </div>
-            </div>
           </div>
 
-          <div className="glass-panel rounded-2xl p-8 border border-white/5">
-            <div className="flex items-center justify-between mb-10">
+          <div className="glass-panel rounded-2xl p-6 border border-white/5">
+            <div className="flex items-center justify-between mb-6">
               <div className="space-y-1">
                 <h2 className="text-xs font-black text-white uppercase tracking-[0.2em]">Probability Matrix</h2>
                 <p className="text-[9px] text-muted font-bold uppercase tracking-widest">Weighted Comparative Analysis</p>
               </div>
               <div className="flex gap-4 text-[9px] font-black uppercase tracking-widest text-muted">
-                <div className="flex items-center gap-2"><div className="w-1.5 h-1.5 bg-white/10 rounded-full" /> Market Average</div>
-                <div className="flex items-center gap-2"><div className="w-1.5 h-1.5 bg-primary rounded-full shadow-[0_0_10px_rgba(24,255,25,0.3)]" /> Atypica Model</div>
+                <div className="flex items-center gap-2"><div className="w-1.5 h-1.5 bg-white/10 rounded-full" /> Market Context</div>
               </div>
             </div>
-            <div className="h-[200px] w-full">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={data} layout="vertical" margin={{ left: 0, right: 30 }}>
-                  <XAxis type="number" hide />
-                  <YAxis dataKey="name" type="category" width={100} tick={{ fontSize: 9, fontWeight: 700, fill: '#666' }} axisLine={false} tickLine={false} />
-                  <Tooltip cursor={{ fill: 'rgba(255,255,255,0.01)' }} contentStyle={{ background: '#000', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', fontSize: '9px' }} />
-                  <Bar dataKey="external" fill="rgba(255,255,255,0.05)" radius={[0, 2, 2, 0]} barSize={8} />
-                  <Bar dataKey="atypica" radius={[0, 2, 2, 0]} barSize={8}>
-                    {data.map((entry, index) => <Cell key={index} fill={entry.isAtypicaPick ? '#18FF19' : '#ffffff'} />)}
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
+            <div className="h-[140px] w-full relative">
+              <div className="flex items-center h-full">
+                {/* 左侧：百分比、Atypica 标志和 Yes/No 文字 */}
+                <div className="flex-shrink-0 w-[200px] h-full flex flex-col justify-center gap-4">
+                  {data.map((entry, index) => (
+                    <div key={index} className="flex items-center">
+                      <div className="w-[60px] flex-shrink-0">
+                        {entry.isAtypicaPick && (
+                          <span className="text-[10px] font-semibold text-primary bg-primary/10 px-1.5 py-0.5 rounded">
+                            Atypica
+                          </span>
+                        )}
+                      </div>
+                      <span className="text-[20px] text-white/60 font-semibold w-[45px] text-left">
+                        {entry.external}%
+                      </span>
+                      <span className="text-[18px] font-bold text-[#666] ml-2">
+                        {entry.name}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+                {/* 中间：进度条（居中） */}
+                <div className="flex-1 flex justify-center h-full min-w-0">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={data} layout="vertical" margin={{ left: 20, right: 20, top: 20, bottom: 20 }}>
+                      <XAxis 
+                        type="number" 
+                        domain={[0, 100]} 
+                        hide 
+                      />
+                      <YAxis 
+                        dataKey="name" 
+                        type="category" 
+                        width={0}
+                        tick={false}
+                        axisLine={false} 
+                        tickLine={false}
+                      />
+                      <Tooltip cursor={{ fill: 'rgba(255,255,255,0.01)' }} contentStyle={{ background: '#000', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', fontSize: '9px' }} />
+                      <Bar 
+                        dataKey="external" 
+                        fill="rgba(255,255,255,0.3)" 
+                        radius={[0, 2, 2, 0]} 
+                        barSize={8}
+                      />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -234,8 +275,8 @@ export default function MarketDetailClient({ market }: MarketDetailClientProps) 
               {/* Atypical 的选择 */}
               <div className="text-center mb-6">
                 <div className="text-[9px] text-muted font-bold uppercase tracking-[0.3em] mb-2">Atypica Choice</div>
-                <div className="text-2xl font-black text-primary leading-tight bg-primary/10 px-4 py-3 rounded-lg border border-primary/30">
-                  {pickedOption?.text || 'N/A'}
+                <div className="flex items-center justify-center text-2xl font-black text-primary leading-tight bg-primary/10 px-4 py-3 rounded-lg border border-primary/30">
+                  <span>{pickedOption?.text || 'N/A'}</span>
                 </div>
               </div>
 
@@ -251,24 +292,26 @@ export default function MarketDetailClient({ market }: MarketDetailClientProps) 
               </div>
 
               {/* 波动比例 */}
-              <div className="text-center mb-6">
-                <div className="text-[8px] text-muted font-bold uppercase tracking-widest mb-2">Price Change</div>
-                <div className={`text-2xl font-black ${priceChange >= 0 ? 'text-primary' : 'text-red-400'} leading-tight`}>
-                  {priceChange >= 0 ? '+' : ''}{priceChange.toFixed(1)}%
+              {market.nftPercentRealizedPnl !== undefined && (
+                <div className="text-center mb-6">
+                  <div className="text-[8px] text-muted font-bold uppercase tracking-widest mb-2">Price Change</div>
+                  <div className={`text-2xl font-black ${market.nftPercentRealizedPnl >= 0 ? 'text-green-400' : 'text-red-400'} leading-tight`}>
+                    {market.nftPercentRealizedPnl >= 0 ? '+' : ''}{market.nftPercentRealizedPnl.toFixed(2)}%
+                  </div>
                 </div>
-              </div>
+              )}
 
               {/* Model Confidence - 三个短横线 */}
               <div className="text-center border-t border-white/10 pt-6">
                 <div className="text-[8px] text-muted font-bold uppercase tracking-widest mb-3">Model Confidence</div>
-                <div className="flex items-center justify-center gap-2">
-                  {[0, 1, 2].map((index) => (
+                <div className="flex items-center justify-center gap-1.5">
+                  {[1, 2, 3].map((index) => (
                     <div
                       key={index}
-                      className={`h-1 rounded-full transition-all ${
-                        index < confidenceLevel
-                          ? 'bg-primary w-8'
-                          : 'bg-white/20 w-8'
+                      className={`h-2 w-7 rounded-sm transition-all ${
+                        index <= confidenceLevel
+                          ? 'bg-primary'
+                          : 'bg-white'
                       }`}
                     />
                   ))}

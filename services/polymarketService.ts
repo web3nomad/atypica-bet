@@ -96,6 +96,59 @@ function mapStatus(active: boolean, closed: boolean): PredictionStatus {
 }
 
 /**
+ * 根据 Polymarket tags 映射到 Category
+ */
+function mapCategoryFromTags(tags: { label: string; slug: string }[]): Category {
+  if (!tags || tags.length === 0) {
+    return Category.ENTERTAINMENT; // 默认值
+  }
+
+  // 根据 tag label 或 slug 来推断 category
+  const tagLabels = tags.map(t => t.label.toLowerCase());
+  const tagSlugs = tags.map(t => t.slug.toLowerCase());
+
+  // 检查是否包含相关关键词（CRYPTO 优先检查，因为 crypto 可能同时匹配 TECH 和 FINANCE）
+  if (tagLabels.some(l => l.includes('crypto') || l.includes('bitcoin') || l.includes('ethereum') || l.includes('blockchain') || l.includes('cryptocurrency') || l.includes('defi') || l.includes('token') || l.includes('coin') || l.includes('btc') || l.includes('eth')) ||
+      tagSlugs.some(s => s.includes('crypto') || s.includes('bitcoin') || s.includes('ethereum') || s.includes('blockchain') || s.includes('defi'))) {
+    return Category.CRYPTO;
+  }
+
+  // 检查是否包含相关关键词
+  if (tagLabels.some(l => l.includes('tech') || l.includes('technology') || l.includes('ai')) ||
+      tagSlugs.some(s => s.includes('tech') || s.includes('technology'))) {
+    return Category.TECH;
+  }
+
+  if (tagLabels.some(l => l.includes('finance') || l.includes('financial') || l.includes('economics')) ||
+      tagSlugs.some(s => s.includes('finance') || s.includes('financial'))) {
+    return Category.FINANCE;
+  }
+
+  if (tagLabels.some(l => l.includes('sport') || l.includes('football') || l.includes('soccer') || l.includes('basketball') || l.includes('baseball')) ||
+      tagSlugs.some(s => s.includes('sport'))) {
+    return Category.SPORTS;
+  }
+
+  if (tagLabels.some(l => l.includes('politics') || l.includes('election') || l.includes('political') || l.includes('government') || l.includes('president')) ||
+      tagSlugs.some(s => s.includes('politics') || s.includes('election') || s.includes('political'))) {
+    return Category.POLITICS;
+  }
+
+  if (tagLabels.some(l => l.includes('culture') || l.includes('cultural') || l.includes('art') || l.includes('music') || l.includes('film') || l.includes('literature')) ||
+      tagSlugs.some(s => s.includes('culture') || s.includes('cultural') || s.includes('art'))) {
+    return Category.CULTURE;
+  }
+
+  if (tagLabels.some(l => l.includes('entertainment')) ||
+      tagSlugs.some(s => s.includes('entertainment'))) {
+    return Category.ENTERTAINMENT;
+  }
+
+  // 默认返回 ENTERTAINMENT
+  return Category.ENTERTAINMENT;
+}
+
+/**
  * 转换单个子市场
  */
 export function convertSubMarketToPrediction(
@@ -104,12 +157,14 @@ export function convertSubMarketToPrediction(
 ): PredictionMarket {
   const probability = calculateProbability(subMarket);
   const options = createOptionsFromOutcomes(subMarket, probability);
+  // 从 eventGroup 的 tags 中映射 category
+  const category = mapCategoryFromTags(eventGroup.tags || []);
 
   return {
     id: `poly-${subMarket.id}`,
     title: subMarket.question,
     description: subMarket.description || eventGroup.description,
-    category: Category.SPORTS,
+    category: category,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
     closeDate: subMarket.endDate,

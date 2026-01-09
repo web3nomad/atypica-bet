@@ -13,6 +13,13 @@ async function getMarket(id: string): Promise<PredictionMarket | null> {
 
     if (!market) return null;
 
+    // 从 externalData 中提取 icon
+    let icon: string | undefined = undefined;
+    if (market.externalData && typeof market.externalData === 'object') {
+      const data = market.externalData as any;
+      icon = data.icon || data.subMarket?.icon || data.eventGroup?.icon;
+    }
+
     return {
       id: market.id,
       title: market.title,
@@ -34,6 +41,7 @@ async function getMarket(id: string): Promise<PredictionMarket | null> {
       atypicaAnalysis: market.atypicaAnalysis || undefined,
       accuracyScore: market.accuracyScore || undefined,
       externalSource: market.externalSource || undefined,
+      icon: icon,
       shareCount: market.shareCount || 0,
       viewCount: market.viewCount || 0,
       poolAmount: market.poolAmount || undefined,

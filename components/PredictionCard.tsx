@@ -111,43 +111,46 @@ export const PredictionCard: React.FC<PredictionCardProps> = ({ market, onClick,
 
   const renderConfidenceIndicator = (probability: number) => {
     // 根据概率值决定哪个 bar 高亮
-    // 0-40%: 红色高亮 (低置信度)
-    // 40-70%: 黄色高亮 (中置信度)
-    // 70-100%: 绿色高亮 (高置信度)
+    // 0-40%: 第一个 bar 高亮 (低置信度)
+    // 40-70%: 第二个 bar 高亮 (中置信度)
+    // 70-100%: 第三个 bar 高亮 (高置信度)
     const percent = probability * 100;
-    let activeBar: 1 | 2 | 3 = 1; // 默认红色
+    let activeBar: 1 | 2 | 3 = 1; // 默认第一个
 
     if (percent >= 70) {
-      activeBar = 3; // 绿色
+      activeBar = 3; // 第三个
     } else if (percent >= 40) {
-      activeBar = 2; // 黄色
+      activeBar = 2; // 第二个
     } else {
-      activeBar = 1; // 红色
+      activeBar = 1; // 第一个
     }
     
     return (
       <div className="flex flex-col gap-1.5">
-        <div className="text-xs font-semibold text-white/70 mb-0.5">Prediction confidence</div>
-        <div className="flex gap-2 items-center">
-          {/* 红色 bar (低置信度) */}
+        <div className="flex items-center gap-1.5 mb-0.5">
+          <div className="w-1 h-1 rounded-full bg-primary"></div>
+          <div className="text-xs font-semibold text-white/70">Prediction confidence</div>
+        </div>
+        <div className="flex gap-1.5 items-center">
+          {/* 第一个 bar */}
           <div
-            className={`h-2 w-10 rounded-sm transition-all ${activeBar === 1
-                ? 'bg-red-500 shadow-lg shadow-red-500/50'
-                : 'bg-red-500/20'
+            className={`h-2 w-7 rounded-sm transition-all ${activeBar >= 1
+                ? 'bg-primary'
+                : 'bg-white'
               }`}
           />
-          {/* 黄色 bar (中置信度) */}
+          {/* 第二个 bar */}
           <div
-            className={`h-2 w-10 rounded-sm transition-all ${activeBar === 2
-                ? 'bg-yellow-500 shadow-lg shadow-yellow-500/50'
-                : 'bg-yellow-500/20'
+            className={`h-2 w-7 rounded-sm transition-all ${activeBar >= 2
+                ? 'bg-primary'
+                : 'bg-white'
               }`}
           />
-          {/* 绿色 bar (高置信度) */}
+          {/* 第三个 bar */}
           <div
-            className={`h-2 w-10 rounded-sm transition-all ${activeBar === 3
-                ? 'bg-green-500 shadow-lg shadow-green-500/50'
-                : 'bg-green-500/20'
+            className={`h-2 w-7 rounded-sm transition-all ${activeBar >= 3
+                ? 'bg-primary'
+                : 'bg-white'
               }`}
           />
         </div>
@@ -209,56 +212,84 @@ export const PredictionCard: React.FC<PredictionCardProps> = ({ market, onClick,
       </div>
 
       {/* Prediction Question */}
-      <h3 className="text-lg font-semibold text-white leading-snug mb-4">
-        {market.title}
+      <h3 className="text-lg font-semibold text-white leading-snug mb-4 flex items-center gap-3">
+        {market.icon && (
+          <img 
+            src={market.icon} 
+            alt="" 
+            className="w-6 h-6 rounded object-cover flex-shrink-0"
+            onError={(e) => {
+              // 如果图片加载失败，隐藏图片
+              (e.target as HTMLImageElement).style.display = 'none';
+            }}
+          />
+        )}
+        <span>{market.title}</span>
       </h3>
 
       {/* Main Prediction Box */}
       {pickedOption && (
-        <div className="mb-4 bg-white/[0.03] border border-white/10 rounded-xl p-4 card-layer-2">
-          <div className="flex flex-row justify-between items-start mb-3">
-            <div className="text-lg font-bold text-white">{pickedOption.text}</div>
-          </div>
-
-          <div className="flex flex-rwo items-start gap-4">
-            {/* Prediction confidence */}
+        <div className="mb-4 bg-white/[0.03] border border-white/10 rounded-xl p-6 card-layer-2 relative">
+          {/* 左侧内容：左对齐 */}
+          <div className="flex flex-col items-start">
+            <div className="text-[11px] text-white/70 mb-2">Atypica Prediction</div>
+            <div className="text-3xl md:text-4xl font-bold text-white leading-tight break-words mb-4">{pickedOption.text}</div>
+            
+            {/* Prediction confidence 和 Odds 同一行 */}
             {pickedOption.atypicaProb !== undefined ? (
-              renderConfidenceIndicator(market.accuracyScore || 0)
+              <div className="flex flex-col items-start w-full">
+                {/* 第一行：Prediction confidence 和 Odds */}
+                <div className="flex flex-row items-center gap-4 w-full mb-1">
+                  <div className="flex items-center gap-1.5">
+                    <div className="w-1 h-1 rounded-full bg-primary"></div>
+                    <div className="text-[10.5px] font-semibold text-white/70">Prediction confidence</div>
+                  </div>
+                  {/* Odds 标签，与 Prediction confidence 同一行 */}
+                  {market.nftPercentRealizedPnl !== undefined && (
+                    <div className="text-[10.5px] font-semibold text-white/70 ml-auto">
+                      Odds
+                    </div>
+                  )}
+                </div>
+                {/* 第二行：三个横线，左对齐 */}
+                {(() => {
+                  const percent = (market.accuracyScore || 0) * 100;
+                  let activeBar: 1 | 2 | 3 = 1;
+                  if (percent >= 70) {
+                    activeBar = 3;
+                  } else if (percent >= 40) {
+                    activeBar = 2;
+                  } else {
+                    activeBar = 1;
+                  }
+                  return (
+                    <div className="flex gap-1.5 items-center">
+                      <div className={`h-2 w-7 rounded-sm transition-all ${activeBar >= 1 ? 'bg-primary' : 'bg-white'}`} />
+                      <div className={`h-2 w-7 rounded-sm transition-all ${activeBar >= 2 ? 'bg-primary' : 'bg-white'}`} />
+                      <div className={`h-2 w-7 rounded-sm transition-all ${activeBar >= 3 ? 'bg-primary' : 'bg-white'}`} />
+                    </div>
+                  );
+                })()}
+              </div>
             ) : (
               <div className="text-white">N/A</div>
             )}
-
-            {/* NFT 持仓信息 */}
-            {market.nftPercentRealizedPnl !== undefined && (
-              <div className="flex-1 pt-0">
-                <div className="flex items-center gap-1.5 mb-2">
-                  <div className="w-1 h-1 rounded-full bg-primary"></div>
-                  <div className="text-xs font-semibold text-white/70">
-                    NFT Position
-                  </div>
-                </div>
-
-                <div className="">
-                  <div className="bg-gradient-to-br from-black/70 to-black/50 rounded-lg px-2.5 py-2 border border-white/20 hover:border-white/30 transition-all hover:scale-[1.02]">
-                    <div className="text-[9px] text-white/50 mb-1 font-medium">
-                      Odds
-                    </div>
-
-                    <div
-                      className={`text-xs font-bold ${market.nftPercentRealizedPnl >= 0
-                          ? 'text-green-400'
-                          : 'text-red-400'
-                        }`}
-                    >
-                      {market.nftPercentRealizedPnl >= 0 ? '+' : ''}
-                      {market.nftPercentRealizedPnl.toFixed(2)}%
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-
           </div>
+
+          {/* 右侧百分比：绝对定位，中间高度居中 */}
+          {market.nftPercentRealizedPnl !== undefined && (
+            <div className="absolute top-1/2 right-6 -translate-y-1/2 flex flex-col items-end">
+              <div
+                className={`text-[22px] md:text-[27.6px] font-bold leading-none ${market.nftPercentRealizedPnl >= 0
+                    ? 'text-green-400'
+                    : 'text-red-400'
+                  }`}
+              >
+                {market.nftPercentRealizedPnl >= 0 ? '+' : ''}
+                {market.nftPercentRealizedPnl.toFixed(2)}%
+              </div>
+            </div>
+          )}
         </div>
       )}
 
@@ -294,9 +325,16 @@ export const PredictionCard: React.FC<PredictionCardProps> = ({ market, onClick,
                 <div className="w-4 h-4 mr-2"></div>
                 <span className="text-sm text-white">{option.text}</span>
               </div>
-              <span className="text-sm font-medium text-white">
-                {Math.round((option.externalProb || 0) * 100)}%
-              </span>
+              <div className="flex items-center gap-2">
+                {option.id === market.atypicaPickId && (
+                  <span className="text-[10px] font-semibold text-primary bg-primary/10 px-1.5 py-0.5 rounded">
+                    Atypica
+                  </span>
+                )}
+                <span className="text-sm font-medium text-white">
+                  {Math.round((option.externalProb || 0) * 100)}%
+                </span>
+              </div>
             </div>
           ))}
         </div>
