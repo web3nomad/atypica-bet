@@ -181,6 +181,7 @@ export const PredictionCard: React.FC<PredictionCardProps> = ({ market, onClick,
   const formattedPoolAmount = market.poolAmount
     ? formatAmount(market.poolAmount)
     : null;
+    
 
   return (
     <div
@@ -212,7 +213,7 @@ export const PredictionCard: React.FC<PredictionCardProps> = ({ market, onClick,
       </div>
 
       {/* Prediction Question */}
-      <h3 className="text-lg font-semibold text-white leading-snug mb-4 flex items-center gap-3">
+      <h3 className="text-lg font-semibold text-white leading-snug mb-4 flex items-start gap-3 h-12">
         {market.icon && (
           <img 
             src={market.icon} 
@@ -224,7 +225,7 @@ export const PredictionCard: React.FC<PredictionCardProps> = ({ market, onClick,
             }}
           />
         )}
-        <span>{market.title}</span>
+        <div className="line-clamp-2">{market.title}</div>
       </h3>
 
       {/* Main Prediction Box */}
