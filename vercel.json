@@ -6,7 +6,7 @@
   "regions": ["iad1"],
   "crons": [
     {
-      "path": "/api/positions/snapshot?secret=${CRON_SECRET}",
+      "path": "/api/positions/snapshot",
       "schedule": "0 * * * *"
     }
   ]

@@ -87,7 +87,7 @@ Open [http://localhost:3000](http://localhost:3000)
 
 ### Protected APIs (require authentication)
 
-- `GET /api/positions/snapshot?secret=CRON_SECRET` - Create position snapshot
+- `GET /api/positions/snapshot` - Create position snapshot (requires Authorization header)
 - `GET /admin` - Admin panel (requires basic auth)
 
 ## Hourly Position Snapshots
@@ -102,7 +102,7 @@ Configured in `vercel.json`:
 {
   "crons": [
     {
-      "path": "/api/positions/snapshot?secret=${CRON_SECRET}",
+      "path": "/api/positions/snapshot",
       "schedule": "0 * * * *"
     }
   ]
@@ -110,9 +110,12 @@ Configured in `vercel.json`:
 ```
 
 **Setup:**
-1. Set `CRON_SECRET` in Vercel environment variables
+1. Set `CRON_SECRET` in Vercel environment variables (Production environment)
 2. Deploy to Vercel - cron runs automatically
-3. View logs: Vercel Dashboard → Deployments → Cron Logs
+3. Vercel automatically sends `CRON_SECRET` as `Authorization` header
+4. View logs: Vercel Dashboard → Deployments → Cron Logs
+
+**Security**: Vercel automatically injects the `CRON_SECRET` environment variable as an Authorization header when invoking the cron job. No need to manually pass it in the URL.
 
 **Free Plan Limits**: 100 calls/day (24 hourly snapshots = well within limit)
 
@@ -123,7 +126,7 @@ If not using Vercel Cron, you can set up external scheduling:
 **Option 1: Server Cron Job**
 ```bash
 # Add to crontab
-0 * * * * curl "https://your-app.vercel.app/api/positions/snapshot?secret=your_secret"
+0 * * * * curl -H "Authorization: your_secret" "https://your-app.vercel.app/api/positions/snapshot"
 ```
 
 **Option 2: GitHub Actions**
@@ -137,22 +140,23 @@ jobs:
   snapshot:
     runs-on: ubuntu-latest
     steps:
-      - run: curl "https://your-app.vercel.app/api/positions/snapshot?secret=${{ secrets.CRON_SECRET }}"
+      - run: curl -H "Authorization: ${{ secrets.CRON_SECRET }}" "https://your-app.vercel.app/api/positions/snapshot"
 ```
 
 **Option 3: cron-job.org**
-- URL: `https://your-app.vercel.app/api/positions/snapshot?secret=your_secret`
+- URL: `https://your-app.vercel.app/api/positions/snapshot`
 - Method: GET
+- Headers: `Authorization: your_secret`
 - Schedule: Every hour
 
 ### Testing Snapshot Creation
 
 ```bash
 # Local
-curl "http://localhost:3000/api/positions/snapshot?secret=your_secret"
+curl -H "Authorization: your_secret" "http://localhost:3000/api/positions/snapshot"
 
 # Production
-curl "https://your-app.vercel.app/api/positions/snapshot?secret=your_secret"
+curl -H "Authorization: your_secret" "https://your-app.vercel.app/api/positions/snapshot"
 ```
 
 ## Admin Panel
