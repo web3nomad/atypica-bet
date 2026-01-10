@@ -126,7 +126,7 @@ If not using Vercel Cron, you can set up external scheduling:
 **Option 1: Server Cron Job**
 ```bash
 # Add to crontab
-0 * * * * curl -H "Authorization: your_secret" "https://your-app.vercel.app/api/positions/snapshot"
+0 * * * * curl -H "Authorization: Bearer your_secret" "https://your-app.vercel.app/api/positions/snapshot"
 ```
 
 **Option 2: GitHub Actions**
@@ -140,23 +140,23 @@ jobs:
   snapshot:
     runs-on: ubuntu-latest
     steps:
-      - run: curl -H "Authorization: ${{ secrets.CRON_SECRET }}" "https://your-app.vercel.app/api/positions/snapshot"
+      - run: curl -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" "https://your-app.vercel.app/api/positions/snapshot"
 ```
 
 **Option 3: cron-job.org**
 - URL: `https://your-app.vercel.app/api/positions/snapshot`
 - Method: GET
-- Headers: `Authorization: your_secret`
+- Headers: `Authorization: Bearer your_secret`
 - Schedule: Every hour
 
 ### Testing Snapshot Creation
 
 ```bash
 # Local
-curl -H "Authorization: your_secret" "http://localhost:3000/api/positions/snapshot"
+curl -H "Authorization: Bearer your_secret" "http://localhost:3000/api/positions/snapshot"
 
 # Production
-curl -H "Authorization: your_secret" "https://your-app.vercel.app/api/positions/snapshot"
+curl -H "Authorization: Bearer your_secret" "https://your-app.vercel.app/api/positions/snapshot"
 ```
 
 ## Admin Panel

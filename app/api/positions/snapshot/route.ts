@@ -11,9 +11,9 @@ import { setProxy } from '@/lib/proxy';
  * - 创建快照记录（自动去重：同一市场同一小时只保留最新一条）
  *
  * 安全验证：
- * - 需要 Authorization header 包含 CRON_SECRET
+ * - 需要 Authorization header: Bearer <CRON_SECRET>
  * - Vercel Cron 自动注入
- * - 手动调用: curl -H "Authorization: your_secret"
+ * - 手动调用: curl -H "Authorization: Bearer your_secret" url
  */
 export async function GET(request: NextRequest) {
   // 验证授权
@@ -27,7 +27,7 @@ export async function GET(request: NextRequest) {
 
   const authHeader = request.headers.get('authorization');
 
-  if (authHeader !== cronSecret) {
+  if (authHeader !== `Bearer ${cronSecret}`) {
     return NextResponse.json(
       { error: 'Unauthorized' },
       { status: 401 }
