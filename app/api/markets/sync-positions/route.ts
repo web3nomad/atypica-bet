@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { fetchWalletPositions } from '@/lib/polymarket';
-import { syncPositionsToMarkets } from '@/services/nftPositionService';
+import { syncPositionsToMarkets } from '@/lib/nftPositions';
 import { setProxy } from '@/lib/proxy';
 
 // POST /api/markets/sync-positions - 手动触发同步钱包持仓

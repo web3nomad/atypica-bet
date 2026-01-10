@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { PredictionMarket, PredictionOption, PolymarketEventGroup } from '@/types';
-import { convertEventGroupToMarkets } from '@/services/polymarketService';
+import { convertEventGroupToMarkets } from '@/lib/polymarket';
 
 interface BatchImportBody {
   eventGroup?: PolymarketEventGroup;
@@ -11,8 +11,6 @@ interface BatchImportBody {
 
 // POST /api/markets/batch - 批量保存市场
 export async function POST(request: NextRequest) {
-   const x = await prisma.market.findMany();
-   console.log(x);
 
   try {
     const body = (await request.json()) as BatchImportBody;
@@ -49,12 +47,7 @@ export async function POST(request: NextRequest) {
         let savedMarket;
 
         if (existingMarket) {
-          // 市场已存在，先删除旧的 options
-          await prisma.option.deleteMany({
-            where: { marketId: market.id },
-          });
-
-          // 更新市场信息（保留已有的 atypica 相关字段，如果新数据没有提供）
+          // 市场已存在，更新市场信息（保留已有的 atypica 相关字段，如果新数据没有提供）
           savedMarket = await prisma.market.update({
             where: { id: market.id },
             data: {
@@ -64,7 +57,6 @@ export async function POST(request: NextRequest) {
               status: market.status,
               closeDate: new Date(market.closeDate),
               resolveDate: market.resolveDate ? new Date(market.resolveDate) : null,
-              // 保留已有的 atypica 相关字段（如果新数据没有提供）
               atypicaPickId: market.atypicaPickId ?? existingMarket.atypicaPickId ?? null,
               atypicaAnalysis: market.atypicaAnalysis ?? existingMarket.atypicaAnalysis ?? null,
               accuracyScore: market.accuracyScore ?? existingMarket.accuracyScore ?? null,
@@ -75,39 +67,23 @@ export async function POST(request: NextRequest) {
                     originalId: market.id,
                   }
                 : undefined,
-              viewCount: market.probability !== undefined ? Math.round(market.probability * 10000) : 0,  // 存储 probability 到 viewCount
+              viewCount: market.probability !== undefined ? Math.round(market.probability * 10000) : 0,
               shareCount: market.shareCount,
               poolAmount: market.poolAmount,
               poolCurrency: market.poolCurrency || 'USD',
-              
+              options: {
+                deleteMany: {},
+                create: market.options.map((option: PredictionOption) => ({
+                  id: option.id,
+                  text: option.text,
+                  externalProb: option.externalProb,
+                  atypicaProb: option.atypicaProb,
+                  isWinner: option.isWinner || false,
+                })),
+              },
             },
             include: { options: true },
           });
-
-          // 创建新的 options
-          await prisma.option.createMany({
-            data: market.options.map((option: PredictionOption) => ({
-              id: option.id,
-              marketId: market.id,
-              text: option.text,
-              externalProb: option.externalProb,
-              atypicaProb: option.atypicaProb,
-              isWinner: option.isWinner || false,
-            })),
-            skipDuplicates: true,
-          });
-
-          // 重新获取包含 options 的市场数据
-          const marketWithOptions = await prisma.market.findUnique({
-            where: { id: market.id },
-            include: { options: true },
-          });
-          
-          if (!marketWithOptions) {
-            throw new Error(`无法重新获取市场数据: ${market.id}`);
-          }
-          
-          savedMarket = marketWithOptions;
         } else {
           // 市场不存在，创建新市场
           savedMarket = await prisma.market.create({
@@ -129,7 +105,7 @@ export async function POST(request: NextRequest) {
                     originalId: market.id,
                   }
                 : undefined,
-              viewCount: market.probability !== undefined ? Math.round(market.probability * 10000) : 0,  // 存储 probability 到 viewCount
+              viewCount: market.probability !== undefined ? Math.round(market.probability * 10000) : 0,
               shareCount: market.shareCount,
               poolAmount: market.poolAmount,
               poolCurrency: market.poolCurrency || 'USD',
@@ -183,22 +159,6 @@ export async function POST(request: NextRequest) {
           nftLastSynced: savedMarket.nftLastSynced?.toISOString(),
         });
       } catch (error) {
-        // 单个市场失败不影响其他市场
-        console.log('=== 单个市场错误详情 ===');
-        console.log('Market ID:', market.id);
-        console.log('Full error:', JSON.stringify(error, null, 2));
-        console.log('Error meta:', JSON.stringify((error as any).meta, null, 2));
-        console.log('Error code:', (error as any).code);
-        console.log('Error message:', (error as any).message);
-        
-        // 尝试从 meta 中提取列名信息
-        const meta = (error as any).meta;
-        if (meta) {
-          console.log('Meta target:', meta.target);
-          console.log('Meta column:', meta.column);
-          console.log('Meta table:', meta.table);
-        }
-        
         console.error(`保存市场 ${market.id} 失败:`, error);
         // 继续处理下一个市场
       }
@@ -206,27 +166,12 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(results);
   } catch (error) {
-    console.log('=== 批量操作错误详情 ===');
-    console.log('Full error:', JSON.stringify(error, null, 2));
-    console.log('Error meta:', JSON.stringify((error as any).meta, null, 2));
-    console.log('Error code:', (error as any).code);
-    console.log('Error message:', (error as any).message);
-    
-    // 尝试从 meta 中提取列名信息
-    const meta = (error as any).meta;
-    if (meta) {
-      console.log('Meta target:', meta.target);
-      console.log('Meta column:', meta.column);
-      console.log('Meta table:', meta.table);
-    }
-    
     console.error('批量保存市场失败:', error);
     return NextResponse.json(
       { 
         error: error instanceof Error ? error.message : '批量保存市场失败',
         details: process.env.NODE_ENV === 'development' ? {
-          code: (error as any).code,
-          meta: (error as any).meta,
+          message: error instanceof Error ? error.message : '未知错误',
         } : undefined,
       },
       { status: 500 }

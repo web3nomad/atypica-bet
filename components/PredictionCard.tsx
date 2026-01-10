@@ -34,8 +34,7 @@ export const PredictionCard: React.FC<PredictionCardProps> = ({ market, onClick,
     setLastUpdated(formatUpdateTime());
   }, [isRefreshing]);
   
-  // 橙黄色光效（增强可见度）
-  const { cardRef: lightCardRef } = useLightCard({
+  const { cardRef: lightCardRef, lightStyle, isHovered } = useLightCard({
     light: {
       color: 'rgba(255, 179, 71, 0.4)',
       width: 100,
@@ -191,6 +190,7 @@ export const PredictionCard: React.FC<PredictionCardProps> = ({ market, onClick,
         market.status === PredictionStatus.SUCCESSFUL ? 'success-glow' : ''
       }`}
     >
+      {isHovered && <div style={lightStyle} />}
       {/* 防误解锚点 - Header with AI prediction disclaimer */}
       <div className="mb-3">
         <div className="flex items-center justify-between mb-1.5">

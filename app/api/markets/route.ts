@@ -90,28 +90,10 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json(results);
   } catch (error) {
-    console.log('=== 详细错误信息 ===');
-    console.log('Full error:', JSON.stringify(error, null, 2));
-    console.log('Error meta:', JSON.stringify((error as any).meta, null, 2));
-    console.log('Error code:', (error as any).code);
-    console.log('Error message:', (error as any).message);
-    
-    // 尝试从 meta 中提取列名信息
-    const meta = (error as any).meta;
-    if (meta) {
-      console.log('Meta target:', meta.target);
-      console.log('Meta column:', meta.column);
-      console.log('Meta table:', meta.table);
-    }
-    
     console.error('获取市场失败:', error);
     return NextResponse.json(
       { 
         error: error instanceof Error ? error.message : '获取市场失败',
-        details: process.env.NODE_ENV === 'development' ? {
-          code: (error as any).code,
-          meta: (error as any).meta,
-        } : undefined,
       },
       { status: 500 }
     );
