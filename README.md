@@ -87,7 +87,7 @@ Open [http://localhost:3000](http://localhost:3000)
 
 ### Protected APIs (require authentication)
 
-- `POST /api/positions/snapshot?secret=CRON_SECRET` - Create position snapshot
+- `GET /api/positions/snapshot?secret=CRON_SECRET` - Create position snapshot
 - `GET /admin` - Admin panel (requires basic auth)
 
 ## Hourly Position Snapshots
@@ -123,7 +123,7 @@ If not using Vercel Cron, you can set up external scheduling:
 **Option 1: Server Cron Job**
 ```bash
 # Add to crontab
-0 * * * * curl -X POST "https://your-app.vercel.app/api/positions/snapshot?secret=your_secret"
+0 * * * * curl "https://your-app.vercel.app/api/positions/snapshot?secret=your_secret"
 ```
 
 **Option 2: GitHub Actions**
@@ -137,22 +137,22 @@ jobs:
   snapshot:
     runs-on: ubuntu-latest
     steps:
-      - run: curl -X POST "https://your-app.vercel.app/api/positions/snapshot?secret=${{ secrets.CRON_SECRET }}"
+      - run: curl "https://your-app.vercel.app/api/positions/snapshot?secret=${{ secrets.CRON_SECRET }}"
 ```
 
 **Option 3: cron-job.org**
 - URL: `https://your-app.vercel.app/api/positions/snapshot?secret=your_secret`
-- Method: POST
+- Method: GET
 - Schedule: Every hour
 
 ### Testing Snapshot Creation
 
 ```bash
 # Local
-curl -X POST "http://localhost:3000/api/positions/snapshot?secret=your_secret"
+curl "http://localhost:3000/api/positions/snapshot?secret=your_secret"
 
 # Production
-curl -X POST "https://your-app.vercel.app/api/positions/snapshot?secret=your_secret"
+curl "https://your-app.vercel.app/api/positions/snapshot?secret=your_secret"
 ```
 
 ## Admin Panel

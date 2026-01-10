@@ -4,17 +4,18 @@ import { prisma } from '@/lib/prisma';
 import { setProxy } from '@/lib/proxy';
 
 /**
- * POST /api/positions/snapshot
+ * GET /api/positions/snapshot
  * 创建持仓快照
  * - 获取钱包持仓数据
  * - 匹配对应的 Market
  * - 创建快照记录（自动去重：同一市场同一小时只保留最新一条）
  *
  * 安全验证：
- * - 需要提供 Authorization header: Bearer <CRON_SECRET>
+ * - 需要提供 query 参数: ?secret=<CRON_SECRET>
+ * - 或 Authorization header: Bearer <CRON_SECRET>
  * - CRON_SECRET 必须在环境变量中配置
  */
-export async function POST(request: NextRequest) {
+export async function GET(request: NextRequest) {
   // 验证授权
   const cronSecret = process.env.CRON_SECRET;
   if (!cronSecret) {
