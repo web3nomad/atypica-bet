@@ -82,7 +82,13 @@ export async function POST(request: NextRequest) {
                 })),
               },
             },
-            include: { options: true },
+            include: {
+              options: true,
+              snapshots: {
+                orderBy: { timestamp: 'desc' },
+                take: 1,
+              },
+            },
           });
         } else {
           // 市场不存在，创建新市场
@@ -119,7 +125,13 @@ export async function POST(request: NextRequest) {
                 })),
               },
             },
-            include: { options: true },
+            include: {
+              options: true,
+              snapshots: {
+                orderBy: { timestamp: 'desc' },
+                take: 1,
+              },
+            },
           });
         }
 
@@ -153,10 +165,7 @@ export async function POST(request: NextRequest) {
           viewCount: savedMarket.viewCount,
           poolAmount: savedMarket.poolAmount ?? undefined,
           poolCurrency: savedMarket.poolCurrency ?? undefined,
-          nftPercentRealizedPnl: savedMarket.nftPercentRealizedPnl ?? undefined,
-          nftCurrentValue: savedMarket.nftCurrentValue ?? undefined,
-          nftWinValue: savedMarket.nftWinValue ?? undefined,
-          nftLastSynced: savedMarket.nftLastSynced?.toISOString(),
+          nftPercentRealizedPnl: savedMarket.snapshots[0]?.percentRealizedPnl ?? undefined,
         });
       } catch (error) {
         console.error(`保存市场 ${market.id} 失败:`, error);

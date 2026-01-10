@@ -10,7 +10,13 @@ const getMarket = unstable_cache(
     try {
       const market = await prisma.market.findUnique({
         where: { id },
-        include: { options: true },
+        include: {
+          options: true,
+          snapshots: {
+            orderBy: { timestamp: 'desc' },
+            take: 1,
+          },
+        },
       });
 
       if (!market) return null;
@@ -47,6 +53,7 @@ const getMarket = unstable_cache(
         viewCount: market.viewCount || 0,
         poolAmount: market.poolAmount || undefined,
         poolCurrency: market.poolCurrency || undefined,
+        nftPercentRealizedPnl: market.snapshots[0]?.percentRealizedPnl || undefined,
       };
     } catch (error) {
       console.error('Failed to fetch market:', error);

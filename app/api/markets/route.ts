@@ -27,9 +27,13 @@ export async function GET(request: NextRequest) {
         shareCount: true,
         poolAmount: true,
         poolCurrency: true,
-        // 暂时排除 NFT 字段，等数据库同步后再添加
-        nftPercentRealizedPnl: true,
-        // nftLastSynced: true,
+        snapshots: {
+          orderBy: { timestamp: 'desc' },
+          take: 1,
+          select: {
+            percentRealizedPnl: true,
+          },
+        },
         options: {
           select: {
             id: true,
@@ -80,11 +84,7 @@ export async function GET(request: NextRequest) {
         viewCount: market.viewCount,
         poolAmount: market.poolAmount ?? undefined,
         poolCurrency: market.poolCurrency ?? undefined,
-        // 暂时排除 NFT 字段
-        // nftPercentRealizedPnl: market.nftPercentRealizedPnl ?? undefined,
-        // nftCurrentValue: market.nftCurrentValue ?? undefined,
-        // nftWinValue: market.nftWinValue ?? undefined,
-        // nftLastSynced: market.nftLastSynced?.toISOString(),
+        nftPercentRealizedPnl: market.snapshots[0]?.percentRealizedPnl ?? undefined,
       };
     });
 
@@ -142,6 +142,10 @@ export async function POST(request: NextRequest) {
       },
       include: {
         options: true,
+        snapshots: {
+          orderBy: { timestamp: 'desc' },
+          take: 1,
+        },
       },
     });
 
@@ -179,11 +183,7 @@ export async function POST(request: NextRequest) {
       viewCount: savedMarket.viewCount,
       poolAmount: savedMarket.poolAmount ?? undefined,
       poolCurrency: savedMarket.poolCurrency ?? undefined,
-      // 暂时排除 NFT 字段
-      // nftPercentRealizedPnl: savedMarket.nftPercentRealizedPnl ?? undefined,
-      // nftCurrentValue: savedMarket.nftCurrentValue ?? undefined,
-      // nftWinValue: savedMarket.nftWinValue ?? undefined,
-      // nftLastSynced: savedMarket.nftLastSynced?.toISOString(),
+      nftPercentRealizedPnl: savedMarket.snapshots[0]?.percentRealizedPnl ?? undefined,
     };
 
     return NextResponse.json(result);
