@@ -29,6 +29,7 @@ async function testFields() {
     'updatedAt',
     'atypicaPickId',
     'atypicaAnalysis',
+    'atypicaAnalysisUrl',
     'accuracyScore',
     'externalSource',
     'externalData',
@@ -36,10 +37,6 @@ async function testFields() {
     'shareCount',
     'poolAmount',
     'poolCurrency',
-    'nftPercentRealizedPnl',
-    'nftCurrentValue',
-    'nftWinValue',
-    'nftLastSynced',
   ];
 
   let workingFields: string[] = [];

@@ -25,6 +25,7 @@ async function diagnose() {
     'updatedAt',
     'atypicaPickId',
     'atypicaAnalysis',
+    'atypicaAnalysisUrl',
     'accuracyScore',
     'externalSource',
     'externalData',
@@ -32,10 +33,6 @@ async function diagnose() {
     'shareCount',
     'poolAmount',
     'poolCurrency',
-    'nftPercentRealizedPnl',
-    'nftCurrentValue',
-    'nftWinValue',
-    'nftLastSynced',
   ];
 
   console.log('测试 1: 不使用 include 查询所有字段');
@@ -53,6 +50,7 @@ async function diagnose() {
         updatedAt: true,
         atypicaPickId: true,
         atypicaAnalysis: true,
+        atypicaAnalysisUrl: true,
         accuracyScore: true,
         externalSource: true,
         externalData: true,
@@ -60,10 +58,6 @@ async function diagnose() {
         shareCount: true,
         poolAmount: true,
         poolCurrency: true,
-        nftPercentRealizedPnl: true,
-        nftCurrentValue: true,
-        nftWinValue: true,
-        nftLastSynced: true,
       },
     });
     console.log('✓ 所有字段查询成功\n');
