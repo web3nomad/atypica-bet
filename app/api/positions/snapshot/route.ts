@@ -9,8 +9,34 @@ import { setProxy } from '@/lib/proxy';
  * - 获取钱包持仓数据
  * - 匹配对应的 Market
  * - 创建快照记录（自动去重：同一市场同一小时只保留最新一条）
+ *
+ * 安全验证：
+ * - 需要提供 Authorization header: Bearer <CRON_SECRET>
+ * - CRON_SECRET 必须在环境变量中配置
  */
 export async function POST(request: NextRequest) {
+  // 验证授权
+  const cronSecret = process.env.CRON_SECRET;
+  if (!cronSecret) {
+    return NextResponse.json(
+      { error: 'Server configuration error: CRON_SECRET not set' },
+      { status: 500 }
+    );
+  }
+
+  // 从 query 参数或 Authorization header 获取 secret
+  const { searchParams } = new URL(request.url);
+  const querySecret = searchParams.get('secret');
+  const authHeader = request.headers.get('authorization');
+  const providedSecret = querySecret || authHeader?.replace('Bearer ', '');
+
+  if (providedSecret !== cronSecret) {
+    return NextResponse.json(
+      { error: 'Unauthorized' },
+      { status: 401 }
+    );
+  }
+
   try {
     // 1. 确保代理设置完成
     await setProxy();

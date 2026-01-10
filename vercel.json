@@ -3,6 +3,11 @@
   "devCommand": "next dev",
   "installCommand": "pnpm install",
   "framework": "nextjs",
-  "regions": ["iad1"]
+  "regions": ["iad1"],
+  "crons": [
+    {
+      "path": "/api/positions/snapshot?secret=${CRON_SECRET}",
+      "schedule": "0 * * * *"
+    }
+  ]
 }
-
