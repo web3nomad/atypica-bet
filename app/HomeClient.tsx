@@ -21,6 +21,8 @@ export default function HomeClient({ initialMarkets }: HomeClientProps) {
   const [viewMode, setViewMode] = useState<'hourly' | 'daily'>('hourly');
   const [brushStartIndex, setBrushStartIndex] = useState<number>(0);
   const [brushEndIndex, setBrushEndIndex] = useState<number>(0);
+  const [profitDataFromAPI, setProfitDataFromAPI] = useState<any[]>([]);
+  const [isLoadingProfitData, setIsLoadingProfitData] = useState(true);
   const mouseFollowRef = useRef<HTMLDivElement>(null);
   const ribbonTriggerRef = useRef<HTMLSpanElement>(null);
   
@@ -188,7 +190,89 @@ export default function HomeClient({ initialMarkets }: HomeClientProps) {
 
   const successfulMarkets = initialMarkets.filter(m => m.status === PredictionStatus.SUCCESSFUL);
 
-  // 生成从1月9号往前推7天的日期数据，包含每小时的数据点
+  // 从 API 获取真实的历史收益数据
+  useEffect(() => {
+    const fetchProfitData = async () => {
+      try {
+        setIsLoadingProfitData(true);
+        const response = await fetch('/api/positions/history?limit=6');
+        if (!response.ok) throw new Error('Failed to fetch profit data');
+
+        const data = await response.json();
+
+        // 转换 API 数据为图表格式
+        const convertedData = convertAPIDataToChartFormat(data);
+        setProfitDataFromAPI(convertedData);
+      } catch (error) {
+        console.error('获取收益历史数据失败:', error);
+        // 如果获取失败，使用空数据
+        setProfitDataFromAPI([]);
+      } finally {
+        setIsLoadingProfitData(false);
+      }
+    };
+
+    fetchProfitData();
+  }, []);
+
+  // 将 API 返回的数据转换为图表所需格式
+  const convertAPIDataToChartFormat = (apiData: any) => {
+    const { markets } = apiData;
+
+    if (!markets || markets.length === 0) {
+      return [];
+    }
+
+    // 收集所有时间戳
+    const allTimestamps = new Set<string>();
+    markets.forEach((market: any) => {
+      market.snapshots.forEach((snapshot: any) => {
+        allTimestamps.add(snapshot.timestamp);
+      });
+    });
+
+    // 按时间排序
+    const sortedTimestamps = Array.from(allTimestamps).sort();
+
+    // 为每个时间点创建数据
+    const chartData = sortedTimestamps.map(timestamp => {
+      const date = new Date(timestamp);
+      const month = date.getMonth() + 1;
+      const day = date.getDate();
+      const hour = date.getHours();
+
+      const dataPoint: any = {
+        dateTime: `${month}/${day} ${hour.toString().padStart(2, '0')}:00`,
+        date: `${month}/${day}`,
+        hour: hour,
+        dateFull: date,
+      };
+
+      // 为每个市场添加对应时间点的数据
+      let dailyTotal = 0;
+      markets.forEach((market: any, index: number) => {
+        const snapshot = market.snapshots.find((s: any) => s.timestamp === timestamp);
+        const value = snapshot ? snapshot.percentRealizedPnl : 0;
+        dataPoint[`bet${index + 1}`] = Math.round(value * 10) / 10;
+        dailyTotal += value;
+      });
+
+      dataPoint.dailyTotal = Math.round(dailyTotal * 10) / 10;
+
+      return dataPoint;
+    });
+
+    // 计算累计收益
+    let cumulative = 0;
+    chartData.forEach((point: any) => {
+      cumulative += point.dailyTotal;
+      point.cumulativeTotal = Math.round(cumulative * 10) / 10;
+    });
+
+    return chartData;
+  };
+
+  // 使用旧的生成函数作为后备（如果 API 数据为空）
   const generateProfitData = () => {
     const today = new Date(2026, 0, 9); // 1月9号
     const data = [];
@@ -258,7 +342,8 @@ export default function HomeClient({ initialMarkets }: HomeClientProps) {
     return data;
   };
 
-  const allProfitData = generateProfitData();
+  // 使用 API 数据或后备 mock 数据
+  const allProfitData = profitDataFromAPI.length > 0 ? profitDataFromAPI : generateProfitData();
   
   // 根据视图模式过滤数据（用于 Brush 显示所有可选数据）
   const allFilteredData = useMemo(() => {

@@ -7,7 +7,13 @@ const getMarkets = unstable_cache(
   async (): Promise<PredictionMarket[]> => {
     try {
       const markets = await prisma.market.findMany({
-        include: { options: true },
+        include: {
+          options: true,
+          snapshots: {
+            orderBy: { timestamp: 'desc' },
+            take: 1,
+          },
+        },
         orderBy: { createdAt: 'desc' },
       });
 
@@ -44,7 +50,7 @@ const getMarkets = unstable_cache(
           viewCount: market.viewCount || 0,
           poolAmount: market.poolAmount || undefined,
           poolCurrency: market.poolCurrency || undefined,
-          nftPercentRealizedPnl: market.nftPercentRealizedPnl || undefined
+          nftPercentRealizedPnl: market.snapshots[0]?.percentRealizedPnl || undefined
         };
       });
     } catch (error) {
