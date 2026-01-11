@@ -23,6 +23,8 @@ export default function HomeClient({ initialMarkets }: HomeClientProps) {
   const [brushEndIndex, setBrushEndIndex] = useState<number>(0);
   const [profitDataFromAPI, setProfitDataFromAPI] = useState<any[]>([]);
   const [isLoadingProfitData, setIsLoadingProfitData] = useState(true);
+  const [marketTitles, setMarketTitles] = useState<string[]>([]);
+  const [totalReturn, setTotalReturn] = useState<number>(0);
   const mouseFollowRef = useRef<HTMLDivElement>(null);
   const ribbonTriggerRef = useRef<HTMLSpanElement>(null);
   
@@ -200,6 +202,36 @@ export default function HomeClient({ initialMarkets }: HomeClientProps) {
 
         const data = await response.json();
 
+        // 保存市场标题（智能截断：前2个单词 + ... + 后2个单词）
+        const titles = (data.markets || []).map((m: any) => {
+          const title = m.title || '';
+          const words = title.split(/\s+/);
+
+          if (words.length <= 6) {
+            // 单词数不多，直接返回
+            return title;
+          }
+
+          // 前2个单词 + ... + 后2个单词
+          const first = words.slice(0, 2).join(' ');
+          const last = words.slice(-2).join(' ');
+          return `${first}...${last}`;
+        });
+        setMarketTitles(titles);
+
+        // 计算总收益率：所有市场最新收益率的平均值
+        const markets = data.markets || [];
+        if (markets.length > 0) {
+          const totalPnl = markets.reduce((sum: number, market: any) => {
+            const latestSnapshot = market.snapshots[market.snapshots.length - 1];
+            return sum + (latestSnapshot?.percentRealizedPnl || 0);
+          }, 0);
+          const avgReturn = totalPnl / markets.length;
+          setTotalReturn(Math.round(avgReturn * 10) / 10);
+        } else {
+          setTotalReturn(0);
+        }
+
         // 转换 API 数据为图表格式
         const convertedData = convertAPIDataToChartFormat(data);
         setProfitDataFromAPI(convertedData);
@@ -207,6 +239,7 @@ export default function HomeClient({ initialMarkets }: HomeClientProps) {
         console.error('获取收益历史数据失败:', error);
         // 如果获取失败，使用空数据
         setProfitDataFromAPI([]);
+        setMarketTitles([]);
       } finally {
         setIsLoadingProfitData(false);
       }
@@ -272,78 +305,8 @@ export default function HomeClient({ initialMarkets }: HomeClientProps) {
     return chartData;
   };
 
-  // 使用旧的生成函数作为后备（如果 API 数据为空）
-  const generateProfitData = () => {
-    const today = new Date(2026, 0, 9); // 1月9号
-    const data = [];
-    const dailyValues = {
-      bet1: [0, 2, 3, -1, -2, 4, 6],
-      bet2: [0, -1, -2, 1, 0, 2, 3],
-      bet3: [0, 3, 5, 4, 3, -1, 0],
-    };
-    
-    let cumulativeSum = 0;
-    
-    for (let i = 6; i >= 0; i--) {
-      const date = new Date(today);
-      date.setDate(date.getDate() - i);
-      const month = date.getMonth() + 1;
-      const day = date.getDate();
-      const dayIndex = 6 - i;
-      
-      // 每天24小时的数据点
-      for (let hour = 0; hour < 24; hour++) {
-        const hourDate = new Date(date);
-        hourDate.setHours(hour, 0, 0, 0);
-        
-        // 使用小时进度进行插值和波动，让数据更有动态感
-        const hourProgress = hour / 24;
-        const wave1 = Math.sin(hourProgress * Math.PI * 2) * 0.8;
-        const wave2 = Math.cos(hourProgress * Math.PI * 1.5) * 0.6;
-        const wave3 = Math.sin(hourProgress * Math.PI * 2.5) * 0.7;
-        
-        // 计算每小时的值，添加波动让线条更有动态感
-        const bet1Value = dayIndex === 0 && hour === 0 ? 0 : 
-          dailyValues.bet1[dayIndex] * hourProgress + wave1;
-        
-        const bet2Value = dayIndex === 0 && hour === 0 ? 0 :
-          dailyValues.bet2[dayIndex] * hourProgress + wave2;
-        
-        const bet3Value = dayIndex === 0 && hour === 0 ? 0 :
-          dailyValues.bet3[dayIndex] * hourProgress + wave3;
-        
-        const dailyTotalValue = bet1Value + bet2Value + bet3Value;
-        
-        // 计算累计值：前面所有天的总和 + 当前天到当前小时的累计
-        let prevDaysTotal = 0;
-        for (let d = 0; d < dayIndex; d++) {
-          prevDaysTotal += dailyValues.bet1[d] + dailyValues.bet2[d] + dailyValues.bet3[d];
-        }
-        
-        // 当前天到当前小时的累计（使用插值）
-        const currentDayTotal = dayIndex === 0 ? 0 :
-          (dailyValues.bet1[dayIndex] + dailyValues.bet2[dayIndex] + dailyValues.bet3[dayIndex]) * hourProgress;
-        
-        const cumulativeTotal = prevDaysTotal + currentDayTotal;
-        
-        data.push({
-          dateTime: `${month}/${day} ${hour.toString().padStart(2, '0')}:00`,
-          date: `${month}/${day}`,
-          hour: hour,
-          dateFull: hourDate,
-          bet1: Math.round(bet1Value * 10) / 10,
-          bet2: Math.round(bet2Value * 10) / 10,
-          bet3: Math.round(bet3Value * 10) / 10,
-          dailyTotal: Math.round(dailyTotalValue * 10) / 10,
-          cumulativeTotal: Math.round(cumulativeTotal * 10) / 10
-        });
-      }
-    }
-    return data;
-  };
-
-  // 使用 API 数据或后备 mock 数据
-  const allProfitData = profitDataFromAPI.length > 0 ? profitDataFromAPI : generateProfitData();
+  // 直接使用 API 数据，不使用 mock 数据
+  const allProfitData = profitDataFromAPI;
   
   // 根据视图模式过滤数据（用于 Brush 显示所有可选数据）
   const allFilteredData = useMemo(() => {
@@ -434,10 +397,14 @@ export default function HomeClient({ initialMarkets }: HomeClientProps) {
               </p>
             </div>
             <div className="flex items-center gap-3">
-            <div className="flex items-center gap-1.5 p-2 bg-white/5 rounded-lg">
-              <div className="w-3 h-3 rounded-full bg-primary"></div>
-              <span className="text-xs text-white font-medium">+42% Total Return</span>
+            {marketTitles.length > 0 && (
+              <div className="flex items-center gap-1.5 p-2 bg-white/5 rounded-lg">
+                <div className={`w-3 h-3 rounded-full ${totalReturn > 0 ? 'bg-primary' : 'bg-red-500'}`}></div>
+                <span className="text-xs text-white font-medium">
+                  {totalReturn > 0 ? '+' : ''}{totalReturn}% Total Return
+                </span>
               </div>
+            )}
               <div className="flex items-center gap-1.5 p-1.5 bg-white/5 rounded-lg border border-white/10">
                 <button
                   onClick={() => setViewMode('hourly')}
@@ -512,51 +479,42 @@ export default function HomeClient({ initialMarkets }: HomeClientProps) {
                   </linearGradient>
                 </defs>
                 <ReferenceLine y={0} stroke="rgba(255,255,255,0.2)" />
-                <Line 
-                  type="monotone" 
-                  dataKey="bet1" 
-                  stroke="#FF4444" 
-                  dot={false}
-                  activeDot={{ r: 6, fill: '#FF4444', stroke: '#fff', strokeWidth: 2 }} 
-                  name="Market A"
-                  strokeWidth={1.5}
-                />
-                <Line 
-                  type="monotone" 
-                  dataKey="bet2" 
-                  stroke="#82ca9d"
-                  dot={false}
-                  activeDot={{ r: 6, fill: '#82ca9d', stroke: '#fff', strokeWidth: 2 }}
-                  name="Market B"
-                  strokeWidth={1.5}
-                />
-                <Line 
-                  type="monotone" 
-                  dataKey="bet3" 
-                  stroke="#ffc658"
-                  dot={false}
-                  activeDot={{ r: 6, fill: '#ffc658', stroke: '#fff', strokeWidth: 2 }}
-                  name="Market C"
-                  strokeWidth={1.5}
-                />
-                <Line 
-                  type="monotone" 
-                  dataKey="dailyTotal" 
-                  stroke="#4CAF50" 
+                {/* 动态生成市场线条 */}
+                {marketTitles.map((title, index) => {
+                  const colors = ['#FF4444', '#82ca9d', '#ffc658', '#8884d8', '#ff7c43', '#a28dff'];
+                  const color = colors[index % colors.length];
+                  return (
+                    <Line
+                      key={`bet${index + 1}`}
+                      type="monotone"
+                      dataKey={`bet${index + 1}`}
+                      stroke={color}
+                      dot={false}
+                      activeDot={{ r: 6, fill: color, stroke: '#fff', strokeWidth: 2 }}
+                      name={title}
+                      strokeWidth={1.5}
+                    />
+                  );
+                })}
+                <Line
+                  type="monotone"
+                  dataKey="dailyTotal"
+                  stroke="#4CAF50"
                   strokeWidth={2}
                   dot={false}
                   activeDot={{ r: 7, fill: '#4CAF50', stroke: '#fff', strokeWidth: 2 }}
                   name="Daily Total"
                 />
-                <Line 
-                  type="monotone" 
-                  dataKey="cumulativeTotal" 
-                  stroke="url(#cumulativeGradient)" 
+                {/* 暂时隐藏累积收益线 */}
+                {/* <Line
+                  type="monotone"
+                  dataKey="cumulativeTotal"
+                  stroke="url(#cumulativeGradient)"
                   strokeWidth={2.5}
                   dot={false}
                   activeDot={{ r: 8, fill: '#7C3AED', stroke: '#fff', strokeWidth: 2 }}
                   name="Cumulative Profit"
-                />
+                /> */}
                 <Brush
                   dataKey={viewMode === 'hourly' ? 'dateTime' : 'date'}
                   height={30}
@@ -600,9 +558,8 @@ export default function HomeClient({ initialMarkets }: HomeClientProps) {
             <div className="flex items-start gap-2">
               <Info className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
               <p className="text-xs text-white/80 font-gothic">
-                Each bet line represents a separate prediction market position. The daily total shows aggregate profit/loss
-                per day across all positions, while the cumulative line displays total earnings over time.
-                All predictions use the Atypica AI predictive engine with a consistent betting strategy.
+                Each line represents a separate prediction market position. The daily total shows aggregate profit/loss
+                per day across all positions. All predictions use the Atypica AI predictive engine with a consistent betting strategy.
                 This chart's predictions are based on equal investment amounts across all options.
               </p>
             </div>
@@ -660,9 +617,9 @@ export default function HomeClient({ initialMarkets }: HomeClientProps) {
           filteredMarkets.slice(0, 3).map((market, index) => {
             const labels = ['A', 'B', 'C'];
             return (
-              <PredictionCard 
-                key={market.id} 
-                market={market} 
+              <PredictionCard
+                key={market.id}
+                market={market}
                 onClick={handleMarketClick}
                 marketLabel={labels[index]}
               />

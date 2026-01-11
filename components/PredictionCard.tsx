@@ -185,7 +185,10 @@ export const PredictionCard: React.FC<PredictionCardProps> = ({ market, onClick,
   return (
     <div
       ref={lightCardRef}
-      onClick={() => onClick(market.id)}
+      onClick={() => {
+        // 详情页未完成，暂时禁用点击
+        // onClick(market.id)
+      }}
       className={`group cursor-pointer glass-panel glass-effect spotlight-card rounded-xl transition-all duration-300 hover:border-white/20 p-5 cursor-follow card-layered relative overflow-hidden ${
         market.status === PredictionStatus.SUCCESSFUL ? 'success-glow' : ''
       }`}
