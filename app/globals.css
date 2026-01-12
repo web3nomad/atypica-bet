@@ -4,49 +4,58 @@
 
 /* Brush 组件样式优化 */
 .recharts-brush {
-  margin-top: 40px !important;
+  margin-top: 50px !important;
   padding-top: 8px;
 }
 
+/* Brush 背景区域 - 左侧（未选择区域） */
 .recharts-brush-slide {
-  fill: rgba(255, 255, 255, 0.08);
-  stroke: rgba(255, 255, 255, 0.3);
+  fill: rgba(40, 42, 54, 0.8) !important; /* 深灰色 #282a36 */
+  stroke: rgba(255, 255, 255, 0.1);
   stroke-width: 1;
-  rx: 6;
-  ry: 6;
+  rx: 4;
+  ry: 4;
+}
+
+/* Brush 选中区域 - 右侧（已选择区域） */
+.recharts-brush-slide-selected {
+  fill: rgba(40, 42, 54, 0.95) !important; /* 深蓝色，稍微深一点 */
+  stroke: rgba(255, 255, 255, 0.15);
+  stroke-width: 1;
+  rx: 4;
+  ry: 4;
 }
 
 .recharts-brush-traveller {
-  fill: rgba(255, 255, 255, 0.2);
-  stroke: rgba(255, 255, 255, 0.5);
-  stroke-width: 2;
+  fill: rgba(255, 255, 255, 0.15) !important;
+  stroke: rgba(255, 255, 255, 0.4) !important;
+  stroke-width: 1.5;
   cursor: grab;
-  rx: 4;
-  ry: 4;
-  transition: all 0.2s ease;
+  rx: 3;
+  ry: 3;
+  transition: none;
 }
 
 .recharts-brush-traveller:hover {
-  fill: rgba(255, 255, 255, 0.3);
-  stroke: rgba(255, 255, 255, 0.7);
-  transform: scale(1.1);
+  fill: rgba(255, 255, 255, 0.25) !important;
+  stroke: rgba(255, 255, 255, 0.6) !important;
 }
 
 .recharts-brush-traveller:active {
   cursor: grabbing;
-  fill: rgba(255, 255, 255, 0.4);
-  stroke: rgba(255, 255, 255, 0.9);
+  fill: rgba(255, 255, 255, 0.3) !important;
+  stroke: rgba(255, 255, 255, 0.8) !important;
 }
 
 .recharts-brush-texts {
   font-size: 9px !important;
-  fill: rgba(255, 255, 255, 0.6) !important;
+  fill: rgba(255, 255, 255, 0.5) !important;
   font-weight: 500;
 }
 
 .recharts-brush-texts text {
   font-size: 9px !important;
-  fill: rgba(255, 255, 255, 0.6) !important;
+  fill: rgba(255, 255, 255, 0.5) !important;
   font-weight: 500;
 }
 
@@ -54,7 +63,7 @@
 .recharts-brush-texts .recharts-brush-text-start,
 .recharts-brush-texts .recharts-brush-text-end {
   font-size: 9px !important;
-  fill: rgba(255, 255, 255, 0.7) !important;
+  fill: rgba(255, 255, 255, 0.6) !important;
   font-weight: 600;
 }
 

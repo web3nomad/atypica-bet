@@ -35,7 +35,7 @@ export const Header: React.FC = () => {
             rel="noopener noreferrer"
             className="text-[11px] font-bold uppercase tracking-widest text-muted hover:text-white transition-colors"
           >
-            atypica.Ai
+            Powered by ATYPICA.AI
           </a>
           <button className="btn-outline px-6 py-2 text-[11px] font-bold uppercase tracking-widest hidden">
             Connect

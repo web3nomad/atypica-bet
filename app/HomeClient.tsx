@@ -3,7 +3,7 @@
 import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { PredictionMarket, Category, PredictionStatus } from '@/types';
-import { CATEGORY_LABELS } from '@/constants';
+import { CATEGORY_LABELS, STATUS_LABELS } from '@/constants';
 import { PredictionCard } from '@/components/PredictionCard';
 import { StatCard } from '@/components/StatCard';
 import { ChevronDown, SlidersHorizontal, CheckCircle2, Zap, ChevronRight, ArrowRight, TrendingUp, Info } from 'lucide-react';
@@ -18,6 +18,8 @@ export default function HomeClient({ initialMarkets }: HomeClientProps) {
   const router = useRouter();
   const [activeCategory, setActiveCategory] = useState<Category | 'ALL'>('ALL');
   const [activeStatus, setActiveStatus] = useState<PredictionStatus | 'ALL'>('ALL');
+  const [isStatusDropdownOpen, setIsStatusDropdownOpen] = useState(false);
+  const statusDropdownRef = useRef<HTMLDivElement>(null);
   const [viewMode, setViewMode] = useState<'hourly' | 'daily'>('hourly');
   const [brushStartIndex, setBrushStartIndex] = useState<number>(0);
   const [brushEndIndex, setBrushEndIndex] = useState<number>(0);
@@ -41,6 +43,31 @@ export default function HomeClient({ initialMarkets }: HomeClientProps) {
   const handleMarketClick = (id: string) => {
     router.push(`/market/${id}`);
   };
+
+  // 调试信息
+  useEffect(() => {
+    console.log('[HomeClient] 接收到市场数据:', initialMarkets.length, '个市场');
+    if (initialMarkets.length > 0) {
+      console.log('[HomeClient] 第一个市场:', initialMarkets[0]?.title);
+    }
+  }, [initialMarkets]);
+
+  // 点击外部关闭下拉菜单
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (statusDropdownRef.current && !statusDropdownRef.current.contains(event.target as Node)) {
+        setIsStatusDropdownOpen(false);
+      }
+    };
+
+    if (isStatusDropdownOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isStatusDropdownOpen]);
 
   // Confetti effect for Verified Success tag
   const createConfetti = () => {
@@ -233,7 +260,10 @@ export default function HomeClient({ initialMarkets }: HomeClientProps) {
         }
 
         // 转换 API 数据为图表格式
+        console.log('[fetchProfitData] API 返回的数据:', data);
+        console.log('[fetchProfitData] markets 数量:', data.markets?.length || 0);
         const convertedData = convertAPIDataToChartFormat(data);
+        console.log('[fetchProfitData] 转换后的图表数据长度:', convertedData.length);
         setProfitDataFromAPI(convertedData);
       } catch (error) {
         console.error('获取收益历史数据失败:', error);
@@ -252,9 +282,14 @@ export default function HomeClient({ initialMarkets }: HomeClientProps) {
   const convertAPIDataToChartFormat = (apiData: any) => {
     const { markets } = apiData;
 
+    console.log('[convertAPIDataToChartFormat] 输入数据:', apiData);
+    
     if (!markets || markets.length === 0) {
+      console.warn('[convertAPIDataToChartFormat] 没有市场数据');
       return [];
     }
+
+    console.log('[convertAPIDataToChartFormat] 市场数量:', markets.length);
 
     // 收集所有时间戳
     const allTimestamps = new Set<string>();
@@ -275,9 +310,9 @@ export default function HomeClient({ initialMarkets }: HomeClientProps) {
       const hour = date.getHours();
 
       const dataPoint: any = {
-        dateTime: `${month}/${day} ${hour.toString().padStart(2, '0')}:00`,
-        date: `${month}/${day}`,
-        hour: hour,
+          dateTime: `${month}/${day} ${hour.toString().padStart(2, '0')}:00`,
+          date: `${month}/${day}`,
+          hour: hour,
         dateFull: date,
       };
 
@@ -347,17 +382,17 @@ export default function HomeClient({ initialMarkets }: HomeClientProps) {
         style={{ left: '50%', top: '50%' }}
       />
       {/* Hero Section */}
-      <section className="pt-32 pb-24 text-center relative z-50">
-        <div className="max-w-4xl mx-auto space-y-8">
+      <section className="pt-32 pb-24 text-center relative z-50 overflow-x-visible">
+        <div className="max-w-5xl mx-auto space-y-8 px-6">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/[0.05] border border-white/10 text-white/60 text-[10px] font-bold uppercase tracking-[0.2em]">
              AI Predictive Infrastructure 
           </div>
 
-          <div className="relative z-50">
-            <h1 className="text-6xl md:text-8xl font-black tracking-tighter leading-[0.95] relative z-50">
+          <div className="relative z-50 overflow-visible">
+            <h1 className="text-6xl md:text-8xl font-black tracking-tighter leading-[0.95] relative z-50 overflow-visible">
               <span className="text-white relative z-50">Intelligence</span>
               <br />
-              <span className="bg-gradient-to-t from-gray-500 to-white bg-clip-text text-transparent relative z-50">Beyond Guess.</span>
+              <span className="bg-gradient-to-t from-gray-500 to-white bg-clip-text text-transparent relative z-50 inline-block pr-2">Beyond Guess.</span>
             </h1>
           </div>
 
@@ -369,9 +404,9 @@ export default function HomeClient({ initialMarkets }: HomeClientProps) {
 
       {/* Stats Section */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-24 max-w-5xl mx-auto">
-        <StatCard label="Active Matrix Nodes" value={stats.active} hoverEffect="blue-ring" />
-        <StatCard label="Successful Resolves" value={stats.success} hoverEffect="blue-ring" />
-        <StatCard label="Model Precision" value={stats.precision + '%'} hoverEffect="blue-ring" />
+        <StatCard label="Active Matrix Nodes" value={stats.active} />
+        <StatCard label="Successful Resolves" value={stats.success} />
+        <StatCard label="Model Precision" value={stats.precision + '%'} />
       </div>
 
       {/* Profits Visualization */}
@@ -398,7 +433,7 @@ export default function HomeClient({ initialMarkets }: HomeClientProps) {
             </div>
             <div className="flex items-center gap-3">
             {marketTitles.length > 0 && (
-              <div className="flex items-center gap-1.5 p-2 bg-white/5 rounded-lg">
+            <div className="flex items-center gap-1.5 p-2 bg-white/5 rounded-lg">
                 <div className={`w-3 h-3 rounded-full ${totalReturn > 0 ? 'bg-primary' : 'bg-red-500'}`}></div>
                 <span className="text-xs text-white font-medium">
                   {totalReturn > 0 ? '+' : ''}{totalReturn}% Total Return
@@ -438,7 +473,7 @@ export default function HomeClient({ initialMarkets }: HomeClientProps) {
                   top: 5,
                   right: 20,
                   left: 0,
-                  bottom: 70,
+                  bottom: 100,
                 }}
               >
                 <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
@@ -447,7 +482,7 @@ export default function HomeClient({ initialMarkets }: HomeClientProps) {
                   stroke="#666" 
                   tick={{ fontSize: 9, fill: '#666' }}
                   interval={viewMode === 'hourly' ? 23 : 0} // 按小时模式时每24个显示一个，按天模式时全部显示
-                  label={{ value: viewMode === 'hourly' ? 'Date & Time' : 'Date', position: 'insideBottom', offset: -5, fill: '#666', style: { fontSize: '10px' } }}
+                  label={{ value: viewMode === 'hourly' ? 'Date & Time' : 'Date', position: 'insideBottom', offset: -55, fill: '#666', style: { fontSize: '10px' } }}
                   angle={viewMode === 'hourly' ? -45 : 0}
                   textAnchor={viewMode === 'hourly' ? 'end' : 'middle'}
                   height={viewMode === 'hourly' ? 40 : 20}
@@ -484,22 +519,22 @@ export default function HomeClient({ initialMarkets }: HomeClientProps) {
                   const colors = ['#FF4444', '#82ca9d', '#ffc658', '#8884d8', '#ff7c43', '#a28dff'];
                   const color = colors[index % colors.length];
                   return (
-                    <Line
+                <Line 
                       key={`bet${index + 1}`}
-                      type="monotone"
+                  type="monotone" 
                       dataKey={`bet${index + 1}`}
                       stroke={color}
-                      dot={false}
+                  dot={false}
                       activeDot={{ r: 6, fill: color, stroke: '#fff', strokeWidth: 2 }}
                       name={title}
-                      strokeWidth={1.5}
-                    />
+                  strokeWidth={1.5}
+                />
                   );
                 })}
-                <Line
-                  type="monotone"
-                  dataKey="dailyTotal"
-                  stroke="#4CAF50"
+                <Line 
+                  type="monotone" 
+                  dataKey="dailyTotal" 
+                  stroke="#4CAF50" 
                   strokeWidth={2}
                   dot={false}
                   activeDot={{ r: 7, fill: '#4CAF50', stroke: '#fff', strokeWidth: 2 }}
@@ -507,46 +542,41 @@ export default function HomeClient({ initialMarkets }: HomeClientProps) {
                 />
                 {/* 暂时隐藏累积收益线 */}
                 {/* <Line
-                  type="monotone"
-                  dataKey="cumulativeTotal"
-                  stroke="url(#cumulativeGradient)"
+                  type="monotone" 
+                  dataKey="cumulativeTotal" 
+                  stroke="url(#cumulativeGradient)" 
                   strokeWidth={2.5}
                   dot={false}
                   activeDot={{ r: 8, fill: '#7C3AED', stroke: '#fff', strokeWidth: 2 }}
                   name="Cumulative Profit"
                 /> */}
                 <Brush
+                  data={allFilteredData}
                   dataKey={viewMode === 'hourly' ? 'dateTime' : 'date'}
                   height={30}
-                  stroke="rgba(255,255,255,0.3)"
+                  stroke="rgba(255,255,255,0.2)"
                   fill="rgba(255,255,255,0.05)"
                   startIndex={brushStartIndex}
                   endIndex={brushEndIndex}
-                  onChange={(props) => {
-                    if (props && typeof props.startIndex === 'number' && typeof props.endIndex === 'number') {
-                      // 确保索引有效，防止乱跳
+                  onChange={(newStartIndex: number, newEndIndex: number) => {
+                    if (typeof newStartIndex === 'number' && typeof newEndIndex === 'number') {
                       const maxIndex = allFilteredData.length - 1;
-                      const validStart = Math.max(0, Math.min(Math.floor(props.startIndex), maxIndex));
-                      const validEnd = Math.max(validStart, Math.min(Math.ceil(props.endIndex), maxIndex));
-                      // 只有当索引真正改变时才更新，避免不必要的重渲染
-                      if (validStart !== brushStartIndex || validEnd !== brushEndIndex) {
-                        setBrushStartIndex(validStart);
-                        setBrushEndIndex(validEnd);
-                      }
+                      const validStart = Math.max(0, Math.min(newStartIndex, maxIndex));
+                      const validEnd = Math.max(validStart, Math.min(newEndIndex, maxIndex));
+                      setBrushStartIndex(validStart);
+                      setBrushEndIndex(validEnd);
                     }
                   }}
                   tickFormatter={(value) => {
                     if (viewMode === 'hourly') {
-                      // 格式化日期时间，只显示日期部分（更简洁）
                       if (typeof value === 'string') {
                         const parts = value.split(' ');
                         if (parts.length > 0) {
-                          return parts[0]; // 只显示日期部分，如 "1/9"
+                          return parts[0];
                         }
                       }
                       return value;
                     }
-                    // 按天模式时直接返回日期
                     return value;
                   }}
                 />
@@ -592,17 +622,58 @@ export default function HomeClient({ initialMarkets }: HomeClientProps) {
         </div>
 
         <div className="flex items-center gap-4">
-          <div className="relative">
-            <select
-              value={activeStatus}
-              onChange={(e) => setActiveStatus(e.target.value as any)}
-              className="appearance-none bg-transparent border-none text-[11px] font-bold uppercase tracking-widest text-muted focus:text-white outline-none pr-6 cursor-pointer"
+          <div className="relative" ref={statusDropdownRef}>
+            <button
+              onClick={() => setIsStatusDropdownOpen(!isStatusDropdownOpen)}
+              className="flex items-center gap-2 glass-panel bg-white/5 border border-white/10 px-4 py-2 pr-3 rounded-lg text-[11px] font-bold uppercase tracking-widest text-muted hover:text-white hover:bg-white/10 hover:border-white/15 outline-none cursor-pointer transition-all"
             >
-              <option value="ALL">All Status</option>
-              <option value={PredictionStatus.ACTIVE}>Active</option>
-              <option value={PredictionStatus.SUCCESSFUL}>Success</option>
-            </select>
-            <ChevronDown className="absolute right-0 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted pointer-events-none" />
+              <span>{activeStatus === 'ALL' ? 'All Status' : STATUS_LABELS[activeStatus as PredictionStatus]}</span>
+              <ChevronDown className={`w-3.5 h-3.5 transition-transform ${isStatusDropdownOpen ? 'rotate-180' : ''}`} />
+            </button>
+            
+            {isStatusDropdownOpen && (
+              <div className="absolute top-full left-0 mt-1 min-w-full glass-panel bg-white/5 border border-white/10 rounded-lg overflow-hidden shadow-xl backdrop-blur-md z-50">
+                <button
+                  onClick={() => {
+                    setActiveStatus('ALL');
+                    setIsStatusDropdownOpen(false);
+                  }}
+                  className={`w-full text-left px-4 py-2.5 text-[11px] font-bold uppercase tracking-widest transition-colors ${
+                    activeStatus === 'ALL'
+                      ? 'bg-white/10 text-white'
+                      : 'text-muted hover:bg-white/5 hover:text-white'
+                  }`}
+                >
+                  All Status
+                </button>
+                <button
+                  onClick={() => {
+                    setActiveStatus(PredictionStatus.ACTIVE);
+                    setIsStatusDropdownOpen(false);
+                  }}
+                  className={`w-full text-left px-4 py-2.5 text-[11px] font-bold uppercase tracking-widest transition-colors border-t border-white/10 ${
+                    activeStatus === PredictionStatus.ACTIVE
+                      ? 'bg-white/10 text-white'
+                      : 'text-muted hover:bg-white/5 hover:text-white'
+                  }`}
+                >
+                  {STATUS_LABELS[PredictionStatus.ACTIVE]}
+                </button>
+                <button
+                  onClick={() => {
+                    setActiveStatus(PredictionStatus.SUCCESSFUL);
+                    setIsStatusDropdownOpen(false);
+                  }}
+                  className={`w-full text-left px-4 py-2.5 text-[11px] font-bold uppercase tracking-widest transition-colors border-t border-white/10 ${
+                    activeStatus === PredictionStatus.SUCCESSFUL
+                      ? 'bg-white/10 text-white'
+                      : 'text-muted hover:bg-white/5 hover:text-white'
+                  }`}
+                >
+                  {STATUS_LABELS[PredictionStatus.SUCCESSFUL]}
+                </button>
+              </div>
+            )}
           </div>
           <div className="w-px h-4 bg-white/10 hidden md:block"></div>
           <button className="text-muted hover:text-white transition-colors">
@@ -617,9 +688,9 @@ export default function HomeClient({ initialMarkets }: HomeClientProps) {
           filteredMarkets.slice(0, 3).map((market, index) => {
             const labels = ['A', 'B', 'C'];
             return (
-              <PredictionCard
-                key={market.id}
-                market={market}
+              <PredictionCard 
+                key={market.id} 
+                market={market} 
                 onClick={handleMarketClick}
                 marketLabel={labels[index]}
               />
@@ -697,7 +768,7 @@ export default function HomeClient({ initialMarkets }: HomeClientProps) {
                         <div className="flex gap-1.5 items-center">
                           <div className="w-6 h-1 bg-primary rounded-sm"></div>
                           <div className="w-6 h-1 bg-primary rounded-sm"></div>
-                          <div className="w-6 h-1 bg-primary rounded-sm"></div>
+                          <div className="w-6 h-1 bg-white rounded-sm"></div>
                         </div>
                       </div>
                       </div>
@@ -760,14 +831,14 @@ export default function HomeClient({ initialMarkets }: HomeClientProps) {
                       </div>
 
                       <div className="flex items-center gap-3 text-sm">
-                        <div className="flex items-center">
-                          <span className="text-[9px] mr-1 text-muted">Market:</span>
-                    <span className="text-xs font-bold text-white">37%</span>
-                        </div>
                           <div className="flex items-center gap-1.5">
                             <div className="h-2 w-7 rounded-sm bg-primary" />
                             <div className="h-2 w-7 rounded-sm bg-primary" />
-                            <div className="h-2 w-7 rounded-sm bg-primary" />
+                            <div className="h-2 w-7 rounded-sm bg-white" />
+                          </div>
+                        <div className="flex items-center">
+                          <span className="text-[9px] mr-1 text-muted">Market:</span>
+                    <span className="text-xs font-bold text-white">37%</span>
                           </div>
                       </div>
                     </div>
@@ -784,9 +855,6 @@ export default function HomeClient({ initialMarkets }: HomeClientProps) {
                     <span className="text-[9px] mr-1 text-muted">Market:</span>
                     <span className="text-xs font-bold text-white">12%</span>
                   </div>
-                  <div className="flex items-center">
-                    <span className="text-xs font-bold text-white/50">Medium</span>
-                  </div>
                 </div>
               </div>
 
@@ -801,9 +869,6 @@ export default function HomeClient({ initialMarkets }: HomeClientProps) {
                   <div className="flex items-center">
                     <span className="text-[9px] mr-1 text-muted">Market:</span>
                     <span className="text-xs font-bold text-white">42%</span>
-                  </div>
-                  <div className="flex items-center">
-                    <span className="text-xs font-bold text-white/50">Medium</span>
                   </div>
                 </div>
               </div>
