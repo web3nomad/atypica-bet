@@ -87,7 +87,7 @@ export default function MarketDetailClient({ market }: MarketDetailClientProps) 
       const formattedMinutes = minutes.toString().padStart(2, '0');
       return `${month}/${day} ${hours}:${formattedMinutes}`;
     };
-    
+
     setLastUpdated(formatUpdateTime());
   }, [isRefreshing]);
 
@@ -174,12 +174,13 @@ export default function MarketDetailClient({ market }: MarketDetailClientProps) 
               </h1>
               <div className="flex flex-col gap-3">
                 <a
-                  href={market.atypicaAnalysisUrl}
+                  href={market.atypicaAnalysisUrl || '#'}
                   target="_blank"
                   rel="noopener noreferrer"
                   onClick={(e) => {
                     if (!market.atypicaAnalysisUrl) {
                       e.preventDefault();
+                      return;
                     }
                   }}
                   className="inline-flex items-center gap-1.5 text-[20px] font-bold uppercase tracking-widest text-white/60 hover:text-white transition-colors group"
@@ -188,9 +189,15 @@ export default function MarketDetailClient({ market }: MarketDetailClientProps) 
                   <ArrowRight className="w-3 h-3 translate-x-0 group-hover:translate-x-1 transition-transform" />
                 </a>
                 <a
-                  href="https://polymarket.com/"
+                  href={market.polyMarketUrl || '#'}
                   target="_blank"
                   rel="noopener noreferrer"
+                  onClick={(e) => {
+                    if (!market.polyMarketUrl) {
+                      e.preventDefault();
+                      return;
+                    }
+                  }}
                   className="inline-flex items-center gap-1.5 text-[20px] font-bold uppercase tracking-widest text-white/60 hover:text-white transition-colors group"
                 >
                   GO POLYMARKET
@@ -278,24 +285,24 @@ export default function MarketDetailClient({ market }: MarketDetailClientProps) 
                 <div className="flex-1 flex justify-center h-full min-w-0">
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart data={data} layout="vertical" margin={{ left: 20, right: 20, top: 20, bottom: 20 }}>
-                      <XAxis 
-                        type="number" 
-                        domain={[0, 100]} 
-                        hide 
+                      <XAxis
+                        type="number"
+                        domain={[0, 100]}
+                        hide
                       />
-                      <YAxis 
-                        dataKey="name" 
-                        type="category" 
+                      <YAxis
+                        dataKey="name"
+                        type="category"
                         width={0}
                         tick={false}
-                        axisLine={false} 
+                        axisLine={false}
                         tickLine={false}
                       />
                       <Tooltip cursor={{ fill: 'rgba(255,255,255,0.01)' }} contentStyle={{ background: '#000', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', fontSize: '9px' }} />
-                      <Bar 
-                        dataKey="external" 
-                        fill="rgba(255,255,255,0.3)" 
-                        radius={[0, 2, 2, 0]} 
+                      <Bar
+                        dataKey="external"
+                        fill="rgba(255,255,255,0.3)"
+                        radius={[0, 2, 2, 0]}
                         barSize={8}
                       />
                     </BarChart>
@@ -345,11 +352,10 @@ export default function MarketDetailClient({ market }: MarketDetailClientProps) 
                   {[1, 2, 3].map((index) => (
                     <div
                       key={index}
-                      className={`h-2 w-7 rounded-sm transition-all ${
-                        index <= confidenceLevel
+                      className={`h-2 w-7 rounded-sm transition-all ${index <= confidenceLevel
                           ? 'bg-primary'
                           : 'bg-white'
-                      }`}
+                        }`}
                     />
                   ))}
                 </div>

@@ -205,7 +205,9 @@ export function convertSubMarketToPrediction(
     viewCount: 0,
     poolAmount: parseFloat(subMarket.volume) || undefined,
     poolCurrency: 'USD',
-    probability: probability
+    probability: probability,
+    polyMarketUrl: subMarket.slug ? `https://polymarket.com/event/${subMarket.slug}` : undefined,
+    polyMarketIcon: subMarket.icon || eventGroup.icon
   };
 }
 

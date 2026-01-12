@@ -67,6 +67,8 @@ export async function POST(request: NextRequest) {
                     originalId: market.id,
                   }
                 : undefined,
+              polyMarketIcon: market.polyMarketIcon,
+              polyMarketUrl: market.polyMarketUrl,
               viewCount: market.probability !== undefined ? Math.round(market.probability * 10000) : 0,
               shareCount: market.shareCount,
               poolAmount: market.poolAmount,
@@ -111,6 +113,8 @@ export async function POST(request: NextRequest) {
                     originalId: market.id,
                   }
                 : undefined,
+              polyMarketUrl: market.polyMarketUrl,
+              polyMarketIcon: market.polyMarketIcon,
               viewCount: market.probability !== undefined ? Math.round(market.probability * 10000) : 0,
               shareCount: market.shareCount,
               poolAmount: market.poolAmount,
@@ -166,6 +170,8 @@ export async function POST(request: NextRequest) {
           poolAmount: savedMarket.poolAmount ?? undefined,
           poolCurrency: savedMarket.poolCurrency ?? undefined,
           nftPercentRealizedPnl: savedMarket.snapshots[0]?.percentRealizedPnl ?? undefined,
+          polyMarketIcon: savedMarket.polyMarketIcon ?? undefined,
+          polyMarketUrl: savedMarket.polyMarketUrl ?? undefined
         });
       } catch (error) {
         console.error(`保存市场 ${market.id} 失败:`, error);

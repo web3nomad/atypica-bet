@@ -47,6 +47,7 @@ const getMarket = unstable_cache(
         atypicaPickId: market.atypicaPickId || undefined,
         atypicaAnalysis: market.atypicaAnalysis || undefined,
         atypicaSummary: market.atypicaSummary || undefined,
+        atypicaAnalysisUrl: market.atypicaAnalysisUrl || undefined,
         accuracyScore: market.accuracyScore || undefined,
         externalSource: market.externalSource || undefined,
         icon: icon,
@@ -55,6 +56,8 @@ const getMarket = unstable_cache(
         poolAmount: market.poolAmount || undefined,
         poolCurrency: market.poolCurrency || undefined,
         nftPercentRealizedPnl: market.snapshots[0]?.percentRealizedPnl || undefined,
+        polyMarketIcon: market.polyMarketIcon || undefined,
+        polyMarketUrl: market.polyMarketUrl || undefined
       };
     } catch (error) {
       console.error('Failed to fetch market:', error);
