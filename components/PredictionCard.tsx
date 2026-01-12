@@ -181,7 +181,6 @@ export const PredictionCard: React.FC<PredictionCardProps> = ({ market, onClick,
     ? formatAmount(market.poolAmount)
     : null;
     
-console.log(market.atypicaAnalysisUrl);
   return (
     <div
       ref={lightCardRef}

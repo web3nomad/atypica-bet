@@ -46,6 +46,7 @@ const getMarket = unstable_cache(
         })),
         atypicaPickId: market.atypicaPickId || undefined,
         atypicaAnalysis: market.atypicaAnalysis || undefined,
+        atypicaSummary: market.atypicaSummary || undefined,
         accuracyScore: market.accuracyScore || undefined,
         externalSource: market.externalSource || undefined,
         icon: icon,

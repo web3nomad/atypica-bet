@@ -219,6 +219,27 @@ export default function MarketDetailClient({ market }: MarketDetailClientProps) 
                 });
               })() : ''}
             </p>
+            <p className="text-muted text-lg font-medium leading-relaxed">
+              {market.atypicaSummary ? (() => {
+                const text = market.atypicaSummary;
+                // 处理双引号内的内容：斜体显示，并在双引号后换行
+                const parts = text.split(/"([^"]*)"/g);
+                return parts.map((part, index) => {
+                  if (index % 2 === 1) {
+                    // 双引号内的内容
+                    return (
+                      <React.Fragment key={index}>
+                        <em className="italic">"{part}"</em>
+                        <br />
+                      </React.Fragment>
+                    );
+                  } else {
+                    // 双引号外的内容
+                    return <span key={index}>{part}</span>;
+                  }
+                });
+              })() : ''}
+            </p>
           </div>
 
           <div className="glass-panel rounded-2xl p-6 border border-white/5">
