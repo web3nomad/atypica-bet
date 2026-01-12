@@ -16,6 +16,7 @@ export async function PATCH(
       description,
       atypicaAnalysis,
       atypicaAnalysisUrl,
+      atypicaSummary,
       accuracyScore,
       options,
     }: {
@@ -23,6 +24,7 @@ export async function PATCH(
       description?: string;
       atypicaAnalysis?: string;
       atypicaAnalysisUrl?: string;
+      atypicaSummary?: string;
       accuracyScore?: number;
       options?: { id: string; atypicaProb?: number }[];
     } = body;
@@ -32,6 +34,7 @@ export async function PATCH(
       description,
       atypicaAnalysis,
       atypicaAnalysisUrl,
+      atypicaSummary,
       accuracyScore,
     };
 
@@ -60,6 +63,7 @@ export async function PATCH(
       description: updated.description ?? undefined,
       atypicaAnalysis: updated.atypicaAnalysis ?? undefined,
       atypicaAnalysisUrl: updated.atypicaAnalysisUrl ?? undefined,
+      atypicaSummary: updated.atypicaSummary ?? undefined,
       accuracyScore: updated.accuracyScore ?? undefined,
       options: updated.options.map((o) => ({
         id: o.id,
