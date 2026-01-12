@@ -38,8 +38,11 @@ export interface PredictionMarket {
   atypicaPickId?: string;
   atypicaAnalysis?: string;
   atypicaAnalysisUrl?: string; // Atypica 分析报告链接
+  atypicaSummary?: string;
   accuracyScore?: number; // 0-1
   externalSource?: string;
+  polyMarketUrl?: string;
+  polyMarketIcon?: string;
   icon?: string; // Event icon URL
   shareCount: number;
   viewCount: number;

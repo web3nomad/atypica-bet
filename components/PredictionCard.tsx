@@ -30,10 +30,10 @@ export const PredictionCard: React.FC<PredictionCardProps> = ({ market, onClick,
       const formattedMinutes = minutes.toString().padStart(2, '0');
       return `${month}/${day} ${hours}:${formattedMinutes}`;
     };
-    
+
     setLastUpdated(formatUpdateTime());
   }, [isRefreshing]);
-  
+
   const { cardRef: lightCardRef, lightStyle, isHovered } = useLightCard({
     light: {
       color: 'rgba(255, 179, 71, 0.4)',
@@ -123,7 +123,7 @@ export const PredictionCard: React.FC<PredictionCardProps> = ({ market, onClick,
     } else {
       activeBar = 1; // 第一个
     }
-    
+
     return (
       <div className="flex flex-col gap-1.5">
         <div className="flex items-center gap-1.5 mb-0.5">
@@ -134,22 +134,22 @@ export const PredictionCard: React.FC<PredictionCardProps> = ({ market, onClick,
           {/* 第一个 bar */}
           <div
             className={`h-2 w-7 rounded-sm transition-all ${activeBar >= 1
-                ? 'bg-primary'
-                : 'bg-white'
+              ? 'bg-primary'
+              : 'bg-white'
               }`}
           />
           {/* 第二个 bar */}
           <div
             className={`h-2 w-7 rounded-sm transition-all ${activeBar >= 2
-                ? 'bg-primary'
-                : 'bg-white'
+              ? 'bg-primary'
+              : 'bg-white'
               }`}
           />
           {/* 第三个 bar */}
           <div
             className={`h-2 w-7 rounded-sm transition-all ${activeBar >= 3
-                ? 'bg-primary'
-                : 'bg-white'
+              ? 'bg-primary'
+              : 'bg-white'
               }`}
           />
         </div>
@@ -180,8 +180,7 @@ export const PredictionCard: React.FC<PredictionCardProps> = ({ market, onClick,
   const formattedPoolAmount = market.poolAmount
     ? formatAmount(market.poolAmount)
     : null;
-    
-console.log(market.atypicaAnalysisUrl);
+
   return (
     <div
       ref={lightCardRef}
@@ -189,22 +188,19 @@ console.log(market.atypicaAnalysisUrl);
         // 详情页未完成，暂时禁用点击
         onClick(market.id)
       }}
-      className={`group cursor-pointer glass-panel glass-effect spotlight-card rounded-xl transition-all duration-300 hover:border-white/20 p-5 cursor-follow card-layered relative overflow-hidden ${
-        market.status === PredictionStatus.SUCCESSFUL ? 'success-glow' : ''
-      }`}
+      className={`group cursor-pointer glass-panel glass-effect spotlight-card rounded-xl transition-all duration-300 hover:border-white/20 p-5 cursor-follow card-layered relative overflow-hidden ${market.status === PredictionStatus.SUCCESSFUL ? 'success-glow' : ''
+        }`}
     >
       {isHovered && <div style={lightStyle} />}
       {/* 防误解锚点 - Header with AI prediction disclaimer */}
       <div className="mb-3">
         <div className="flex items-center justify-between mb-1.5">
           <div className="flex items-center gap-1.5">
-            {/* Market Label (A, B, C) - 细绿色边框+白色字母居中，闪电图标在右下角 */}
-            {marketLabel && (
-              <div className="relative w-7 h-7 rounded-md border-[0.5px] border-primary flex items-center justify-center bg-transparent">
+            {/* Market Label */}
+            <div className="relative w-7 h-7 rounded-md border-[0.5px] border-primary flex items-center justify-center bg-transparent">
                 <span className="text-[11px] font-bold text-white">{marketLabel}</span>
                 <Zap className="absolute -bottom-1 -right-1 w-3 h-3 text-primary" />
               </div>
-            )}
             <span className="text-[12px] font-bold text-primary">Atypica AI Prediction</span>
           </div>
           <div className="flex items-center text-[9px] text-white/50 gap-1">
@@ -217,10 +213,10 @@ console.log(market.atypicaAnalysisUrl);
 
       {/* Prediction Question */}
       <h3 className="text-lg font-semibold text-white leading-snug mb-4 flex items-start gap-3 h-12">
-        {market.icon && (
-          <img 
-            src={market.icon} 
-            alt="" 
+        {market.polyMarketIcon && (
+          <img
+            src={market.polyMarketIcon}
+            alt=""
             className="w-6 h-6 rounded object-cover flex-shrink-0"
             onError={(e) => {
               // 如果图片加载失败，隐藏图片
@@ -238,7 +234,7 @@ console.log(market.atypicaAnalysisUrl);
           <div className="flex flex-col items-start">
             <div className="text-[11px] text-white/70 mb-2">Atypica Prediction</div>
             <div className="text-3xl md:text-4xl font-bold text-white leading-tight break-words mb-4">{pickedOption.text}</div>
-            
+
             {/* Prediction confidence 和 Odds 同一行 */}
             {pickedOption.atypicaProb !== undefined ? (
               <div className="flex flex-col items-start w-full">
@@ -285,8 +281,8 @@ console.log(market.atypicaAnalysisUrl);
             <div className="absolute top-1/2 right-6 -translate-y-1/2 flex flex-col items-end">
               <div
                 className={`text-[22px] md:text-[27.6px] font-bold leading-none ${market.nftPercentRealizedPnl >= 0
-                    ? 'text-green-400'
-                    : 'text-red-400'
+                  ? 'text-green-400'
+                  : 'text-red-400'
                   }`}
               >
                 {market.nftPercentRealizedPnl >= 0 ? '+' : ''}
