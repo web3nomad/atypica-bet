@@ -58,7 +58,7 @@ const getMarket = unstable_cache(
         viewCount: market.viewCount || 0,
         poolAmount: market.poolAmount || undefined,
         poolCurrency: market.poolCurrency || undefined,
-        nftPercentRealizedPnl: market.snapshots[0]?.percentRealizedPnl || undefined,
+        nftPercentRealizedPnl: market.snapshots[0]?.percentRealizedPnl || undefined
       };
     } catch (error) {
       console.error('Failed to fetch market:', error);

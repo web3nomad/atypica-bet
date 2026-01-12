@@ -210,7 +210,7 @@ export function MarketEditClient({ market }: MarketEditClientProps) {
 
             <div className="space-y-2">
               <label className="text-[11px] font-bold text-white/70">
-                Atypica 分析（Analysis）
+                Atypica Analysis
               </label>
               <textarea
                 rows={5}
