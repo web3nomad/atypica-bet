@@ -239,15 +239,16 @@ export const PredictionCard: React.FC<PredictionCardProps> = ({ market, onClick,
             {pickedOption.atypicaProb !== undefined ? (
               <div className="flex flex-col items-start w-full">
                 {/* 第一行：Prediction confidence 和 Odds */}
-                <div className="flex flex-row items-center gap-4 w-full mb-1">
+                <div className="flex flex-row items-start gap-4 w-full mb-1">
                   <div className="flex items-center gap-1.5">
                     <div className="w-1 h-1 rounded-full bg-primary"></div>
                     <div className="text-[10.5px] font-semibold text-white/70">Prediction confidence</div>
                   </div>
-                  {/* Odds 标签，与 Prediction confidence 同一行 */}
+                  {/* Market Move / Since Signal 标签，与 Prediction confidence 同一行 */}
                   {market.nftPercentRealizedPnl !== undefined && (
-                    <div className="text-[10.5px] font-semibold text-white/70 ml-auto">
-                      Odds
+                    <div className="text-[9.5px] font-semibold text-white/70 ml-auto text-right">
+                      <div>Market Move</div>
+                      <div>Since Signal</div>
                     </div>
                   )}
                 </div>

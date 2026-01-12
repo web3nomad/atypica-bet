@@ -54,6 +54,7 @@ export interface PredictionMarket {
   nftCurrentValue?: number; // 当前价值
   nftWinValue?: number; // Win value
   nftLastSynced?: string; // 最后同步时间
+  
 }
 
 // Polymarket API 响应类型

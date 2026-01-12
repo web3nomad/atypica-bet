@@ -23,27 +23,33 @@ export async function GET(request: NextRequest) {
 
     // 如果指定了 marketIds，使用指定的 ID
     if (marketIdsParam) {
-      marketIds = marketIdsParam.split(',').map(id => id.trim());
+      marketIds = marketIdsParam.split(',').map(id => id.trim()).filter(id => id.length > 0);
     } else {
       // 否则，查询最近有快照的 N 个市场
-      const recentMarkets = await prisma.market.findMany({
-        where: {
-          snapshots: {
-            some: {},
+      try {
+        const recentMarkets = await prisma.market.findMany({
+          where: {
+            snapshots: {
+              some: {},
+            },
           },
-        },
-        orderBy: {
-          snapshots: {
-            _count: 'desc',
+          orderBy: {
+            createdAt: 'desc',
           },
-        },
-        take: limit,
-        select: {
-          id: true,
-        },
-      });
+          take: limit,
+          select: {
+            id: true,
+          },
+        });
 
-      marketIds = recentMarkets.map(m => m.id);
+        marketIds = recentMarkets.map(m => m.id);
+      } catch (dbError) {
+        console.error('查询市场失败:', dbError);
+        // 如果查询失败，返回空数组而不是错误
+        return NextResponse.json({
+          markets: [],
+        });
+      }
     }
 
     if (marketIds.length === 0) {
@@ -52,73 +58,78 @@ export async function GET(request: NextRequest) {
       });
     }
 
-    // 构建查询条件
-    const whereClause: any = {
-      marketId: {
-        in: marketIds,
-      },
-    };
-
+    // 构建快照查询条件
+    const snapshotWhere: any = {};
     if (startTime || endTime) {
-      whereClause.timestamp = {};
+      snapshotWhere.timestamp = {};
       if (startTime) {
-        whereClause.timestamp.gte = new Date(startTime);
+        snapshotWhere.timestamp.gte = new Date(startTime);
       }
       if (endTime) {
-        whereClause.timestamp.lte = new Date(endTime);
+        snapshotWhere.timestamp.lte = new Date(endTime);
       }
     }
 
     // 查询市场和快照数据
-    const markets = await prisma.market.findMany({
-      where: {
-        id: {
-          in: marketIds,
-        },
-      },
-      select: {
-        id: true,
-        title: true,
-        snapshots: {
-          where: whereClause.timestamp ? { timestamp: whereClause.timestamp } : {},
-          orderBy: {
-            timestamp: 'asc',
-          },
-          select: {
-            timestamp: true,
-            percentRealizedPnl: true,
-            currentValue: true,
-            winValue: true,
+    try {
+      const markets = await prisma.market.findMany({
+        where: {
+          id: {
+            in: marketIds,
           },
         },
-      },
-    });
+        select: {
+          id: true,
+          title: true,
+          snapshots: {
+            where: snapshotWhere,
+            orderBy: {
+              timestamp: 'asc',
+            },
+            select: {
+              timestamp: true,
+              percentRealizedPnl: true,
+              currentValue: true,
+              winValue: true,
+            },
+          },
+        },
+      });
 
-    // 只返回有快照的市场
-    const marketsWithSnapshots = markets.filter(m => m.snapshots.length > 0);
+      // 只返回有快照的市场
+      const marketsWithSnapshots = markets.filter(m => m.snapshots.length > 0);
 
-    // 格式化返回数据
-    const result = {
-      markets: marketsWithSnapshots.map(market => ({
-        marketId: market.id,
-        title: market.title,
-        snapshots: market.snapshots.map(snapshot => ({
-          timestamp: snapshot.timestamp.toISOString(),
-          percentRealizedPnl: snapshot.percentRealizedPnl,
-          currentValue: snapshot.currentValue,
-          winValue: snapshot.winValue,
+      // 格式化返回数据
+      const result = {
+        markets: marketsWithSnapshots.map(market => ({
+          marketId: market.id,
+          title: market.title,
+          snapshots: market.snapshots.map(snapshot => ({
+            timestamp: snapshot.timestamp.toISOString(),
+            percentRealizedPnl: snapshot.percentRealizedPnl,
+            currentValue: snapshot.currentValue,
+            winValue: snapshot.winValue,
+          })),
         })),
-      })),
-    };
+      };
 
-    return NextResponse.json(result);
+      return NextResponse.json(result);
+    } catch (queryError) {
+      console.error('查询市场和快照数据失败:', queryError);
+      // 如果查询失败，返回空数组而不是错误
+      return NextResponse.json({
+        markets: [],
+      });
+    }
   } catch (error) {
     console.error('查询历史快照失败:', error);
+    // 确保即使出现未预期的错误，也返回有效的 JSON 响应
     return NextResponse.json(
       {
+        markets: [],
         error: error instanceof Error ? error.message : '查询历史快照失败',
       },
-      { status: 500 }
+      { status: 200 }
     );
   }
 }
