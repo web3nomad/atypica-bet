@@ -27,12 +27,15 @@ model Market {
   // AI 分析字段
   atypicaPickId      String?
   atypicaAnalysis    String?  @db.Text
+  atypicaSummary     String?
   atypicaAnalysisUrl String?  // Atypica 分析报告链接
   accuracyScore      Float?
 
   // 外部数据源
   externalSource String?
   externalData   Json?   // 存储完整的 Polymarket 原始数据
+  polyMarketUrl  String?
+  polyMarketIcon String?
 
   // 统计字段
   viewCount   Int     @default(0)
