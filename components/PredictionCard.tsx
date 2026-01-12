@@ -181,13 +181,13 @@ export const PredictionCard: React.FC<PredictionCardProps> = ({ market, onClick,
     ? formatAmount(market.poolAmount)
     : null;
     
-
+console.log(market.atypicaAnalysisUrl);
   return (
     <div
       ref={lightCardRef}
       onClick={() => {
         // 详情页未完成，暂时禁用点击
-        // onClick(market.id)
+        onClick(market.id)
       }}
       className={`group cursor-pointer glass-panel glass-effect spotlight-card rounded-xl transition-all duration-300 hover:border-white/20 p-5 cursor-follow card-layered relative overflow-hidden ${
         market.status === PredictionStatus.SUCCESSFUL ? 'success-glow' : ''
@@ -371,7 +371,7 @@ export const PredictionCard: React.FC<PredictionCardProps> = ({ market, onClick,
           </div>
 
           <a
-            href={market.externalSource || '#'}
+            href={market.atypicaAnalysisUrl || '/'}
             target="_blank"
             rel="noopener noreferrer"
             onClick={(e) => {

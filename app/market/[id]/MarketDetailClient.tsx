@@ -168,19 +168,35 @@ export default function MarketDetailClient({ market }: MarketDetailClientProps) 
               </div>
             </div>
 
-            <div className="relative">
+            <div className="space-y-4">
               <h1 className="text-4xl md:text-6xl font-black text-white tracking-tighter leading-[1.1] text-header">
                 {market.title}
               </h1>
-              <a
-                href={market.externalSource || '#'}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="absolute bottom-0 right-0 flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-white/60 hover:text-white transition-colors group"
-              >
-                View Research
-                <ArrowRight className="w-3 h-3 translate-x-0 group-hover:translate-x-1 transition-transform" />
-              </a>
+              <div className="flex flex-col gap-3">
+                <a
+                  href={market.atypicaAnalysisUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={(e) => {
+                    if (!market.atypicaAnalysisUrl) {
+                      e.preventDefault();
+                    }
+                  }}
+                  className="inline-flex items-center gap-1.5 text-[20px] font-bold uppercase tracking-widest text-white/60 hover:text-white transition-colors group"
+                >
+                  View Research
+                  <ArrowRight className="w-3 h-3 translate-x-0 group-hover:translate-x-1 transition-transform" />
+                </a>
+                <a
+                  href="https://polymarket.com/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 text-[20px] font-bold uppercase tracking-widest text-white/60 hover:text-white transition-colors group"
+                >
+                  GO POLYMARKET
+                  <ArrowRight className="w-3 h-3 translate-x-0 group-hover:translate-x-1 transition-transform" />
+                </a>
+              </div>
             </div>
             <p className="text-muted text-lg font-medium leading-relaxed">
               {market.atypicaAnalysis ? (() => {
