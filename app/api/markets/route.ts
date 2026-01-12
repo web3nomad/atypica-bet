@@ -53,9 +53,9 @@ export async function GET(request: NextRequest) {
     });
 
     const results: PredictionMarket[] = markets.map(market => {
-      // 从 externalData 中提取 icon
-      let icon: string | undefined = undefined;
-      if (market.externalData && typeof market.externalData === 'object') {
+      // 优先使用 polyMarketIcon，如果没有则从 externalData 中提取
+      let icon: string | undefined = market.polyMarketIcon ?? undefined;
+      if (!icon && market.externalData && typeof market.externalData === 'object') {
         const data = market.externalData as any;
         icon = data.icon || data.subMarket?.icon || data.eventGroup?.icon;
       }
@@ -155,9 +155,9 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    // 从 externalData 中提取 icon
-    let icon: string | undefined = undefined;
-    if (savedMarket.externalData && typeof savedMarket.externalData === 'object') {
+    // 优先使用 polyMarketIcon，如果没有则从 externalData 中提取
+    let icon: string | undefined = savedMarket.polyMarketIcon ?? undefined;
+    if (!icon && savedMarket.externalData && typeof savedMarket.externalData === 'object') {
       const data = savedMarket.externalData as any;
       icon = data.icon || data.subMarket?.icon || data.eventGroup?.icon;
     }
@@ -184,6 +184,8 @@ export async function POST(request: NextRequest) {
       atypicaAnalysisUrl: savedMarket.atypicaAnalysisUrl ?? undefined,
       accuracyScore: savedMarket.accuracyScore ?? undefined,
       externalSource: savedMarket.externalSource ?? undefined,
+      polyMarketIcon: savedMarket.polyMarketIcon ?? undefined,
+      polyMarketUrl: savedMarket.polyMarketUrl ?? undefined,
       icon: icon,
       shareCount: savedMarket.shareCount,
       viewCount: savedMarket.viewCount,

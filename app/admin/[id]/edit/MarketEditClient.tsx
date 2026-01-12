@@ -20,6 +20,9 @@ export function MarketEditClient({ market }: MarketEditClientProps) {
   const [analysis, setAnalysis] = useState<string>(
     market.atypicaAnalysis || ''
   );
+  const [summary, setSummary] = useState<string>(
+    market.atypicaSummary || ''
+  );
   const [analysisUrl, setAnalysisUrl] = useState<string>(
     market.atypicaAnalysisUrl || ''
   );
@@ -81,6 +84,7 @@ export function MarketEditClient({ market }: MarketEditClientProps) {
           atypicaPickId: atypicaPickId || undefined,
           atypicaAnalysis: analysis || undefined,
           atypicaAnalysisUrl: analysisUrl || undefined,
+          atypicaSummary: summary || undefined,
           accuracyScore,
           options: optionsPayload,
         }),
@@ -213,6 +217,19 @@ export function MarketEditClient({ market }: MarketEditClientProps) {
                 value={analysis}
                 onChange={(e) => setAnalysis(e.target.value)}
                 placeholder="输入或粘贴 Atypica 的推理说明..."
+                className="w-full px-4 py-3 rounded-xl border border-white/20 bg-black/60 text-sm text-white placeholder:text-white/50 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/30 transition-all resize-none"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-[11px] font-bold text-white/70">
+                Atypica 摘要（Summary）
+              </label>
+              <textarea
+                rows={3}
+                value={summary}
+                onChange={(e) => setSummary(e.target.value)}
+                placeholder="输入 Atypica 分析的简短摘要..."
                 className="w-full px-4 py-3 rounded-xl border border-white/20 bg-black/60 text-sm text-white placeholder:text-white/50 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/30 transition-all resize-none"
               />
             </div>
