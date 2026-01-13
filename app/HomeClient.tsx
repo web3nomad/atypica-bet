@@ -29,6 +29,8 @@ export default function HomeClient({ initialMarkets }: HomeClientProps) {
   const [totalReturn, setTotalReturn] = useState<number>(0);
   const mouseFollowRef = useRef<HTMLDivElement>(null);
   const ribbonTriggerRef = useRef<HTMLSpanElement>(null);
+  const [isMobile, setIsMobile] = useState(false);
+  const [isFilterDrawerOpen, setIsFilterDrawerOpen] = useState(false);
   
   // Verified Logic Results 卡片的橙黄色光效（增强可见度）
   const { cardRef: verifiedCardRef } = useLightCard({
@@ -43,6 +45,16 @@ export default function HomeClient({ initialMarkets }: HomeClientProps) {
   const handleMarketClick = (id: string) => {
     router.push(`/market/${id}`);
   };
+
+  // 检测移动端
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   // 调试信息
   useEffect(() => {
@@ -130,6 +142,9 @@ export default function HomeClient({ initialMarkets }: HomeClientProps) {
   };
 
   useEffect(() => {
+    // 只在桌面端启用confetti效果
+    if (isMobile) return;
+    
     const container = verifiedCardRef.current;
     if (!container || !ribbonTriggerRef.current) return;
     
@@ -142,10 +157,12 @@ export default function HomeClient({ initialMarkets }: HomeClientProps) {
     return () => {
       container.removeEventListener('mouseenter', handleMouseEnter);
     };
-  }, [verifiedCardRef]);
+  }, [verifiedCardRef, isMobile]);
 
-  // 鼠标跟随背景效果（带滞后平滑 Lerp 动画）
+  // 鼠标跟随背景效果（带滞后平滑 Lerp 动画）- 仅在桌面端
   useEffect(() => {
+    if (isMobile) return;
+    
     let targetX = 0;
     let targetY = 0;
     let currentX = 0;
@@ -200,7 +217,7 @@ export default function HomeClient({ initialMarkets }: HomeClientProps) {
         cancelAnimationFrame(animationFrameId);
       }
     };
-  }, []);
+  }, [isMobile]);
 
   const filteredMarkets = useMemo(() => {
     return initialMarkets.filter(m => {
@@ -373,6 +390,354 @@ export default function HomeClient({ initialMarkets }: HomeClientProps) {
     return allFilteredData;
   }, [allFilteredData, brushStartIndex, brushEndIndex]);
 
+  // 移动端专用布局
+  if (isMobile) {
+    return (
+      <div className="w-full px-4 pb-32 relative">
+        {/* Hero Section - 移动端优化 */}
+        <section className="pt-20 pb-12 text-center">
+          <div className="space-y-6">
+            <div className="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-full bg-white/[0.05] border border-white/10 text-white/60 text-[9px] font-bold uppercase tracking-[0.2em]">
+              AI Predictive Infrastructure 
+            </div>
+
+            <div>
+              <h1 className="text-4xl font-black tracking-tighter leading-[0.95]">
+                <span className="text-white">Intelligence</span>
+                <br />
+                <span className="bg-gradient-to-t from-gray-500 to-white bg-clip-text text-transparent">Beyond Guess.</span>
+              </h1>
+            </div>
+
+            <p className="font-gothic text-muted text-sm max-w-sm mx-auto font-medium leading-relaxed">
+              An experiment in using prediction to understand how intelligence meets uncertainty.
+            </p>
+          </div>
+        </section>
+
+        {/* Stats Section - 移动端垂直堆叠 */}
+        <div className="space-y-3 mb-8">
+          <StatCard label="Active Nodes" value={stats.active} />
+          <StatCard label="Successful" value={stats.success} />
+          <StatCard label="Precision" value={stats.precision + '%'} />
+        </div>
+
+        {/* Profits Visualization - 移动端简化 */}
+        <div className="mb-8">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <div className="w-5 h-5 rounded-lg bg-primary/10 flex items-center justify-center border border-primary/20">
+                <TrendingUp className="text-primary w-3 h-3" />
+              </div>
+              <h2 className="text-base font-bold">Profit Analytics</h2>
+            </div>
+            {marketTitles.length > 0 && (
+              <div className="flex items-center gap-1.5 px-2 py-1 bg-white/5 rounded-lg">
+                <div className={`w-2 h-2 rounded-full ${totalReturn > 0 ? 'bg-primary' : 'bg-red-500'}`}></div>
+                <span className="text-[10px] text-white font-medium">
+                  {totalReturn > 0 ? '+' : ''}{totalReturn}%
+                </span>
+              </div>
+            )}
+          </div>
+
+          <div className="glass-panel p-3 rounded-xl">
+            <div className="mb-3">
+              <h3 className="text-sm font-bold text-white mb-1">Daily Performance</h3>
+              <div className="flex items-center gap-2 mt-2">
+                <button
+                  onClick={() => setViewMode('hourly')}
+                  className={`flex-1 py-2 rounded text-[9px] font-bold uppercase transition-all ${
+                    viewMode === 'hourly'
+                      ? 'bg-primary text-black'
+                      : 'bg-white/5 text-white/60'
+                  }`}
+                >
+                  Hourly
+                </button>
+                <button
+                  onClick={() => setViewMode('daily')}
+                  className={`flex-1 py-2 rounded text-[9px] font-bold uppercase transition-all ${
+                    viewMode === 'daily'
+                      ? 'bg-primary text-black'
+                      : 'bg-white/5 text-white/60'
+                  }`}
+                >
+                  Daily
+                </button>
+              </div>
+            </div>
+
+            <div className="h-64 w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart
+                  data={profitData}
+                  margin={{ top: 5, right: 10, left: -20, bottom: 60 }}
+                >
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
+                  <XAxis 
+                    dataKey={viewMode === 'hourly' ? 'dateTime' : 'date'} 
+                    stroke="#666" 
+                    tick={{ fontSize: 8, fill: '#666' }}
+                    interval={viewMode === 'hourly' ? 23 : 0}
+                    angle={viewMode === 'hourly' ? -45 : 0}
+                    textAnchor={viewMode === 'hourly' ? 'end' : 'middle'}
+                    height={40}
+                  />
+                  <YAxis stroke="#666" tick={{ fontSize: 9 }} width={40} />
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: 'rgba(0, 0, 0, 0.95)',
+                      border: '1px solid rgba(255, 255, 255, 0.4)',
+                      borderRadius: '6px',
+                      padding: '6px',
+                    }}
+                    itemStyle={{ color: '#fff', fontSize: '10px' }}
+                    labelStyle={{ color: '#fff', fontSize: '10px', fontWeight: 'bold' }}
+                  />
+                  <ReferenceLine y={0} stroke="rgba(255,255,255,0.2)" />
+                  {marketTitles.slice(0, 3).map((title, index) => {
+                    const colors = ['#FF4444', '#82ca9d', '#ffc658'];
+                    const color = colors[index % colors.length];
+                    return (
+                      <Line 
+                        key={`bet${index + 1}`}
+                        type="monotone" 
+                        dataKey={`bet${index + 1}`}
+                        stroke={color}
+                        dot={false}
+                        strokeWidth={1.5}
+                        name={title.length > 15 ? title.substring(0, 15) + '...' : title}
+                      />
+                    );
+                  })}
+                  <Line 
+                    type="monotone" 
+                    dataKey="dailyTotal" 
+                    stroke="#4CAF50" 
+                    strokeWidth={2}
+                    dot={false}
+                    name="Daily Total"
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+        </div>
+
+        {/* Filter Button - 移动端底部固定 */}
+        <div className="fixed bottom-0 left-0 right-0 z-50 bg-black/95 backdrop-blur-xl border-t border-white/10 p-4">
+          <button
+            onClick={() => setIsFilterDrawerOpen(true)}
+            className="w-full flex items-center justify-between glass-panel bg-white/5 border border-white/10 px-4 py-3 rounded-lg"
+          >
+            <div className="flex items-center gap-2">
+              <SlidersHorizontal className="w-4 h-4 text-white" />
+              <span className="text-xs font-bold uppercase tracking-wider text-white">
+                {activeCategory !== 'ALL' && CATEGORY_LABELS[activeCategory]}
+                {activeCategory !== 'ALL' && activeStatus !== 'ALL' && ' • '}
+                {activeStatus !== 'ALL' && STATUS_LABELS[activeStatus as PredictionStatus]}
+                {(activeCategory === 'ALL' && activeStatus === 'ALL') && 'Filters'}
+              </span>
+            </div>
+            <ChevronDown className="w-4 h-4 text-white/60" />
+          </button>
+        </div>
+
+        {/* Filter Drawer - 移动端全屏抽屉 */}
+        {isFilterDrawerOpen && (
+          <div className="fixed inset-0 z-[60] bg-black/95 backdrop-blur-xl">
+            <div className="h-full flex flex-col">
+              <div className="flex items-center justify-between p-4 border-b border-white/10">
+                <h3 className="text-lg font-bold">Filters</h3>
+                <button
+                  onClick={() => setIsFilterDrawerOpen(false)}
+                  className="text-white/60 hover:text-white"
+                >
+                  ✕
+                </button>
+              </div>
+              
+              <div className="flex-1 overflow-y-auto p-4 space-y-6">
+                <div>
+                  <h4 className="text-xs font-bold uppercase tracking-wider text-white/60 mb-3">Category</h4>
+                  <div className="space-y-2">
+                    <button
+                      onClick={() => {
+                        setActiveCategory('ALL');
+                        setIsFilterDrawerOpen(false);
+                      }}
+                      className={`w-full text-left px-4 py-3 rounded-lg text-sm font-medium transition-all ${
+                        activeCategory === 'ALL'
+                          ? 'bg-white text-black'
+                          : 'bg-white/5 text-white/80'
+                      }`}
+                    >
+                      All Segments
+                    </button>
+                    {Array.from(new Set(initialMarkets.map(m => m.category))).map((category) => (
+                      <button
+                        key={category}
+                        onClick={() => {
+                          setActiveCategory(category);
+                          setIsFilterDrawerOpen(false);
+                        }}
+                        className={`w-full text-left px-4 py-3 rounded-lg text-sm font-medium transition-all ${
+                          activeCategory === category
+                            ? 'bg-white text-black'
+                            : 'bg-white/5 text-white/80'
+                        }`}
+                      >
+                        {CATEGORY_LABELS[category]}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  <h4 className="text-xs font-bold uppercase tracking-wider text-white/60 mb-3">Status</h4>
+                  <div className="space-y-2">
+                    <button
+                      onClick={() => {
+                        setActiveStatus('ALL');
+                        setIsFilterDrawerOpen(false);
+                      }}
+                      className={`w-full text-left px-4 py-3 rounded-lg text-sm font-medium transition-all ${
+                        activeStatus === 'ALL'
+                          ? 'bg-white text-black'
+                          : 'bg-white/5 text-white/80'
+                      }`}
+                    >
+                      All Status
+                    </button>
+                    <button
+                      onClick={() => {
+                        setActiveStatus(PredictionStatus.ACTIVE);
+                        setIsFilterDrawerOpen(false);
+                      }}
+                      className={`w-full text-left px-4 py-3 rounded-lg text-sm font-medium transition-all ${
+                        activeStatus === PredictionStatus.ACTIVE
+                          ? 'bg-white text-black'
+                          : 'bg-white/5 text-white/80'
+                      }`}
+                    >
+                      {STATUS_LABELS[PredictionStatus.ACTIVE]}
+                    </button>
+                    <button
+                      onClick={() => {
+                        setActiveStatus(PredictionStatus.SUCCESSFUL);
+                        setIsFilterDrawerOpen(false);
+                      }}
+                      className={`w-full text-left px-4 py-3 rounded-lg text-sm font-medium transition-all ${
+                        activeStatus === PredictionStatus.SUCCESSFUL
+                          ? 'bg-white text-black'
+                          : 'bg-white/5 text-white/80'
+                      }`}
+                    >
+                      {STATUS_LABELS[PredictionStatus.SUCCESSFUL]}
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <div className="p-4 border-t border-white/10">
+                <button
+                  onClick={() => setIsFilterDrawerOpen(false)}
+                  className="w-full bg-white text-black py-3 rounded-lg font-bold uppercase text-sm tracking-wider"
+                >
+                  Apply Filters
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Market Grid - 移动端单列 */}
+        <div className="space-y-4 mb-24">
+          {filteredMarkets.length > 0 ? (
+            filteredMarkets.map((market, index) => {
+              const labels = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
+              const labelIndex = labels[index % labels.length];
+              return (
+                <PredictionCard 
+                  key={market.id} 
+                  market={market} 
+                  onClick={handleMarketClick}
+                  marketLabel={labelIndex}
+                />
+              );
+            })
+          ) : (
+            <div className="py-24 text-center">
+              <p className="text-muted font-bold tracking-widest uppercase text-xs">Zero results in this query vector.</p>
+            </div>
+          )}
+        </div>
+
+        {/* Featured Analysis - 移动端简化 */}
+        <div className="mt-16 mb-24">
+          <div className="flex items-center gap-2 mb-4">
+            <div className="w-5 h-5 rounded-lg bg-primary/10 flex items-center justify-center border border-primary/20">
+              <CheckCircle2 className="text-primary w-3 h-3" />
+            </div>
+            <h2 className="text-base font-bold">Featured Analysis</h2>
+          </div>
+
+          <div ref={verifiedCardRef} className="glass-panel rounded-xl p-4">
+            <div className="flex flex-wrap items-center gap-2 mb-3">
+              <span className="px-2 py-0.5 rounded-md text-[9px] font-bold uppercase tracking-wider border border-white/20 bg-white/5 text-white">
+                Politics
+              </span>
+              <span ref={ribbonTriggerRef} className="px-2 py-0.5 rounded-md text-[9px] font-bold uppercase tracking-wider border border-primary/30 bg-primary/5 text-primary">
+                Featured
+              </span>
+            </div>
+
+            <h3 className="text-base font-bold text-white leading-tight mb-2">
+              Who will be the next Federal Reserve Chair?
+            </h3>
+
+            <p className="text-xs text-white/70 mb-4 line-clamp-3">
+              Comprehensive competitive analysis across five dimensions evaluating the nomination probability and market impact of three candidates.
+            </p>
+
+            <div className="bg-white/[0.03] rounded-lg p-3 border border-white/10 mb-3">
+              <div className="flex items-center gap-2 mb-2">
+                <Zap className="w-3 h-3 text-primary" />
+                <div className="text-xs font-black text-primary">Atypica Pick</div>
+              </div>
+              <div className="text-lg font-black text-primary mb-2">Kevin Hassett</div>
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-white/50">Confidence</span>
+                <div className="flex gap-1">
+                  <div className="w-4 h-0.5 bg-primary rounded-sm"></div>
+                  <div className="w-4 h-0.5 bg-primary rounded-sm"></div>
+                  <div className="w-4 h-0.5 bg-white rounded-sm"></div>
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <div className="flex items-center justify-between p-2 rounded bg-primary/10 border border-primary/20">
+                <span className="text-xs font-black text-primary">Kevin Hassett</span>
+                <span className="text-xs font-bold text-white">37%</span>
+              </div>
+              <div className="flex items-center justify-between p-2 rounded bg-white/5">
+                <span className="text-xs text-white">Christopher Waller</span>
+                <span className="text-xs font-bold text-white">12%</span>
+              </div>
+              <div className="flex items-center justify-between p-2 rounded bg-white/5">
+                <span className="text-xs text-white">Kevin Warsh</span>
+                <span className="text-xs font-bold text-white">42%</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // 桌面端布局（保持原有设计）
   return (
     <div className="max-w-7xl mx-auto px-4 md:px-6 pb-40 relative">
       {/* 鼠标跟随背景光晕 */}
