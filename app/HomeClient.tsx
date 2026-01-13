@@ -485,7 +485,7 @@ export default function HomeClient({ initialMarkets }: HomeClientProps) {
                   label={{ value: viewMode === 'hourly' ? 'Date & Time' : 'Date', position: 'insideBottom', offset: -55, fill: '#666', style: { fontSize: '10px' } }}
                   angle={viewMode === 'hourly' ? -45 : 0}
                   textAnchor={viewMode === 'hourly' ? 'end' : 'middle'}
-                  height={viewMode === 'hourly' ? 40 : 20}
+                  height={40}
                 />
                 <YAxis stroke="#666" tick={{ fontSize: 10 }} />
                 <Tooltip
