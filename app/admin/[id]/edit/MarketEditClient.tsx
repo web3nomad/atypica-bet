@@ -223,13 +223,13 @@ export function MarketEditClient({ market }: MarketEditClientProps) {
 
             <div className="space-y-2">
               <label className="text-[11px] font-bold text-white/70">
-                Atypica Summary
+                Atypica 摘要（Summary）
               </label>
               <textarea
-                rows={5}
+                rows={3}
                 value={summary}
                 onChange={(e) => setSummary(e.target.value)}
-                placeholder="输入或粘贴 Atypica 的summary"
+                placeholder="输入 Atypica 分析的简短摘要..."
                 className="w-full px-4 py-3 rounded-xl border border-white/20 bg-black/60 text-sm text-white placeholder:text-white/50 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/30 transition-all resize-none"
               />
             </div>

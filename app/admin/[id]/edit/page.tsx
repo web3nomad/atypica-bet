@@ -41,6 +41,8 @@ export default async function AdminMarketEditPage({ params }: PageProps) {
     })),
     atypicaPickId: market.atypicaPickId ?? undefined,
     atypicaAnalysis: market.atypicaAnalysis ?? undefined,
+    atypicaAnalysisUrl: market.atypicaAnalysisUrl ?? undefined,
+    atypicaSummary: market.atypicaSummary ?? undefined,
     accuracyScore: market.accuracyScore ?? undefined,
     externalSource: market.externalSource ?? undefined,
     shareCount: market.shareCount,

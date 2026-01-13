@@ -682,17 +682,19 @@ export default function HomeClient({ initialMarkets }: HomeClientProps) {
         </div>
       </div>
 
-      {/* Market Grid - 只显示前3张卡片 */}
+      {/* Market Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {filteredMarkets.length > 0 ? (
-          filteredMarkets.slice(0, 3).map((market, index) => {
-            const labels = ['A', 'B', 'C'];
+          filteredMarkets.map((market, index) => {
+            // 生成标签：A, B, C, ..., Z，如果超过26个则循环使用
+            const labels = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
+            const labelIndex = labels[index % labels.length];
             return (
               <PredictionCard 
                 key={market.id} 
                 market={market} 
                 onClick={handleMarketClick}
-                marketLabel={labels[index]}
+                marketLabel={labelIndex}
               />
             );
           })
@@ -831,11 +833,12 @@ export default function HomeClient({ initialMarkets }: HomeClientProps) {
                       </div>
 
                       <div className="flex items-center gap-3 text-sm">
-                          <div className="flex items-center gap-1.5">
+                          {/* 隐藏信心指示器（三个短横线） */}
+                          {/* <div className="flex items-center gap-1.5">
                             <div className="h-2 w-7 rounded-sm bg-primary" />
                             <div className="h-2 w-7 rounded-sm bg-primary" />
                             <div className="h-2 w-7 rounded-sm bg-white" />
-                          </div>
+                          </div> */}
                         <div className="flex items-center">
                           <span className="text-[9px] mr-1 text-muted">Market:</span>
                     <span className="text-xs font-bold text-white">37%</span>

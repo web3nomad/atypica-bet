@@ -14,7 +14,7 @@ export const CATEGORY_LABELS: Record<Category, string> = {
 export const STATUS_LABELS: Record<PredictionStatus, string> = {
   [PredictionStatus.ACTIVE]: 'Active',
   [PredictionStatus.CLOSED]: 'Closed',
-  [PredictionStatus.SUCCESSFUL]: 'Successful',
+  [PredictionStatus.SUCCESSFUL]: 'Resolved',
   [PredictionStatus.FAILED]: 'Failed'
 };
 

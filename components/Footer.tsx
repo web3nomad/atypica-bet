@@ -2,7 +2,6 @@
 
 import React from 'react';
 import Image from 'next/image';
-import { ArrowRight } from 'lucide-react';
 
 export const Footer: React.FC = () => {
   return (
@@ -23,13 +22,13 @@ export const Footer: React.FC = () => {
             <div className="flex flex-col min-w-0">
               <span className="font-bold text-white uppercase tracking-tighter text-sm whitespace-nowrap">Atypica Bet</span>
               <p className="text-[11px] text-muted leading-relaxed font-medium uppercase tracking-widest max-w-xs mt-1">
-                Atypica builds AI systems that simulate real human decisions to study markets, behavior, and uncertainty.
+                An independent prediction experiment, informed by Atypica research.
               </p>
             </div>
           </div>
           
-          {/* CTA Button */}
-          <a
+          {/* CTA Button - 隐藏 */}
+          {/* <a
             href="https://atypica.ai/"
             target="_blank"
             rel="noopener noreferrer"
@@ -37,11 +36,11 @@ export const Footer: React.FC = () => {
           >
             <span>See how Atypica studies prediction</span>
             <ArrowRight className="w-6 h-6 md:w-8 md:h-8 translate-x-0 group-hover:translate-x-2 transition-transform" />
-          </a>
+          </a> */}
         </div>
         
         <div className="pt-8 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-6">
-          <span className="text-[9px] text-muted font-bold uppercase tracking-widest">© 2026 ATYPICA SYSTEM. NO RIGHTS RESERVED BY MACHINES.</span>
+          <span className="text-[9px] text-muted font-bold uppercase tracking-widest">© 2026 Experimental project. Not affiliated with Atypica.</span>
           <div className="flex gap-8">
             <a href="#" className="text-[9px] text-muted font-bold uppercase tracking-widest hover:text-white">Security</a>
             <a href="#" className="text-[9px] text-muted font-bold uppercase tracking-widest hover:text-white">Privacy</a>

@@ -18,8 +18,9 @@ async function getMarkets(): Promise<PredictionMarket[]> {
 
     console.log(`[getMarkets] 查询到 ${markets.length} 个市场`);
     const result = markets.map(market => {
-      let icon: string | undefined = undefined;
-      if (market.externalData && typeof market.externalData === 'object') {
+      // 优先使用 polyMarketIcon，如果没有则从 externalData 中提取
+      let icon: string | undefined = market.polyMarketIcon || undefined;
+      if (!icon && market.externalData && typeof market.externalData === 'object') {
         const data = market.externalData as any;
         icon = data.icon || data.subMarket?.icon || data.eventGroup?.icon;
       }
