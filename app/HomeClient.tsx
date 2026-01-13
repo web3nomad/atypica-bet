@@ -374,7 +374,7 @@ export default function HomeClient({ initialMarkets }: HomeClientProps) {
   }, [allFilteredData, brushStartIndex, brushEndIndex]);
 
   return (
-    <div className="max-w-7xl mx-auto px-6 pb-40 relative">
+    <div className="max-w-7xl mx-auto px-4 md:px-6 pb-40 relative">
       {/* 鼠标跟随背景光晕 */}
       <div
         ref={mouseFollowRef}
@@ -383,7 +383,7 @@ export default function HomeClient({ initialMarkets }: HomeClientProps) {
       />
       {/* Hero Section */}
       <section className="pt-32 pb-24 text-center relative z-50 overflow-x-visible">
-        <div className="max-w-5xl mx-auto space-y-8 px-6">
+        <div className="max-w-5xl mx-auto space-y-8">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/[0.05] border border-white/10 text-white/60 text-[10px] font-bold uppercase tracking-[0.2em]">
              AI Predictive Infrastructure 
           </div>
