@@ -22,7 +22,7 @@ export const Footer: React.FC = () => {
             <div className="flex flex-col min-w-0">
               <span className="font-bold text-white uppercase tracking-tighter text-sm whitespace-nowrap">Atypica Bet</span>
               <p className="text-[11px] text-muted leading-relaxed font-medium uppercase tracking-widest max-w-xs mt-1">
-                An independent prediction experiment, informed by Atypica research.
+                An independent experiment using atypica.ai for predictions.
               </p>
             </div>
           </div>
@@ -40,7 +40,7 @@ export const Footer: React.FC = () => {
         </div>
         
         <div className="pt-8 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-6">
-          <span className="text-[9px] text-muted font-bold uppercase tracking-widest">© 2026 Experimental project. Not affiliated with Atypica.</span>
+          <span className="text-[9px] text-muted font-bold uppercase tracking-widest">© 2026 Independent project using atypica.ai | Not affiliated with Atypica</span>
           <div className="flex gap-8">
             <a href="#" className="text-[9px] text-muted font-bold uppercase tracking-widest hover:text-white">Security</a>
             <a href="#" className="text-[9px] text-muted font-bold uppercase tracking-widest hover:text-white">Privacy</a>

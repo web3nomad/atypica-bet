@@ -5,24 +5,24 @@ import './globals.css';
 
 export const metadata: Metadata = {
   title: {
-    default: 'Atypica Bet - AI Predictive Intelligence',
+    default: 'Atypica Bet - Prediction Experiment',
     template: '%s | Atypica Bet',
   },
-  description: 'Objective predictive intelligence powered by mathematical certainty. Explore AI-powered predictions and market analysis.',
-  keywords: ['AI', 'Prediction', 'Market Analysis', 'Atypica', 'Intelligence'],
-  authors: [{ name: 'Atypica System' }],
+  description: 'A crypto enthusiast\'s prediction experiment using atypica.ai. Tracking bets, analyzing markets, learning to predict smarter.',
+  keywords: ['AI', 'Prediction', 'Market Analysis', 'atypica.ai', 'crypto', 'betting'],
+  authors: [{ name: 'Crypto Enthusiast' }],
   openGraph: {
     type: 'website',
-    locale: 'zh_CN',
+    locale: 'en_US',
     url: 'https://atypica-bet.vercel.app',
-    title: 'Atypica Bet - AI Predictive Intelligence',
-    description: 'Objective predictive intelligence powered by mathematical certainty.',
+    title: 'Atypica Bet - Prediction Experiment',
+    description: 'An independent prediction experiment using atypica.ai for market analysis.',
     siteName: 'Atypica Bet',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Atypica Bet - AI Predictive Intelligence',
-    description: 'Objective predictive intelligence powered by mathematical certainty.',
+    title: 'Atypica Bet - Prediction Experiment',
+    description: 'Learning to bet smarter with atypica.ai - an independent prediction experiment.',
   },
 };
 

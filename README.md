@@ -1,6 +1,8 @@
-# Atypica Bet - Prediction Market Tracker
+# Atypica Bet - Prediction Experiment
 
-A Next.js application for tracking and analyzing Polymarket prediction markets with position snapshots and historical performance tracking.
+An independent prediction experiment using atypica.ai for market analysis. A Next.js application for tracking and analyzing Polymarket prediction markets with position snapshots and historical performance tracking.
+
+**Note:** This is an independent project and is not affiliated with or endorsed by Atypica.
 
 ## Features
 

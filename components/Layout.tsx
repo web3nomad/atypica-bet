@@ -52,7 +52,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
                 <span className="font-bold text-white uppercase tracking-tighter text-xs">Atypica Bet</span>
               </div>
               <p className="text-[11px] text-muted leading-relaxed font-medium uppercase tracking-widest max-w-xs">
-                Objective predictive intelligence <br /> Powered by mathematical certainty.
+                An independent experiment <br /> using atypica.ai for predictions.
               </p>
             </div>
             {['Engine', 'Network', 'Connect'].map((title, idx) => (
@@ -67,7 +67,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
             ))}
           </div>
           <div className="pt-8 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-6">
-            <span className="text-[9px] text-muted font-bold uppercase tracking-widest">© 2024 ATYPICA SYSTEM. NO RIGHTS RESERVED BY MACHINES.</span>
+            <span className="text-[9px] text-muted font-bold uppercase tracking-widest">© 2026 Independent project using atypica.ai | Not affiliated with Atypica</span>
             <div className="flex gap-8">
               <a href="#" className="text-[9px] text-muted font-bold uppercase tracking-widest hover:text-white">Security</a>
               <a href="#" className="text-[9px] text-muted font-bold uppercase tracking-widest hover:text-white">Privacy</a>
