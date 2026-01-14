@@ -916,14 +916,14 @@ export default function HomeClient({ initialMarkets }: HomeClientProps) {
                   name="Cumulative Profit"
                 /> */}
                 <Brush
-                  data={allFilteredData}
                   dataKey={viewMode === 'hourly' ? 'dateTime' : 'date'}
                   height={30}
                   stroke="rgba(255,255,255,0.2)"
                   fill="rgba(255,255,255,0.05)"
                   startIndex={brushStartIndex}
                   endIndex={brushEndIndex}
-                  onChange={(newStartIndex: number, newEndIndex: number) => {
+                  onChange={(newState) => {
+                    const { startIndex: newStartIndex, endIndex: newEndIndex } = newState;
                     if (typeof newStartIndex === 'number' && typeof newEndIndex === 'number') {
                       const maxIndex = allFilteredData.length - 1;
                       const validStart = Math.max(0, Math.min(newStartIndex, maxIndex));
