@@ -201,7 +201,7 @@ export const PredictionCard: React.FC<PredictionCardProps> = ({ market, onClick,
                 <span className="text-[11px] font-bold text-white">{marketLabel}</span>
                 <Zap className="absolute -bottom-1 -right-1 w-3 h-3 text-primary" />
               </div>
-            <span className="text-[12px] font-bold text-primary">Atypica AI Prediction</span>
+            <span className="text-[12px] font-bold text-primary">AI Prediction</span>
           </div>
           <div className="flex items-center text-[9px] text-white/50 gap-1">
             <Tag className="w-3 h-3 text-white/40" />
@@ -232,7 +232,7 @@ export const PredictionCard: React.FC<PredictionCardProps> = ({ market, onClick,
         <div className="mb-4 bg-white/[0.03] border border-white/10 rounded-xl p-6 card-layer-2 relative">
           {/* 左侧内容：左对齐 */}
           <div className="flex flex-col items-start">
-            <div className="text-[11px] text-white/70 mb-2">Atypica Prediction</div>
+            <div className="text-[11px] text-white/70 mb-2">AI Prediction</div>
             <div className="text-3xl md:text-4xl font-bold text-white leading-tight break-words mb-4">{pickedOption.text}</div>
 
             {/* Prediction confidence 和 Odds 同一行 */}
@@ -329,7 +329,7 @@ export const PredictionCard: React.FC<PredictionCardProps> = ({ market, onClick,
               <div className="flex items-center gap-2">
                 {option.id === market.atypicaPickId && (
                   <span className="text-[10px] font-semibold text-primary bg-primary/10 px-1.5 py-0.5 rounded">
-                    Atypica
+                    AI Pick
                   </span>
                 )}
                 <span className="text-sm font-medium text-white">

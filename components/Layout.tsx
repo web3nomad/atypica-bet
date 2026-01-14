@@ -17,7 +17,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
               <DiceHexagon className="text-black w-5 h-5 fill-current" />
             </div>
             <span className="text-sm font-black tracking-tight text-white uppercase letter-spacing-tight">
-              Atypica <span className="text-muted">Bet</span>
+              ioiio <span className="text-muted">Bet</span>
             </span>
           </div>
 
@@ -52,7 +52,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
                 <span className="font-bold text-white uppercase tracking-tighter text-xs">ioiio <span className="text-muted">Bet</span></span>
               </div>
               <p className="text-[11px] text-muted leading-relaxed font-medium uppercase tracking-widest max-w-xs">
-                An independent experiment <br /> using atypica.ai for predictions.
+                An AI-powered experiment <br /> in prediction markets.
               </p>
             </div>
             {['Engine', 'Network', 'Connect'].map((title, idx) => (
@@ -67,7 +67,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
             ))}
           </div>
           <div className="pt-8 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-6">
-            <span className="text-[9px] text-muted font-bold uppercase tracking-widest">© 2026 Independent project using atypica.ai | Not affiliated with Atypica</span>
+            <span className="text-[9px] text-muted font-bold uppercase tracking-widest">© 2026 ioiio.bet</span>
             <div className="flex gap-8">
               <a href="#" className="text-[9px] text-muted font-bold uppercase tracking-widest hover:text-white">Security</a>
               <a href="#" className="text-[9px] text-muted font-bold uppercase tracking-widest hover:text-white">Privacy</a>

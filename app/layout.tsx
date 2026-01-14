@@ -9,12 +9,12 @@ export const metadata: Metadata = {
     template: "%s | ioiio.bet",
   },
   description:
-    "A crypto enthusiast's prediction experiment using atypica.ai. Tracking bets, analyzing markets, learning to predict smarter.",
+    "An AI-powered prediction experiment. Tracking bets, analyzing markets, learning to predict smarter.",
   keywords: [
     "AI",
     "Prediction",
     "Market Analysis",
-    "atypica.ai",
+    "AI Prediction",
     "crypto",
     "betting",
   ],
@@ -25,14 +25,14 @@ export const metadata: Metadata = {
     url: "https://ioiio.bet",
     title: "ioiio.bet - Prediction Experiment",
     description:
-      "An independent prediction experiment using atypica.ai for market analysis.",
+      "An AI-powered prediction experiment for market analysis.",
     siteName: "ioiio.bet",
   },
   twitter: {
     card: "summary_large_image",
     title: "ioiio.bet - Prediction Experiment",
     description:
-      "Learning to bet smarter with atypica.ai - an independent prediction experiment.",
+      "Learning to bet smarter with AI - an independent prediction experiment.",
   },
 };
 

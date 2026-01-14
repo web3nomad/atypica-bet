@@ -34,14 +34,6 @@ export const Header: React.FC = () => {
         </nav>
 
         <div className="flex items-center gap-4">
-          <a
-            href="https://atypica.ai/"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-[11px] font-bold uppercase tracking-widest text-muted hover:text-white transition-colors"
-          >
-            Using atypica.ai
-          </a>
           <button className="btn-outline px-6 py-2 text-[11px] font-bold uppercase tracking-widest hidden">
             Connect
           </button>

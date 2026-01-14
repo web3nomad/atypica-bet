@@ -24,27 +24,15 @@ export const Footer: React.FC = () => {
                 ioiio <span className="text-muted">Bet</span>
               </span>
               <p className="text-[11px] text-muted leading-relaxed font-medium uppercase tracking-widest max-w-xs mt-1">
-                An independent experiment using atypica.ai for predictions.
+                An AI-powered experiment in prediction markets.
               </p>
             </div>
           </div>
-
-          {/* CTA Button - 隐藏 */}
-          {/* <a
-            href="https://atypica.ai/"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="group relative inline-flex items-center justify-center gap-4 text-white font-black text-lg md:text-2xl uppercase tracking-wider transition-all duration-300 hover:scale-110 flex-shrink-0"
-          >
-            <span>See how Atypica studies prediction</span>
-            <ArrowRight className="w-6 h-6 md:w-8 md:h-8 translate-x-0 group-hover:translate-x-2 transition-transform" />
-          </a> */}
         </div>
 
         <div className="pt-8 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-6">
           <span className="text-[9px] text-muted font-bold uppercase tracking-widest">
-            © 2026 Independent project using atypica.ai | Not affiliated with
-            Atypica
+            © 2026 ioiio.bet
           </span>
           <div className="flex gap-8">
             <a

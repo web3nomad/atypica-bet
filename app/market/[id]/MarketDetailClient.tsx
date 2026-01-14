@@ -1,24 +1,45 @@
-'use client';
+"use client";
 
-import React, { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { PredictionMarket, PredictionStatus } from '@/types';
-import { CATEGORY_LABELS, STATUS_LABELS } from '@/constants';
-import { AccuracyMeter } from '@/components/AccuracyMeter';
+import React, { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { PredictionMarket, PredictionStatus } from "@/types";
+import { CATEGORY_LABELS, STATUS_LABELS } from "@/constants";
+import { AccuracyMeter } from "@/components/AccuracyMeter";
 import {
-  ChevronLeft, Share2, ShieldCheck, Copy,
-  Check, ChevronDown, ChevronUp, Clock,
-  RefreshCw, MessageSquare, Heart, ArrowRight
-} from 'lucide-react';
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts';
+  ChevronLeft,
+  Share2,
+  ShieldCheck,
+  Copy,
+  Check,
+  ChevronDown,
+  ChevronUp,
+  Clock,
+  RefreshCw,
+  MessageSquare,
+  Heart,
+  ArrowRight,
+} from "lucide-react";
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  Tooltip,
+  ResponsiveContainer,
+  Cell,
+} from "recharts";
 
 interface MarketDetailClientProps {
   market: PredictionMarket;
 }
 
-export default function MarketDetailClient({ market }: MarketDetailClientProps) {
+export default function MarketDetailClient({
+  market,
+}: MarketDetailClientProps) {
   const router = useRouter();
-  const [expandedSection, setExpandedSection] = useState<string | null>('overview');
+  const [expandedSection, setExpandedSection] = useState<string | null>(
+    "overview",
+  );
   const [copied, setCopied] = useState(false);
   const [lastUpdated, setLastUpdated] = useState<string>("");
   const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
@@ -43,8 +64,12 @@ export default function MarketDetailClient({ market }: MarketDetailClientProps) 
       }
 
       const days = Math.floor(timeRemaining / (1000 * 60 * 60 * 24));
-      const hours = Math.floor((timeRemaining % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-      const minutes = Math.floor((timeRemaining % (1000 * 60 * 60)) / (1000 * 60));
+      const hours = Math.floor(
+        (timeRemaining % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60),
+      );
+      const minutes = Math.floor(
+        (timeRemaining % (1000 * 60 * 60)) / (1000 * 60),
+      );
 
       if (days > 0) {
         setCountdown(`${days}d ${hours}h`);
@@ -60,16 +85,16 @@ export default function MarketDetailClient({ market }: MarketDetailClientProps) 
     return () => clearInterval(interval);
   }, [market.closeDate, market.status]);
 
-  const data = market.options.map(opt => ({
+  const data = market.options.map((opt) => ({
     name: opt.text,
     external: Math.round((opt.externalProb || 0) * 100),
     atypica: Math.round((opt.atypicaProb || 0) * 100),
     id: opt.id,
-    isAtypicaPick: opt.id === market.atypicaPickId
+    isAtypicaPick: opt.id === market.atypicaPickId,
   }));
 
   const handleCopyLink = () => {
-    if (typeof window !== 'undefined') {
+    if (typeof window !== "undefined") {
       navigator.clipboard.writeText(window.location.href);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
@@ -84,7 +109,7 @@ export default function MarketDetailClient({ market }: MarketDetailClientProps) 
       const day = now.getDate();
       const hours = now.getHours();
       const minutes = now.getMinutes();
-      const formattedMinutes = minutes.toString().padStart(2, '0');
+      const formattedMinutes = minutes.toString().padStart(2, "0");
       return `${month}/${day} ${hours}:${formattedMinutes}`;
     };
 
@@ -107,7 +132,7 @@ export default function MarketDetailClient({ market }: MarketDetailClientProps) 
       const day = now.getDate();
       const hours = now.getHours();
       const minutes = now.getMinutes();
-      const formattedMinutes = minutes.toString().padStart(2, '0');
+      const formattedMinutes = minutes.toString().padStart(2, "0");
       setLastUpdated(`${month}/${day} ${hours}:${formattedMinutes}`);
     }, 800);
   };
@@ -122,12 +147,14 @@ export default function MarketDetailClient({ market }: MarketDetailClientProps) 
 
   const confidenceLevel = getConfidenceLevel(market.accuracyScore || 0);
 
-  const pickedOption = market.options.find(o => o.id === market.atypicaPickId);
+  const pickedOption = market.options.find(
+    (o) => o.id === market.atypicaPickId,
+  );
 
   return (
     <div className="max-w-5xl mx-auto px-6 py-20">
       <button
-        onClick={() => router.push('/')}
+        onClick={() => router.push("/")}
         className="group flex items-center gap-2 text-muted hover:text-white transition-colors font-bold text-[10px] uppercase tracking-[0.2em] mb-12"
       >
         <ChevronLeft className="w-3.5 h-3.5 group-hover:-translate-x-1 transition-transform" />
@@ -142,18 +169,20 @@ export default function MarketDetailClient({ market }: MarketDetailClientProps) 
                 <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/[0.05] border border-white/10 text-white/60 text-[10px] font-bold uppercase tracking-[0.2em]">
                   {CATEGORY_LABELS[market.category]}
                 </span>
-                {market.status === PredictionStatus.ACTIVE && isNearDeadline && (
-                  <>
-                    <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/5 border border-amber-500/30 text-amber-400 text-[10px] font-bold uppercase tracking-[0.2em]">
-                      Ending Soon
-                    </span>
-                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/[0.05] border border-white/10 text-amber-400 text-[10px] font-bold">
-                      <Clock className="w-3 h-3" />
-                      {countdown}
-                    </span>
-                  </>
-                )}
-                {market.status !== PredictionStatus.ACTIVE || !isNearDeadline ? (
+                {market.status === PredictionStatus.ACTIVE &&
+                  isNearDeadline && (
+                    <>
+                      <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/5 border border-amber-500/30 text-amber-400 text-[10px] font-bold uppercase tracking-[0.2em]">
+                        Ending Soon
+                      </span>
+                      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/[0.05] border border-white/10 text-amber-400 text-[10px] font-bold">
+                        <Clock className="w-3 h-3" />
+                        {countdown}
+                      </span>
+                    </>
+                  )}
+                {market.status !== PredictionStatus.ACTIVE ||
+                !isNearDeadline ? (
                   <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/[0.05] border border-white/10 text-white/60 text-[10px] font-bold uppercase tracking-[0.2em]">
                     {STATUS_LABELS[market.status]}
                   </span>
@@ -161,7 +190,9 @@ export default function MarketDetailClient({ market }: MarketDetailClientProps) 
               </div>
 
               <div className="flex items-center bg-white/[0.03] px-3 py-1.5 rounded-full">
-                <RefreshCw className={`w-3.5 h-3.5 mr-2 text-muted ${isRefreshing ? 'animate-spin' : ''}`} />
+                <RefreshCw
+                  className={`w-3.5 h-3.5 mr-2 text-muted ${isRefreshing ? "animate-spin" : ""}`}
+                />
                 <span className="text-[10px] font-bold text-white/80">
                   Updated {isRefreshing ? "now" : lastUpdated}
                 </span>
@@ -174,7 +205,7 @@ export default function MarketDetailClient({ market }: MarketDetailClientProps) 
               </h1>
               <div className="flex flex-col gap-3">
                 <a
-                  href={market.atypicaAnalysisUrl || '#'}
+                  href={market.atypicaAnalysisUrl || "#"}
                   target="_blank"
                   rel="noopener noreferrer"
                   onClick={(e) => {
@@ -189,7 +220,7 @@ export default function MarketDetailClient({ market }: MarketDetailClientProps) 
                   <ArrowRight className="w-3 h-3 translate-x-0 group-hover:translate-x-1 transition-transform" />
                 </a>
                 <a
-                  href={market.polyMarketUrl || '#'}
+                  href={market.polyMarketUrl || "#"}
                   target="_blank"
                   rel="noopener noreferrer"
                   onClick={(e) => {
@@ -220,23 +251,30 @@ export default function MarketDetailClient({ market }: MarketDetailClientProps) 
           <div className="glass-panel rounded-2xl p-6 border border-white/5">
             <div className="flex items-center justify-between mb-6">
               <div className="space-y-1">
-                <h2 className="text-xs font-black text-white uppercase tracking-[0.2em]">Probability Matrix</h2>
-                <p className="text-[9px] text-muted font-bold uppercase tracking-widest">Weighted Comparative Analysis</p>
+                <h2 className="text-xs font-black text-white uppercase tracking-[0.2em]">
+                  Probability Matrix
+                </h2>
+                <p className="text-[9px] text-muted font-bold uppercase tracking-widest">
+                  Weighted Comparative Analysis
+                </p>
               </div>
               <div className="flex gap-4 text-[9px] font-black uppercase tracking-widest text-muted">
-                <div className="flex items-center gap-2"><div className="w-1.5 h-1.5 bg-white/10 rounded-full" /> Market Context</div>
+                <div className="flex items-center gap-2">
+                  <div className="w-1.5 h-1.5 bg-white/10 rounded-full" />{" "}
+                  Market Context
+                </div>
               </div>
             </div>
             <div className="h-[140px] w-full relative">
               <div className="flex items-center h-full">
-                {/* 左侧：百分比、Atypica 标志和 Yes/No 文字 */}
+                {/* 左侧：百分比、AI Pick 标志和 Yes/No 文字 */}
                 <div className="flex-shrink-0 w-[200px] h-full flex flex-col justify-center gap-4">
                   {data.map((entry, index) => (
                     <div key={index} className="flex items-center">
                       <div className="w-[60px] flex-shrink-0">
                         {entry.isAtypicaPick && (
                           <span className="text-[10px] font-semibold text-primary bg-primary/10 px-1.5 py-0.5 rounded">
-                            Atypica
+                            AI Pick
                           </span>
                         )}
                       </div>
@@ -252,12 +290,12 @@ export default function MarketDetailClient({ market }: MarketDetailClientProps) 
                 {/* 中间：进度条（居中） */}
                 <div className="flex-1 flex justify-center h-full min-w-0">
                   <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={data} layout="vertical" margin={{ left: 20, right: 20, top: 20, bottom: 20 }}>
-                      <XAxis
-                        type="number"
-                        domain={[0, 100]}
-                        hide
-                      />
+                    <BarChart
+                      data={data}
+                      layout="vertical"
+                      margin={{ left: 20, right: 20, top: 20, bottom: 20 }}
+                    >
+                      <XAxis type="number" domain={[0, 100]} hide />
                       <YAxis
                         dataKey="name"
                         type="category"
@@ -266,7 +304,15 @@ export default function MarketDetailClient({ market }: MarketDetailClientProps) 
                         axisLine={false}
                         tickLine={false}
                       />
-                      <Tooltip cursor={{ fill: 'rgba(255,255,255,0.01)' }} contentStyle={{ background: '#000', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', fontSize: '9px' }} />
+                      <Tooltip
+                        cursor={{ fill: "rgba(255,255,255,0.01)" }}
+                        contentStyle={{
+                          background: "#000",
+                          border: "1px solid rgba(255,255,255,0.1)",
+                          borderRadius: "8px",
+                          fontSize: "9px",
+                        }}
+                      />
                       <Bar
                         dataKey="external"
                         fill="rgba(255,255,255,0.3)"
@@ -284,11 +330,13 @@ export default function MarketDetailClient({ market }: MarketDetailClientProps) 
         <div className="lg:col-span-4 space-y-6">
           <div className="glass-panel rounded-2xl p-6 border-primary/20">
             <div className="flex flex-col space-y-6">
-              {/* Atypical 的选择 */}
+              {/* AI 的选择 */}
               <div className="text-center mb-6">
-                <div className="text-[9px] text-muted font-bold uppercase tracking-[0.3em] mb-2">Atypica Choice</div>
+                <div className="text-[9px] text-muted font-bold uppercase tracking-[0.3em] mb-2">
+                  AI Prediction
+                </div>
                 <div className="flex items-center justify-center text-2xl font-black text-primary leading-tight bg-primary/10 px-4 py-3 rounded-lg border border-primary/30">
-                  <span>{pickedOption?.text || 'N/A'}</span>
+                  <span>{pickedOption?.text || "N/A"}</span>
                 </div>
               </div>
 
@@ -306,24 +354,30 @@ export default function MarketDetailClient({ market }: MarketDetailClientProps) 
               {/* 波动比例 */}
               {market.nftPercentRealizedPnl !== undefined && (
                 <div className="text-center mb-6">
-                  <div className="text-[8px] text-muted font-bold uppercase tracking-widest mb-2">Price Change</div>
-                  <div className={`text-2xl font-black ${market.nftPercentRealizedPnl >= 0 ? 'text-green-400' : 'text-red-400'} leading-tight`}>
-                    {market.nftPercentRealizedPnl >= 0 ? '+' : ''}{market.nftPercentRealizedPnl.toFixed(2)}%
+                  <div className="text-[8px] text-muted font-bold uppercase tracking-widest mb-2">
+                    Price Change
+                  </div>
+                  <div
+                    className={`text-2xl font-black ${market.nftPercentRealizedPnl >= 0 ? "text-green-400" : "text-red-400"} leading-tight`}
+                  >
+                    {market.nftPercentRealizedPnl >= 0 ? "+" : ""}
+                    {market.nftPercentRealizedPnl.toFixed(2)}%
                   </div>
                 </div>
               )}
 
               {/* Model Confidence - 三个短横线 */}
               <div className="text-center border-t border-white/10 pt-6">
-                <div className="text-[8px] text-muted font-bold uppercase tracking-widest mb-3">Model Confidence</div>
+                <div className="text-[8px] text-muted font-bold uppercase tracking-widest mb-3">
+                  Model Confidence
+                </div>
                 <div className="flex items-center justify-center gap-1.5">
                   {[1, 2, 3].map((index) => (
                     <div
                       key={index}
-                      className={`h-2 w-7 rounded-sm transition-all ${index <= confidenceLevel
-                          ? 'bg-primary'
-                          : 'bg-white'
-                        }`}
+                      className={`h-2 w-7 rounded-sm transition-all ${
+                        index <= confidenceLevel ? "bg-primary" : "bg-white"
+                      }`}
                     />
                   ))}
                 </div>
@@ -334,13 +388,23 @@ export default function MarketDetailClient({ market }: MarketDetailClientProps) 
           <div className="space-y-4">
             <div className="glass-panel rounded-xl overflow-hidden">
               <button
-                onClick={() => setExpandedSection(expandedSection === 'overview' ? null : 'overview')}
+                onClick={() =>
+                  setExpandedSection(
+                    expandedSection === "overview" ? null : "overview",
+                  )
+                }
                 className="w-full px-6 py-4 flex items-center justify-between text-left hover:bg-white/5 transition-colors"
               >
-                <span className="text-[10px] font-bold uppercase tracking-widest text-white">Contextual Matrix</span>
-                {expandedSection === 'overview' ? <ChevronUp className="w-3.5 h-3.5 text-muted" /> : <ChevronDown className="w-3.5 h-3.5 text-muted" />}
+                <span className="text-[10px] font-bold uppercase tracking-widest text-white">
+                  Contextual Matrix
+                </span>
+                {expandedSection === "overview" ? (
+                  <ChevronUp className="w-3.5 h-3.5 text-muted" />
+                ) : (
+                  <ChevronDown className="w-3.5 h-3.5 text-muted" />
+                )}
               </button>
-              {expandedSection === 'overview' && (
+              {expandedSection === "overview" && (
                 <div className="px-6 pb-5 text-muted text-[12px] leading-relaxed">
                   {market.description}
                 </div>
@@ -349,8 +413,15 @@ export default function MarketDetailClient({ market }: MarketDetailClientProps) 
           </div>
 
           <div className="pt-6 border-t border-white/5 flex flex-wrap gap-3">
-            <button onClick={handleCopyLink} className="flex-1 btn-outline py-2.5 text-[10px] font-bold uppercase tracking-widest">
-              {copied ? <Check className="w-3 h-3 mx-auto" /> : 'Copy Report Link'}
+            <button
+              onClick={handleCopyLink}
+              className="flex-1 btn-outline py-2.5 text-[10px] font-bold uppercase tracking-widest"
+            >
+              {copied ? (
+                <Check className="w-3 h-3 mx-auto" />
+              ) : (
+                "Copy Report Link"
+              )}
             </button>
             <button className="p-2.5 btn-outline text-muted hover:text-white">
               <Share2 className="w-4 h-4" />

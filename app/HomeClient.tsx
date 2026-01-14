@@ -484,14 +484,13 @@ export default function HomeClient({ initialMarkets }: HomeClientProps) {
                 <span className="text-white">Intelligence</span>
                 <br />
                 <span className="bg-gradient-to-t from-gray-500 to-white bg-clip-text text-transparent">
-                  Beyond Guess.
+                  beyond guessing
                 </span>
               </h1>
             </div>
 
             <p className="font-gothic text-muted text-sm max-w-sm mx-auto font-medium leading-relaxed">
-              An experiment in using prediction to understand how intelligence
-              meets uncertainty.
+              An experiment in how generative agents reason about Polymarket
             </p>
           </div>
         </section>
@@ -819,9 +818,7 @@ export default function HomeClient({ initialMarkets }: HomeClientProps) {
             <div className="bg-white/[0.03] rounded-lg p-3 border border-white/10 mb-3">
               <div className="flex items-center gap-2 mb-2">
                 <Zap className="w-3 h-3 text-primary" />
-                <div className="text-xs font-black text-primary">
-                  Atypica Pick
-                </div>
+                <div className="text-xs font-black text-primary">AI Pick</div>
               </div>
               <div className="text-lg font-black text-primary mb-2">
                 Kevin Hassett
@@ -875,18 +872,17 @@ export default function HomeClient({ initialMarkets }: HomeClientProps) {
           </div>
 
           <div className="relative z-50 overflow-visible">
-            <h1 className="text-6xl md:text-8xl font-black tracking-tighter leading-[0.95] relative z-50 overflow-visible">
+            <h1 className="text-6xl md:text-8xl font-black tracking-tighter md:leading-[1.2] relative z-50 overflow-visible">
               <span className="text-white relative z-50">Intelligence</span>
               <br />
               <span className="bg-gradient-to-t from-gray-500 to-white bg-clip-text text-transparent relative z-50 inline-block pr-2">
-                Beyond Guess.
+                beyond guessing
               </span>
             </h1>
           </div>
 
           <p className="font-gothic text-muted text-lg md:text-xl max-w-2xl mx-auto font-medium leading-relaxed mt-12">
-            An experiment in using prediction to understand how intelligence
-            meets uncertainty.
+            An experiment in how generative agents reason about Polymarket
           </p>
         </div>
       </section>
@@ -1149,9 +1145,9 @@ export default function HomeClient({ initialMarkets }: HomeClientProps) {
               <p className="text-xs text-white/80 font-gothic">
                 Each line represents a separate prediction market position. The
                 daily total shows aggregate profit/loss per day across all
-                positions. All predictions use the Atypica AI predictive engine
-                with a consistent betting strategy. This chart's predictions are
-                based on equal investment amounts across all options.
+                positions. All predictions use an AI predictive engine with a
+                consistent betting strategy. This chart's predictions are based
+                on equal investment amounts across all options.
               </p>
             </div>
           </div>
@@ -1336,7 +1332,7 @@ export default function HomeClient({ initialMarkets }: HomeClientProps) {
                 <div className="flex items-center gap-2 mb-3">
                   <Zap className="w-4 h-4 text-primary" />
                   <div className="text-sm font-black text-primary">
-                    Atypica Analysis & Prediction
+                    Analysis & Prediction
                   </div>
                 </div>
 
@@ -1363,7 +1359,7 @@ export default function HomeClient({ initialMarkets }: HomeClientProps) {
                 <div className="flex items-center justify-between">
                   <div>
                     <div className="text-[10px] text-white/50 mb-1">
-                      Atypica&apos;s Choice
+                      AI Prediction
                     </div>
                     <div className="flex items-end gap-3">
                       <div className="text-2xl font-black text-primary">
@@ -1487,7 +1483,7 @@ export default function HomeClient({ initialMarkets }: HomeClientProps) {
                     Kevin Hassett
                   </span>
                   <span className="text-[9px] bg-primary/20 text-primary px-1.5 py-0.5 rounded font-bold">
-                    Atypica Pick
+                    AI Pick
                   </span>
                 </div>
 
