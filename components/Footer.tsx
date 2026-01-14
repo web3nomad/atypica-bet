@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import React from 'react';
-import Image from 'next/image';
+import React from "react";
+import Image from "next/image";
 
 export const Footer: React.FC = () => {
   return (
@@ -13,20 +13,22 @@ export const Footer: React.FC = () => {
             <div className="w-8 h-8 relative transition-all flex-shrink-0">
               <Image
                 src="/images/logoicon.jpg"
-                alt="Atypica Bet Logo"
+                alt="ioiio Logo"
                 fill
                 className="object-contain rounded-lg"
                 priority
               />
             </div>
             <div className="flex flex-col min-w-0">
-              <span className="font-bold text-white uppercase tracking-tighter text-sm whitespace-nowrap">Atypica Bet</span>
+              <span className="font-bold text-white tracking-tighter text-sm whitespace-nowrap">
+                ioiio <span className="text-muted">Bet</span>
+              </span>
               <p className="text-[11px] text-muted leading-relaxed font-medium uppercase tracking-widest max-w-xs mt-1">
                 An independent experiment using atypica.ai for predictions.
               </p>
             </div>
           </div>
-          
+
           {/* CTA Button - 隐藏 */}
           {/* <a
             href="https://atypica.ai/"
@@ -38,12 +40,25 @@ export const Footer: React.FC = () => {
             <ArrowRight className="w-6 h-6 md:w-8 md:h-8 translate-x-0 group-hover:translate-x-2 transition-transform" />
           </a> */}
         </div>
-        
+
         <div className="pt-8 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-6">
-          <span className="text-[9px] text-muted font-bold uppercase tracking-widest">© 2026 Independent project using atypica.ai | Not affiliated with Atypica</span>
+          <span className="text-[9px] text-muted font-bold uppercase tracking-widest">
+            © 2026 Independent project using atypica.ai | Not affiliated with
+            Atypica
+          </span>
           <div className="flex gap-8">
-            <a href="#" className="text-[9px] text-muted font-bold uppercase tracking-widest hover:text-white">Security</a>
-            <a href="#" className="text-[9px] text-muted font-bold uppercase tracking-widest hover:text-white">Privacy</a>
+            <a
+              href="#"
+              className="text-[9px] text-muted font-bold uppercase tracking-widest hover:text-white"
+            >
+              Security
+            </a>
+            <a
+              href="#"
+              className="text-[9px] text-muted font-bold uppercase tracking-widest hover:text-white"
+            >
+              Privacy
+            </a>
           </div>
         </div>
       </div>

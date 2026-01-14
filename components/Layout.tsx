@@ -49,7 +49,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
                 <div className="w-5 h-5 bg-white rounded flex items-center justify-center">
                   <DiceHexagon className="text-black w-3 h-3 fill-current" />
                 </div>
-                <span className="font-bold text-white uppercase tracking-tighter text-xs">Atypica Bet</span>
+                <span className="font-bold text-white uppercase tracking-tighter text-xs">ioiio <span className="text-muted">Bet</span></span>
               </div>
               <p className="text-[11px] text-muted leading-relaxed font-medium uppercase tracking-widest max-w-xs">
                 An independent experiment <br /> using atypica.ai for predictions.

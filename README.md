@@ -1,4 +1,4 @@
-# Atypica Bet - Prediction Experiment
+# ioiio.bet - Prediction Experiment
 
 An independent prediction experiment using atypica.ai for market analysis. A Next.js application for tracking and analyzing Polymarket prediction markets with position snapshots and historical performance tracking.
 

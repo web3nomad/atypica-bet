@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import React from 'react';
-import Link from 'next/link';
-import Image from 'next/image';
-import { Menu } from 'lucide-react';
+import React from "react";
+import Link from "next/link";
+import Image from "next/image";
+import { Menu } from "lucide-react";
 
 export const Header: React.FC = () => {
   return (
@@ -13,19 +13,24 @@ export const Header: React.FC = () => {
           <div className="w-8 h-8 relative transition-all group-hover:scale-105">
             <Image
               src="/images/logoicon.jpg"
-              alt="Atypica Bet Logo"
+              alt="ioiio Logo"
               fill
               className="object-contain rounded-lg"
               priority
             />
           </div>
-          <span className="text-sm font-black tracking-tight text-white uppercase letter-spacing-tight">
-            Atypica <span className="text-muted">Bet</span>
+          <span className="text-sm font-black tracking-tight text-white letter-spacing-tight">
+            ioiio <span className="text-muted">Bet</span>
           </span>
         </Link>
 
         <nav className="hidden md:flex items-center gap-8">
-          <a href="#" className="text-[11px] font-bold uppercase tracking-widest text-muted hover:text-white transition-colors hidden">Matrix</a>
+          <a
+            href="#"
+            className="text-[11px] font-bold uppercase tracking-widest text-muted hover:text-white transition-colors hidden"
+          >
+            Matrix
+          </a>
         </nav>
 
         <div className="flex items-center gap-4">
