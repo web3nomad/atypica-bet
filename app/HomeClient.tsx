@@ -521,7 +521,7 @@ export default function HomeClient({ initialMarkets }: HomeClientProps) {
 
     const series: any[] = [];
 
-    // 为每个 bet 创建堆叠面积图系列
+    // 为每个 bet 创建线条系列
     titles.forEach((title, index) => {
       const key = `bet${index + 1}`;
       const color = colors[index % colors.length];
@@ -534,14 +534,6 @@ export default function HomeClient({ initialMarkets }: HomeClientProps) {
       series.push({
         name: title.length > 15 ? title.substring(0, 15) + "..." : title,
         type: "line",
-        stack: "bets",
-        areaStyle: {
-          color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
-            { offset: 0, color: color },
-            { offset: 1, color: echarts.color.lift(color, -0.3) || color },
-          ]),
-          opacity: 0.6,
-        },
         lineStyle: {
           color: color,
           width: 1.5,
@@ -565,12 +557,6 @@ export default function HomeClient({ initialMarkets }: HomeClientProps) {
         color: "#4CAF50",
         width: 2,
       },
-      areaStyle: {
-        color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
-          { offset: 0, color: "rgba(76, 175, 80, 0.3)" },
-          { offset: 1, color: "rgba(76, 175, 80, 0.05)" },
-        ]),
-      },
       smooth: true,
       symbol: "none",
     });
@@ -580,7 +566,7 @@ export default function HomeClient({ initialMarkets }: HomeClientProps) {
       grid: {
         left: "3%",
         right: "4%",
-        bottom: mode === "hourly" ? "15%" : "10%",
+        bottom: mode === "hourly" ? "20%" : "15%",
         top: "10%",
         containLabel: false,
       },
@@ -662,7 +648,7 @@ export default function HomeClient({ initialMarkets }: HomeClientProps) {
         },
         name: mode === "hourly" ? "Date & Time" : "Date",
         nameLocation: "middle",
-        nameGap: 30,
+        nameGap: mode === "hourly" ? 50 : 40,
         nameTextStyle: {
           color: "#666",
           fontSize: 10,
@@ -695,7 +681,7 @@ export default function HomeClient({ initialMarkets }: HomeClientProps) {
         {
           type: "slider",
           show: true,
-          height: 30,
+          height: 40,
           start:
             totalLength > 0
               ? Math.round(
@@ -710,7 +696,7 @@ export default function HomeClient({ initialMarkets }: HomeClientProps) {
                     100,
                 )
               : 100,
-          bottom: 0,
+          bottom: 10,
           textStyle: {
             color: "#666",
             fontSize: 9,
@@ -1251,7 +1237,7 @@ export default function HomeClient({ initialMarkets }: HomeClientProps) {
             />
           </div>
 
-          <div className="mt-2 p-3 bg-primary/5 border border-primary/20 rounded-lg">
+          <div className="mt-10 p-3 bg-primary/5 border border-primary/20 rounded-lg">
             <div className="flex items-start gap-2">
               <Info className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
               <p className="text-xs text-white/80 font-gothic">
