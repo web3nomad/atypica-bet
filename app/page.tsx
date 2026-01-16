@@ -2,6 +2,10 @@ import { prisma } from '@/lib/prisma';
 import { PredictionMarket, PredictionStatus } from '@/types';
 import HomeClient from './HomeClient';
 
+// Disable caching to always fetch fresh data from database
+export const dynamic = 'force-dynamic';
+export const fetchCache = 'force-no-store';
+
 async function getMarkets(): Promise<PredictionMarket[]> {
   try {
     console.log('[getMarkets] 开始查询市场数据...');

@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 
+// Disable caching to always fetch fresh snapshot data
+export const dynamic = 'force-dynamic';
+
 /**
  * GET /api/positions/history
  * 查询持仓历史快照数据
