@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { Category, PredictionOption, PredictionMarket, PredictionStatus } from '@/types';
 import { ChevronLeft, Plus, X, Sparkles, Loader2, Save, Download, Search } from 'lucide-react';
 import type { PolymarketEventGroup } from '@/types';
+import { extractSlugFromUrl } from '@/lib/utils';
 
 type CreateMode = 'manual' | 'import';
 
@@ -118,25 +119,9 @@ export default function AdminCreatePage() {
     }
   };
 
-  const extractSlugFromUrl = (input: string): string => {
-    const trimmed = input.trim();
-
-    if (trimmed.startsWith('http')) {
-      try {
-        const url = new URL(trimmed);
-        const segments = url.pathname.split('/').filter(Boolean);
-        return segments[segments.length - 1] || '';
-      } catch {
-        return '';
-      }
-    }
-
-    return trimmed;
-  };
-
   const handleFetchPolymarket = async () => {
     if (!slugInput.trim()) {
-      setImportError('请输入 Polymarket Event Slug 或 URL');
+      setImportError('请输入 Polymarket Event URL 或 Slug');
       return;
     }
 
@@ -379,14 +364,17 @@ export default function AdminCreatePage() {
         {/* Polymarket 导入模式 */}
         {mode === 'import' && (
           <div className="space-y-6">
-            {/* Slug 输入 */}
+            {/* URL 输入 */}
             <div className="space-y-2">
               <label className="text-sm font-bold text-white/80">
-                Polymarket Event Slug 或 URL
+                Polymarket Event URL
               </label>
+              <p className="text-xs text-white/50">
+                支持完整 URL 或 Event Slug，系统会自动提取
+              </p>
               <div className="flex gap-3">
                 <input
-                  placeholder="例如: super-bowl-champion-2026"
+                  placeholder="例如: https://polymarket.com/event/super-bowl-champion-2026 或 super-bowl-champion-2026"
                   className="flex-1 px-4 py-3 rounded-xl border border-white/10 bg-white/5 text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-primary/20"
                   value={slugInput}
                   onChange={e => setSlugInput(e.target.value)}
