@@ -16,18 +16,8 @@ import {
   TrendingUp,
   Info,
 } from "lucide-react";
-import {
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
-  ReferenceLine,
-  Brush,
-} from "recharts";
+import ReactECharts from "echarts-for-react";
+import * as echarts from "echarts";
 import { useLightCard } from "@/hooks/useLightCard";
 
 interface HomeClientProps {
@@ -468,6 +458,351 @@ export default function HomeClient({ initialMarkets }: HomeClientProps) {
     return allFilteredData;
   }, [allFilteredData, brushStartIndex, brushEndIndex]);
 
+  // 转换数据为 ECharts 格式
+  const echartsData = useMemo(() => {
+    const times: string[] = [];
+    const betSeries: { [key: string]: number[] } = {};
+    const dailyTotalValues: number[] = [];
+
+    if (!profitData || profitData.length === 0) {
+      return { times, betSeries, dailyTotalValues };
+    }
+
+    // 初始化 bet 系列
+    marketTitles.forEach((_, index) => {
+      betSeries[`bet${index + 1}`] = [];
+    });
+
+    profitData.forEach((point: any) => {
+      // 使用 dateFull 作为时间戳，如果没有则从 dateTime 解析
+      let timestamp: Date;
+      if (point.dateFull) {
+        timestamp = new Date(point.dateFull);
+      } else if (point.dateTime) {
+        // 解析 "M/D HH:00" 格式
+        const [datePart, timePart] = point.dateTime.split(" ");
+        const [month, day] = datePart.split("/").map(Number);
+        const [hour] = timePart.split(":").map(Number);
+        timestamp = new Date(new Date().getFullYear(), month - 1, day, hour);
+      } else {
+        timestamp = new Date(point.date);
+      }
+      times.push(timestamp.toISOString());
+
+      // 收集每个 bet 的数据
+      marketTitles.forEach((_, index) => {
+        const key = `bet${index + 1}`;
+        betSeries[key].push(point[key] || 0);
+      });
+
+      dailyTotalValues.push(point.dailyTotal || 0);
+    });
+
+    return { times, betSeries, dailyTotalValues };
+  }, [profitData, marketTitles]);
+
+  // 创建 ECharts 配置的辅助函数
+  const createEChartsOption = (
+    titles: string[],
+    data: { times: string[]; betSeries: { [key: string]: number[] }; dailyTotalValues: number[] },
+    mode: "hourly" | "daily",
+    totalLength: number,
+    startIndex: number,
+    endIndex: number,
+  ) => {
+    const colors = [
+      "#FF4444",
+      "#82ca9d",
+      "#ffc658",
+      "#8884d8",
+      "#ff7c43",
+      "#a28dff",
+    ];
+
+    const series: any[] = [];
+
+    // 为每个 bet 创建堆叠面积图系列
+    titles.forEach((title, index) => {
+      const key = `bet${index + 1}`;
+      const color = colors[index % colors.length];
+      const betData = data.betSeries[key] || [];
+      // 将数据转换为 [timestamp, value] 格式
+      const seriesData = data.times.map((time, i) => [
+        time,
+        betData[i] || 0,
+      ]);
+      series.push({
+        name: title.length > 15 ? title.substring(0, 15) + "..." : title,
+        type: "line",
+        stack: "bets",
+        areaStyle: {
+          color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+            { offset: 0, color: color },
+            { offset: 1, color: echarts.color.lift(color, -0.3) || color },
+          ]),
+          opacity: 0.6,
+        },
+        lineStyle: {
+          color: color,
+          width: 1.5,
+        },
+        data: seriesData,
+        smooth: true,
+        symbol: "none",
+      });
+    });
+
+    // 添加 Daily Total 作为独立线条（不堆叠）
+    const dailyTotalData = data.times.map((time, i) => [
+      time,
+      data.dailyTotalValues[i] || 0,
+    ]);
+    series.push({
+      name: "Daily Total",
+      type: "line",
+      data: dailyTotalData,
+      lineStyle: {
+        color: "#4CAF50",
+        width: 2,
+      },
+      areaStyle: {
+        color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+          { offset: 0, color: "rgba(76, 175, 80, 0.3)" },
+          { offset: 1, color: "rgba(76, 175, 80, 0.05)" },
+        ]),
+      },
+      smooth: true,
+      symbol: "none",
+    });
+
+    return {
+      backgroundColor: "transparent",
+      grid: {
+        left: "3%",
+        right: "4%",
+        bottom: mode === "hourly" ? "15%" : "10%",
+        top: "10%",
+        containLabel: false,
+      },
+      tooltip: {
+        trigger: "axis",
+        backgroundColor: "rgba(0, 0, 0, 0.95)",
+        borderColor: "rgba(255, 255, 255, 0.4)",
+        borderWidth: 1,
+        borderRadius: 6,
+        padding: [8, 12],
+        textStyle: {
+          color: "#fff",
+          fontSize: 11,
+        },
+        axisPointer: {
+          type: "cross",
+          lineStyle: {
+            color: "rgba(255,255,255,0.5)",
+            width: 2,
+            type: "dashed",
+          },
+        },
+        formatter: (params: any) => {
+          if (!params || params.length === 0) return "";
+          const time = params[0].axisValue;
+          let result = `<div style="font-weight: bold; margin-bottom: 4px; font-size: 11px;">${
+            mode === "hourly" ? `Time: ${time}` : `Date: ${time}`
+          }</div>`;
+          params.forEach((param: any) => {
+            const value = param.value;
+            const sign = value >= 0 ? "+" : "";
+            result += `<div style="margin-top: 4px; font-size: 10px;">
+              <span style="display: inline-block; width: 10px; height: 10px; background: ${param.color}; border-radius: 2px; margin-right: 6px;"></span>
+              ${param.seriesName}: ${sign}${value}%
+            </div>`;
+          });
+          return result;
+        },
+      },
+      legend: {
+        data: [
+          ...titles.map((title) =>
+            title.length > 15 ? title.substring(0, 15) + "..." : title,
+          ),
+          "Daily Total",
+        ],
+        top: 0,
+        textStyle: {
+          color: "#666",
+          fontSize: 10,
+        },
+        itemGap: 15,
+      },
+      xAxis: {
+        type: "time",
+        boundaryGap: false,
+        axisLine: {
+          lineStyle: {
+            color: "#666",
+          },
+        },
+        axisLabel: {
+          color: "#666",
+          fontSize: mode === "hourly" ? 8 : 9,
+          rotate: mode === "hourly" ? -45 : 0,
+          formatter: (value: any) => {
+            const date = new Date(value);
+            if (mode === "hourly") {
+              const month = date.getMonth() + 1;
+              const day = date.getDate();
+              const hour = date.getHours();
+              return `${month}/${day} ${hour.toString().padStart(2, "0")}:00`;
+            } else {
+              const month = date.getMonth() + 1;
+              const day = date.getDate();
+              return `${month}/${day}`;
+            }
+          },
+        },
+        name: mode === "hourly" ? "Date & Time" : "Date",
+        nameLocation: "middle",
+        nameGap: 30,
+        nameTextStyle: {
+          color: "#666",
+          fontSize: 10,
+        },
+      },
+      yAxis: {
+        type: "value",
+        axisLine: {
+          lineStyle: {
+            color: "#666",
+          },
+        },
+        axisLabel: {
+          color: "#666",
+          fontSize: 9,
+        },
+        splitLine: {
+          lineStyle: {
+            color: "rgba(255,255,255,0.1)",
+            type: "dashed",
+          },
+        },
+      },
+      dataZoom: [
+        {
+          type: "inside",
+          start: 0,
+          end: 100,
+        },
+        {
+          type: "slider",
+          show: true,
+          height: 30,
+          start:
+            totalLength > 0
+              ? Math.round(
+                  (startIndex / Math.max(totalLength - 1, 1)) *
+                    100,
+                )
+              : 0,
+          end:
+            totalLength > 0
+              ? Math.round(
+                  (endIndex / Math.max(totalLength - 1, 1)) *
+                    100,
+                )
+              : 100,
+          bottom: 0,
+          textStyle: {
+            color: "#666",
+            fontSize: 9,
+          },
+          borderColor: "rgba(255,255,255,0.2)",
+          fillerColor: "rgba(255,255,255,0.05)",
+          handleStyle: {
+            color: "rgba(255,255,255,0.3)",
+          },
+          dataBackground: {
+            lineStyle: {
+              color: "rgba(255,255,255,0.2)",
+            },
+            areaStyle: {
+              color: "rgba(255,255,255,0.05)",
+            },
+          },
+        },
+      ],
+      series: series.map((s) => {
+        // 为第一个系列添加 y=0 参考线
+        if (s.name === (titles[0]?.length > 15 
+          ? titles[0].substring(0, 15) + "..." 
+          : titles[0])) {
+          return {
+            ...s,
+            markLine: {
+              silent: true,
+              lineStyle: {
+                color: "rgba(255,255,255,0.2)",
+                width: 1,
+              },
+              data: [
+                {
+                  yAxis: 0,
+                },
+              ],
+            },
+          };
+        }
+        return s;
+      }),
+    };
+  };
+
+  // 生成 ECharts 配置（桌面端）
+  const getEChartsOption = useMemo(() => {
+    return createEChartsOption(marketTitles, echartsData, viewMode, allFilteredData.length, brushStartIndex, brushEndIndex);
+  }, [
+    echartsData,
+    marketTitles,
+    viewMode,
+    allFilteredData.length,
+    brushStartIndex,
+    brushEndIndex,
+  ]);
+
+  // 生成 ECharts 配置（移动端，只显示前3个bet）
+  const getEChartsOptionMobile = useMemo(() => {
+    return createEChartsOption(marketTitles.slice(0, 3), echartsData, viewMode, allFilteredData.length, brushStartIndex, brushEndIndex);
+  }, [
+    echartsData,
+    marketTitles,
+    viewMode,
+    allFilteredData.length,
+    brushStartIndex,
+    brushEndIndex,
+  ]);
+
+  // 处理 dataZoom 变化
+  const handleDataZoom = (params: any) => {
+    if (params && params.batch && params.batch[0]) {
+      const { start, end } = params.batch[0];
+      if (
+        typeof start === "number" &&
+        typeof end === "number" &&
+        allFilteredData.length > 0
+      ) {
+        const maxIndex = allFilteredData.length - 1;
+        const newStartIndex = Math.round((start / 100) * maxIndex);
+        const newEndIndex = Math.round((end / 100) * maxIndex);
+        setBrushStartIndex(Math.max(0, Math.min(newStartIndex, maxIndex)));
+        setBrushEndIndex(
+          Math.max(
+            Math.max(0, Math.min(newStartIndex, maxIndex)),
+            Math.min(newEndIndex, maxIndex),
+          ),
+        );
+      }
+    }
+  };
+
   // 移动端专用布局
   if (isMobile) {
     return (
@@ -556,69 +891,14 @@ export default function HomeClient({ initialMarkets }: HomeClientProps) {
             </div>
 
             <div className="h-64 w-full">
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart
-                  data={profitData}
-                  margin={{ top: 5, right: 10, left: -20, bottom: 60 }}
-                >
-                  <CartesianGrid
-                    strokeDasharray="3 3"
-                    stroke="rgba(255,255,255,0.1)"
-                  />
-                  <XAxis
-                    dataKey={viewMode === "hourly" ? "dateTime" : "date"}
-                    stroke="#666"
-                    tick={{ fontSize: 8, fill: "#666" }}
-                    interval={viewMode === "hourly" ? 23 : 0}
-                    angle={viewMode === "hourly" ? -45 : 0}
-                    textAnchor={viewMode === "hourly" ? "end" : "middle"}
-                    height={40}
-                  />
-                  <YAxis stroke="#666" tick={{ fontSize: 9 }} width={40} />
-                  <Tooltip
-                    contentStyle={{
-                      backgroundColor: "rgba(0, 0, 0, 0.95)",
-                      border: "1px solid rgba(255, 255, 255, 0.4)",
-                      borderRadius: "6px",
-                      padding: "6px",
-                    }}
-                    itemStyle={{ color: "#fff", fontSize: "10px" }}
-                    labelStyle={{
-                      color: "#fff",
-                      fontSize: "10px",
-                      fontWeight: "bold",
-                    }}
-                  />
-                  <ReferenceLine y={0} stroke="rgba(255,255,255,0.2)" />
-                  {marketTitles.slice(0, 3).map((title, index) => {
-                    const colors = ["#FF4444", "#82ca9d", "#ffc658"];
-                    const color = colors[index % colors.length];
-                    return (
-                      <Line
-                        key={`bet${index + 1}`}
-                        type="monotone"
-                        dataKey={`bet${index + 1}`}
-                        stroke={color}
-                        dot={false}
-                        strokeWidth={1.5}
-                        name={
-                          title.length > 15
-                            ? title.substring(0, 15) + "..."
-                            : title
-                        }
-                      />
-                    );
-                  })}
-                  <Line
-                    type="monotone"
-                    dataKey="dailyTotal"
-                    stroke="#4CAF50"
-                    strokeWidth={2}
-                    dot={false}
-                    name="Daily Total"
-                  />
-                </LineChart>
-              </ResponsiveContainer>
+              <ReactECharts
+                option={getEChartsOptionMobile}
+                style={{ height: "100%", width: "100%" }}
+                onEvents={{
+                  dataZoom: handleDataZoom,
+                }}
+                opts={{ renderer: "svg", locale: "EN" }}
+              />
             </div>
           </div>
         </div>
@@ -961,182 +1241,14 @@ export default function HomeClient({ initialMarkets }: HomeClientProps) {
           </div>
 
           <div className="h-80 w-full">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart
-                data={profitData}
-                margin={{
-                  top: 5,
-                  right: 20,
-                  left: 0,
-                  bottom: 100,
-                }}
-              >
-                <CartesianGrid
-                  strokeDasharray="3 3"
-                  stroke="rgba(255,255,255,0.1)"
-                />
-                <XAxis
-                  dataKey={viewMode === "hourly" ? "dateTime" : "date"}
-                  stroke="#666"
-                  tick={{ fontSize: 9, fill: "#666" }}
-                  interval={viewMode === "hourly" ? 23 : 0} // 按小时模式时每24个显示一个，按天模式时全部显示
-                  label={{
-                    value: viewMode === "hourly" ? "Date & Time" : "Date",
-                    position: "insideBottom",
-                    offset: -55,
-                    fill: "#666",
-                    style: { fontSize: "10px" },
-                  }}
-                  angle={viewMode === "hourly" ? -45 : 0}
-                  textAnchor={viewMode === "hourly" ? "end" : "middle"}
-                  height={40}
-                />
-                <YAxis stroke="#666" tick={{ fontSize: 10 }} />
-                <Tooltip
-                  contentStyle={{
-                    backgroundColor: "rgba(0, 0, 0, 0.95)",
-                    border: "1px solid rgba(255, 255, 255, 0.4)",
-                    borderRadius: "6px",
-                    padding: "8px",
-                  }}
-                  itemStyle={{ color: "#fff", fontSize: "11px" }}
-                  labelStyle={{
-                    color: "#fff",
-                    fontSize: "11px",
-                    fontWeight: "bold",
-                    marginBottom: "4px",
-                  }}
-                  cursor={{
-                    stroke: "rgba(255,255,255,0.5)",
-                    strokeWidth: 2,
-                    strokeDasharray: "3 3",
-                  }}
-                  formatter={(value: any) => value}
-                  labelFormatter={(label: string, payload: readonly any[]) => {
-                    if (
-                      payload &&
-                      payload[0] &&
-                      payload[0].payload &&
-                      payload[0].payload.dateTime
-                    ) {
-                      return `Time: ${payload[0].payload.dateTime}`;
-                    }
-                    return `Date: ${label}`;
-                  }}
-                />
-                <Legend
-                  verticalAlign="top"
-                  height={20}
-                  wrapperStyle={{ fontSize: "10px", paddingBottom: "5px" }}
-                />
-                <defs>
-                  <linearGradient
-                    id="cumulativeGradient"
-                    x1="0%"
-                    y1="0%"
-                    x2="100%"
-                    y2="0%"
-                  >
-                    <stop offset="0%" stopColor="#9D4EDD" stopOpacity={1} />
-                    <stop offset="100%" stopColor="#3B82F6" stopOpacity={1} />
-                  </linearGradient>
-                </defs>
-                <ReferenceLine y={0} stroke="rgba(255,255,255,0.2)" />
-                {/* 动态生成市场线条 */}
-                {marketTitles.map((title, index) => {
-                  const colors = [
-                    "#FF4444",
-                    "#82ca9d",
-                    "#ffc658",
-                    "#8884d8",
-                    "#ff7c43",
-                    "#a28dff",
-                  ];
-                  const color = colors[index % colors.length];
-                  return (
-                    <Line
-                      key={`bet${index + 1}`}
-                      type="monotone"
-                      dataKey={`bet${index + 1}`}
-                      stroke={color}
-                      dot={false}
-                      activeDot={{
-                        r: 6,
-                        fill: color,
-                        stroke: "#fff",
-                        strokeWidth: 2,
-                      }}
-                      name={title}
-                      strokeWidth={1.5}
-                    />
-                  );
-                })}
-                <Line
-                  type="monotone"
-                  dataKey="dailyTotal"
-                  stroke="#4CAF50"
-                  strokeWidth={2}
-                  dot={false}
-                  activeDot={{
-                    r: 7,
-                    fill: "#4CAF50",
-                    stroke: "#fff",
-                    strokeWidth: 2,
-                  }}
-                  name="Daily Total"
-                />
-                {/* 暂时隐藏累积收益线 */}
-                {/* <Line
-                  type="monotone"
-                  dataKey="cumulativeTotal"
-                  stroke="url(#cumulativeGradient)"
-                  strokeWidth={2.5}
-                  dot={false}
-                  activeDot={{ r: 8, fill: '#7C3AED', stroke: '#fff', strokeWidth: 2 }}
-                  name="Cumulative Profit"
-                /> */}
-                <Brush
-                  dataKey={viewMode === "hourly" ? "dateTime" : "date"}
-                  height={30}
-                  stroke="rgba(255,255,255,0.2)"
-                  fill="rgba(255,255,255,0.05)"
-                  startIndex={brushStartIndex}
-                  endIndex={brushEndIndex}
-                  onChange={(newState) => {
-                    const { startIndex: newStartIndex, endIndex: newEndIndex } =
-                      newState;
-                    if (
-                      typeof newStartIndex === "number" &&
-                      typeof newEndIndex === "number"
-                    ) {
-                      const maxIndex = allFilteredData.length - 1;
-                      const validStart = Math.max(
-                        0,
-                        Math.min(newStartIndex, maxIndex),
-                      );
-                      const validEnd = Math.max(
-                        validStart,
-                        Math.min(newEndIndex, maxIndex),
-                      );
-                      setBrushStartIndex(validStart);
-                      setBrushEndIndex(validEnd);
-                    }
-                  }}
-                  tickFormatter={(value) => {
-                    if (viewMode === "hourly") {
-                      if (typeof value === "string") {
-                        const parts = value.split(" ");
-                        if (parts.length > 0) {
-                          return parts[0];
-                        }
-                      }
-                      return value;
-                    }
-                    return value;
-                  }}
-                />
-              </LineChart>
-            </ResponsiveContainer>
+            <ReactECharts
+              option={getEChartsOption}
+              style={{ height: "100%", width: "100%" }}
+              onEvents={{
+                dataZoom: handleDataZoom,
+              }}
+              opts={{ renderer: "svg", locale: "EN" }}
+            />
           </div>
 
           <div className="mt-2 p-3 bg-primary/5 border border-primary/20 rounded-lg">
