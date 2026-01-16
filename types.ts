@@ -131,3 +131,42 @@ export interface PolymarketPosition {
   endDate: string;
   negativeRisk: boolean;
 }
+
+// Twitter Trading Post Types
+export type TradeAction = 'BUY' | 'SELL' | 'UPDATE' | 'ANALYSIS';
+
+export interface TwitterPost {
+  id: string;
+  tweetId: string; // Original Twitter ID
+  content: string; // Tweet text
+  author: {
+    handle: string; // @ioiiobet
+    name: string;
+    avatar: string;
+  };
+  publishedAt: string; // ISO date
+
+  // Trading metadata
+  tradeData?: {
+    action: TradeAction;
+    market: string; // e.g., "BTC/USD", "Trump 2024"
+    amount?: number;
+    price?: number;
+    revenueRate?: number; // Percentage: 15.5 = +15.5%
+    profitLoss?: number; // Dollar amount
+  };
+
+  // Media attachments
+  media: {
+    images?: string[];
+    videos?: string[];
+    links?: string[];
+  };
+
+  // Engagement metrics
+  engagement: {
+    likes: number;
+    retweets: number;
+    replies: number;
+  };
+}

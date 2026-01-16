@@ -25,12 +25,18 @@ export const Header: React.FC = () => {
         </Link>
 
         <nav className="hidden md:flex items-center gap-8">
-          <a
-            href="#"
-            className="text-[11px] font-bold uppercase tracking-widest text-muted hover:text-white transition-colors hidden"
+          <Link
+            href="/"
+            className="text-[11px] font-bold uppercase tracking-widest text-muted hover:text-white transition-colors"
           >
-            Matrix
-          </a>
+            Markets
+          </Link>
+          <Link
+            href="/history"
+            className="text-[11px] font-bold uppercase tracking-widest text-muted hover:text-white transition-colors"
+          >
+            History
+          </Link>
         </nav>
 
         <div className="flex items-center gap-4">
