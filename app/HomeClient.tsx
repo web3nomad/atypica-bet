@@ -804,7 +804,7 @@ export default function HomeClient({ initialMarkets }: HomeClientProps) {
               <h1 className="text-4xl font-black tracking-tighter leading-[0.95]">
                 <span className="text-white">Intelligence</span>
                 <br />
-                <span className="bg-gradient-to-t from-gray-500 to-white bg-clip-text text-transparent">
+                <span className="bg-gradient-to-t from-gray-500 to-white bg-clip-text text-transparent inline-block pb-2 leading-[1.15]">
                   beyond guessing
                 </span>
               </h1>
@@ -1138,10 +1138,10 @@ export default function HomeClient({ initialMarkets }: HomeClientProps) {
           </div>
 
           <div className="relative z-50 overflow-visible">
-            <h1 className="text-6xl md:text-8xl font-black tracking-tighter md:leading-[1.2] relative z-50 overflow-visible">
+            <h1 className="text-6xl md:text-8xl font-black tracking-tighter md:leading-[1.2] pb-2 relative z-50 overflow-visible">
               <span className="text-white relative z-50">Intelligence</span>
               <br />
-              <span className="bg-gradient-to-t from-gray-500 to-white bg-clip-text text-transparent relative z-50 inline-block pr-2">
+              <span className="bg-gradient-to-t from-gray-500 to-white bg-clip-text text-transparent relative z-50 inline-block pr-2 pb-2 leading-[1.15]">
                 beyond guessing
               </span>
             </h1>
