@@ -434,17 +434,17 @@ export default function HomeClient({ initialMarkets }: HomeClientProps) {
     return allProfitData;
   }, [viewMode, allProfitData]);
 
+  const latestWindowSize = viewMode === "hourly" ? 72 : 3;
+
   // 初始化 Brush 的结束索引
   useEffect(() => {
     if (allFilteredData.length > 0) {
-      const initialEndIndex =
-        viewMode === "hourly"
-          ? Math.min(47, allFilteredData.length - 1) // 显示前2天的数据
-          : Math.min(6, allFilteredData.length - 1); // 显示前7天的数据
-      setBrushStartIndex(0);
-      setBrushEndIndex(initialEndIndex);
+      const lastIndex = allFilteredData.length - 1;
+      const startIndex = Math.max(0, allFilteredData.length - latestWindowSize);
+      setBrushStartIndex(startIndex);
+      setBrushEndIndex(lastIndex);
     }
-  }, [allFilteredData.length, viewMode]);
+  }, [allFilteredData.length, latestWindowSize]);
 
   // 根据 Brush 选择过滤显示的数据
   const profitData = useMemo(() => {
@@ -767,25 +767,14 @@ export default function HomeClient({ initialMarkets }: HomeClientProps) {
   ]);
 
   // 处理 dataZoom 变化
-  const handleDataZoom = (params: any) => {
-    if (params && params.batch && params.batch[0]) {
-      const { start, end } = params.batch[0];
-      if (
-        typeof start === "number" &&
-        typeof end === "number" &&
-        allFilteredData.length > 0
-      ) {
-        const maxIndex = allFilteredData.length - 1;
-        const newStartIndex = Math.round((start / 100) * maxIndex);
-        const newEndIndex = Math.round((end / 100) * maxIndex);
-        setBrushStartIndex(Math.max(0, Math.min(newStartIndex, maxIndex)));
-        setBrushEndIndex(
-          Math.max(
-            Math.max(0, Math.min(newStartIndex, maxIndex)),
-            Math.min(newEndIndex, maxIndex),
-          ),
-        );
-      }
+  const handleDataZoom = () => {
+    if (!allFilteredData.length) return;
+
+    const lastIndex = allFilteredData.length - 1;
+    const startIndex = Math.max(0, allFilteredData.length - latestWindowSize);
+    if (brushStartIndex !== startIndex || brushEndIndex !== lastIndex) {
+      setBrushStartIndex(startIndex);
+      setBrushEndIndex(lastIndex);
     }
   };
 
