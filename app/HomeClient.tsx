@@ -434,17 +434,17 @@ export default function HomeClient({ initialMarkets }: HomeClientProps) {
     return allProfitData;
   }, [viewMode, allProfitData]);
 
+  const latestWindowSize = viewMode === "hourly" ? 72 : 3;
+
   // 初始化 Brush 的结束索引
   useEffect(() => {
     if (allFilteredData.length > 0) {
-      const initialEndIndex =
-        viewMode === "hourly"
-          ? Math.min(47, allFilteredData.length - 1) // 显示前2天的数据
-          : Math.min(6, allFilteredData.length - 1); // 显示前7天的数据
-      setBrushStartIndex(0);
-      setBrushEndIndex(initialEndIndex);
+      const lastIndex = allFilteredData.length - 1;
+      const startIndex = Math.max(0, allFilteredData.length - latestWindowSize);
+      setBrushStartIndex(startIndex);
+      setBrushEndIndex(lastIndex);
     }
-  }, [allFilteredData.length, viewMode]);
+  }, [allFilteredData.length, latestWindowSize]);
 
   // 根据 Brush 选择过滤显示的数据
   const profitData = useMemo(() => {
@@ -767,25 +767,14 @@ export default function HomeClient({ initialMarkets }: HomeClientProps) {
   ]);
 
   // 处理 dataZoom 变化
-  const handleDataZoom = (params: any) => {
-    if (params && params.batch && params.batch[0]) {
-      const { start, end } = params.batch[0];
-      if (
-        typeof start === "number" &&
-        typeof end === "number" &&
-        allFilteredData.length > 0
-      ) {
-        const maxIndex = allFilteredData.length - 1;
-        const newStartIndex = Math.round((start / 100) * maxIndex);
-        const newEndIndex = Math.round((end / 100) * maxIndex);
-        setBrushStartIndex(Math.max(0, Math.min(newStartIndex, maxIndex)));
-        setBrushEndIndex(
-          Math.max(
-            Math.max(0, Math.min(newStartIndex, maxIndex)),
-            Math.min(newEndIndex, maxIndex),
-          ),
-        );
-      }
+  const handleDataZoom = () => {
+    if (!allFilteredData.length) return;
+
+    const lastIndex = allFilteredData.length - 1;
+    const startIndex = Math.max(0, allFilteredData.length - latestWindowSize);
+    if (brushStartIndex !== startIndex || brushEndIndex !== lastIndex) {
+      setBrushStartIndex(startIndex);
+      setBrushEndIndex(lastIndex);
     }
   };
 
@@ -804,7 +793,7 @@ export default function HomeClient({ initialMarkets }: HomeClientProps) {
               <h1 className="text-4xl font-black tracking-tighter leading-[0.95]">
                 <span className="text-white">Intelligence</span>
                 <br />
-                <span className="bg-gradient-to-t from-gray-500 to-white bg-clip-text text-transparent">
+                <span className="bg-gradient-to-t from-gray-500 to-white bg-clip-text text-transparent inline-block pb-2 leading-[1.15]">
                   beyond guessing
                 </span>
               </h1>
@@ -1138,10 +1127,10 @@ export default function HomeClient({ initialMarkets }: HomeClientProps) {
           </div>
 
           <div className="relative z-50 overflow-visible">
-            <h1 className="text-6xl md:text-8xl font-black tracking-tighter md:leading-[1.2] relative z-50 overflow-visible">
+            <h1 className="text-6xl md:text-8xl font-black tracking-tighter md:leading-[1.2] pb-2 relative z-50 overflow-visible">
               <span className="text-white relative z-50">Intelligence</span>
               <br />
-              <span className="bg-gradient-to-t from-gray-500 to-white bg-clip-text text-transparent relative z-50 inline-block pr-2">
+              <span className="bg-gradient-to-t from-gray-500 to-white bg-clip-text text-transparent relative z-50 inline-block pr-2 pb-2 leading-[1.15]">
                 beyond guessing
               </span>
             </h1>
