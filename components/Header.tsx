@@ -8,7 +8,7 @@ import { Menu } from "lucide-react";
 export const Header: React.FC = () => {
   return (
     <header className="sticky top-0 z-50 bg-black/60 backdrop-blur-xl border-b border-white/5">
-      <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+      <div className="max-w-7xl mx-auto px-6 h-16 grid grid-cols-[1fr_auto_1fr] items-center">
         <Link href="/" className="flex items-center gap-3 cursor-pointer group">
           <div className="w-8 h-8 relative transition-all group-hover:scale-105">
             <Image
@@ -24,7 +24,7 @@ export const Header: React.FC = () => {
           </span>
         </Link>
 
-        <nav className="hidden md:flex items-center gap-8">
+        <nav className="hidden md:flex items-center gap-8 justify-self-center">
           <Link
             href="/"
             className="text-[11px] font-bold uppercase tracking-widest text-muted hover:text-white transition-colors"
@@ -39,7 +39,7 @@ export const Header: React.FC = () => {
           </Link>
         </nav>
 
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-4 justify-self-end">
           <button className="btn-outline px-6 py-2 text-[11px] font-bold uppercase tracking-widest hidden">
             Connect
           </button>
