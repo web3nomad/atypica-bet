@@ -1,6 +1,6 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
-import { PredictionMarket, PredictionOption } from '@/types';
+import { NextRequest, NextResponse } from "next/server";
+import { prisma } from "@/lib/prisma";
+import { PredictionMarket, PredictionOption } from "@/types";
 
 // GET /api/markets - 获取所有市场
 export async function GET(request: NextRequest) {
@@ -13,6 +13,7 @@ export async function GET(request: NextRequest) {
         description: true,
         category: true,
         status: true,
+        archived: true,
         closeDate: true,
         resolveDate: true,
         createdAt: true,
@@ -20,6 +21,7 @@ export async function GET(request: NextRequest) {
         atypicaPickId: true,
         atypicaAnalysis: true,
         atypicaAnalysisUrl: true,
+        atypicaPodcastUrl: true,
         atypicaSummary: true,
         accuracyScore: true,
         externalSource: true,
@@ -31,7 +33,7 @@ export async function GET(request: NextRequest) {
         poolAmount: true,
         poolCurrency: true,
         snapshots: {
-          orderBy: { timestamp: 'desc' },
+          orderBy: { timestamp: "desc" },
           take: 1,
           select: {
             percentRealizedPnl: true,
@@ -48,14 +50,18 @@ export async function GET(request: NextRequest) {
         },
       },
       orderBy: {
-        createdAt: 'desc',
+        createdAt: "desc",
       },
     });
 
-    const results: PredictionMarket[] = markets.map(market => {
+    const results: PredictionMarket[] = markets.map((market) => {
       // 优先使用 polyMarketIcon，如果没有则从 externalData 中提取
       let icon: string | undefined = market.polyMarketIcon ?? undefined;
-      if (!icon && market.externalData && typeof market.externalData === 'object') {
+      if (
+        !icon &&
+        market.externalData &&
+        typeof market.externalData === "object"
+      ) {
         const data = market.externalData as any;
         icon = data.icon || data.subMarket?.icon || data.eventGroup?.icon;
       }
@@ -70,18 +76,28 @@ export async function GET(request: NextRequest) {
         closeDate: market.closeDate.toISOString(),
         resolveDate: market.resolveDate?.toISOString(),
         status: market.status as any,
-        options: market.options.map((option: { id: string; text: string; externalProb: number | null; atypicaProb: number | null; isWinner: boolean }) => ({
-          id: option.id,
-          text: option.text,
-          externalProb: option.externalProb ?? undefined,
-          atypicaProb: option.atypicaProb ?? undefined,
-          isWinner: option.isWinner,
-        })),
+        options: market.options.map(
+          (option: {
+            id: string;
+            text: string;
+            externalProb: number | null;
+            atypicaProb: number | null;
+            isWinner: boolean;
+          }) => ({
+            id: option.id,
+            text: option.text,
+            externalProb: option.externalProb ?? undefined,
+            atypicaProb: option.atypicaProb ?? undefined,
+            isWinner: option.isWinner,
+          }),
+        ),
         atypicaPickId: market.atypicaPickId ?? undefined,
         atypicaAnalysis: market.atypicaAnalysis ?? undefined,
         atypicaAnalysisUrl: market.atypicaAnalysisUrl ?? undefined,
+        atypicaPodcastUrl: market.atypicaPodcastUrl ?? undefined,
         atypicaSummary: market.atypicaSummary ?? undefined,
         accuracyScore: market.accuracyScore ?? undefined,
+        archived: market.archived,
         externalSource: market.externalSource ?? undefined,
         polyMarketIcon: market.polyMarketIcon ?? undefined,
         polyMarketUrl: market.polyMarketUrl ?? undefined,
@@ -90,18 +106,19 @@ export async function GET(request: NextRequest) {
         viewCount: market.viewCount,
         poolAmount: market.poolAmount ?? undefined,
         poolCurrency: market.poolCurrency ?? undefined,
-        nftPercentRealizedPnl: market.snapshots[0]?.percentRealizedPnl ?? undefined,
+        nftPercentRealizedPnl:
+          market.snapshots[0]?.percentRealizedPnl ?? undefined,
       };
     });
 
     return NextResponse.json(results);
   } catch (error) {
-    console.error('获取市场失败:', error);
+    console.error("获取市场失败:", error);
     return NextResponse.json(
-      { 
-        error: error instanceof Error ? error.message : '获取市场失败',
+      {
+        error: error instanceof Error ? error.message : "获取市场失败",
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -118,24 +135,30 @@ export async function POST(request: NextRequest) {
         description: market.description,
         category: market.category,
         status: market.status,
+        archived: market.archived ?? false,
         closeDate: new Date(market.closeDate),
         resolveDate: market.resolveDate ? new Date(market.resolveDate) : null,
         atypicaPickId: market.atypicaPickId,
         atypicaAnalysis: market.atypicaAnalysis,
         atypicaAnalysisUrl: market.atypicaAnalysisUrl,
+        atypicaPodcastUrl: market.atypicaPodcastUrl,
         accuracyScore: market.accuracyScore,
         externalSource: market.externalSource,
-        externalData: market.externalSource ? {
-          source: market.externalSource,
-          originalId: market.id,
-          icon: market.icon,
-        } : market.icon ? {
-          icon: market.icon,
-        } : undefined,
+        externalData: market.externalSource
+          ? {
+              source: market.externalSource,
+              originalId: market.id,
+              icon: market.icon,
+            }
+          : market.icon
+            ? {
+                icon: market.icon,
+              }
+            : undefined,
         viewCount: market.viewCount,
         shareCount: market.shareCount,
         poolAmount: market.poolAmount,
-        poolCurrency: market.poolCurrency || 'USD',
+        poolCurrency: market.poolCurrency || "USD",
         options: {
           create: market.options.map((option: PredictionOption) => ({
             id: option.id,
@@ -149,7 +172,7 @@ export async function POST(request: NextRequest) {
       include: {
         options: true,
         snapshots: {
-          orderBy: { timestamp: 'desc' },
+          orderBy: { timestamp: "desc" },
           take: 1,
         },
       },
@@ -157,7 +180,11 @@ export async function POST(request: NextRequest) {
 
     // 优先使用 polyMarketIcon，如果没有则从 externalData 中提取
     let icon: string | undefined = savedMarket.polyMarketIcon ?? undefined;
-    if (!icon && savedMarket.externalData && typeof savedMarket.externalData === 'object') {
+    if (
+      !icon &&
+      savedMarket.externalData &&
+      typeof savedMarket.externalData === "object"
+    ) {
       const data = savedMarket.externalData as any;
       icon = data.icon || data.subMarket?.icon || data.eventGroup?.icon;
     }
@@ -172,7 +199,7 @@ export async function POST(request: NextRequest) {
       closeDate: savedMarket.closeDate.toISOString(),
       resolveDate: savedMarket.resolveDate?.toISOString(),
       status: savedMarket.status as any,
-      options: savedMarket.options.map(option => ({
+      options: savedMarket.options.map((option) => ({
         id: option.id,
         text: option.text,
         externalProb: option.externalProb ?? undefined,
@@ -182,6 +209,7 @@ export async function POST(request: NextRequest) {
       atypicaPickId: savedMarket.atypicaPickId ?? undefined,
       atypicaAnalysis: savedMarket.atypicaAnalysis ?? undefined,
       atypicaAnalysisUrl: savedMarket.atypicaAnalysisUrl ?? undefined,
+      atypicaPodcastUrl: savedMarket.atypicaPodcastUrl ?? undefined,
       accuracyScore: savedMarket.accuracyScore ?? undefined,
       externalSource: savedMarket.externalSource ?? undefined,
       polyMarketIcon: savedMarket.polyMarketIcon ?? undefined,
@@ -191,15 +219,17 @@ export async function POST(request: NextRequest) {
       viewCount: savedMarket.viewCount,
       poolAmount: savedMarket.poolAmount ?? undefined,
       poolCurrency: savedMarket.poolCurrency ?? undefined,
-      nftPercentRealizedPnl: savedMarket.snapshots[0]?.percentRealizedPnl ?? undefined,
+      archived: savedMarket.archived,
+      nftPercentRealizedPnl:
+        savedMarket.snapshots[0]?.percentRealizedPnl ?? undefined,
     };
 
     return NextResponse.json(result);
   } catch (error) {
-    console.error('保存市场失败:', error);
+    console.error("保存市场失败:", error);
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : '保存市场失败' },
-      { status: 500 }
+      { error: error instanceof Error ? error.message : "保存市场失败" },
+      { status: 500 },
     );
   }
 }

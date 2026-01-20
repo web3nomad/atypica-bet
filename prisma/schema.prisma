@@ -17,6 +17,7 @@ model Market {
   description String   @db.Text
   category    String   // TECH, FINANCE, SPORTS, ENTERTAINMENT, CULTURE, POLITICS, CRYPTO
   status      String   // ACTIVE, CLOSED, SUCCESSFUL, FAILED
+  archived    Boolean  @default(false)
 
   // 时间字段
   closeDate   DateTime
@@ -29,6 +30,7 @@ model Market {
   atypicaAnalysis    String?  @db.Text
   atypicaSummary     String?
   atypicaAnalysisUrl String?  // Atypica 分析报告链接
+  atypicaPodcastUrl  String?
   accuracyScore      Float?
 
   // 外部数据源
@@ -46,6 +48,7 @@ model Market {
   // 关联选项
   options     Option[]
   snapshots   PositionSnapshot[]
+  tweets      Tweet[]
 
   @@index([status])
   @@index([category])
@@ -53,6 +56,54 @@ model Market {
 }
 
 // 预测选项表
+enum PostType {
+  BUY
+  SELL
+  REVENUE
+  ANALYSIS
+}
+
+model TwitterAccount {
+  id            String   @id @default(cuid())
+  handle        String   @unique
+  twitterUserId String?  @unique
+  isActive      Boolean  @default(true)
+  lastSyncAt    DateTime?
+
+  tweets        Tweet[]
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model Tweet {
+  id            String   @id @default(cuid())
+  accountId     String
+  account       TwitterAccount @relation(fields: [accountId], references: [id], onDelete: Cascade)
+
+  marketId      String?
+  market        Market?  @relation(fields: [marketId], references: [id], onDelete: SetNull)
+
+  tweetId       String   @unique
+  text          String   @db.Text
+  url           String
+  postedAt      DateTime
+
+  type          PostType?
+  rawJson       Json?
+  mediaUrls     String[] @default([])
+  outLinks      String[] @default([])
+  likeCount     Int?
+  replyCount    Int?
+  retweetCount  Int?
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([accountId])
+  @@index([marketId])
+  @@index([type, postedAt])
+}
+
 model Option {
   id           String   @id @default(cuid())
   marketId     String

@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { PredictionMarket } from '@/types';
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { PredictionMarket } from "@/types";
 
 interface MarketEditClientProps {
   market: PredictionMarket;
@@ -12,24 +12,26 @@ export function MarketEditClient({ market }: MarketEditClientProps) {
   const router = useRouter();
 
   const [atypicaPickId, setAtypicaPickId] = useState<string | undefined>(
-    market.atypicaPickId
+    market.atypicaPickId,
   );
   const [description, setDescription] = useState<string>(
-    market.description || ''
+    market.description || "",
   );
   const [analysis, setAnalysis] = useState<string>(
-    market.atypicaAnalysis || ''
+    market.atypicaAnalysis || "",
   );
-  const [summary, setSummary] = useState<string>(
-    market.atypicaSummary || ''
-  );
+  const [summary, setSummary] = useState<string>(market.atypicaSummary || "");
   const [analysisUrl, setAnalysisUrl] = useState<string>(
-    market.atypicaAnalysisUrl || ''
+    market.atypicaAnalysisUrl || "",
   );
+  const [atypicaPodcastUrl, setAtypicaPodcastUrl] = useState<string>(
+    market.atypicaPodcastUrl || "",
+  );
+  const [archived, setArchived] = useState<boolean>(market.archived ?? false);
   const [accuracyPercent, setAccuracyPercent] = useState<string>(
     market.accuracyScore != null
       ? String(Math.round(market.accuracyScore * 100))
-      : ''
+      : "",
   );
   const [optionProbs, setOptionProbs] = useState<
     { id: string; label: string; value: string }[]
@@ -38,14 +40,14 @@ export function MarketEditClient({ market }: MarketEditClientProps) {
       id: o.id,
       label: o.text,
       value:
-        o.atypicaProb != null ? String(Math.round(o.atypicaProb * 100)) : '',
-    }))
+        o.atypicaProb != null ? String(Math.round(o.atypicaProb * 100)) : "",
+    })),
   );
   const [saving, setSaving] = useState(false);
 
   const handleChangeOptionProb = (id: string, value: string) => {
     setOptionProbs((prev) =>
-      prev.map((p) => (p.id === id ? { ...p, value } : p))
+      prev.map((p) => (p.id === id ? { ...p, value } : p)),
     );
   };
 
@@ -55,51 +57,47 @@ export function MarketEditClient({ market }: MarketEditClientProps) {
 
     try {
       const accuracyScore =
-        accuracyPercent.trim() === ''
+        accuracyPercent.trim() === ""
           ? undefined
-          : Math.max(
-              0,
-              Math.min(1, parseFloat(accuracyPercent) / 100 || 0)
-            );
+          : Math.max(0, Math.min(1, parseFloat(accuracyPercent) / 100 || 0));
 
       const optionsPayload = optionProbs
         .map((p) => ({
           id: p.id,
           atypicaProb:
-            p.value.trim() === ''
+            p.value.trim() === ""
               ? undefined
-              : Math.max(
-                  0,
-                  Math.min(1, parseFloat(p.value) / 100 || 0)
-                ),
+              : Math.max(0, Math.min(1, parseFloat(p.value) / 100 || 0)),
         }))
         // 只发送有值的，避免不必要的更新
         .filter((o) => o.atypicaProb !== undefined);
 
       const res = await fetch(`/api/markets/${market.id}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           description: description || undefined,
           atypicaPickId: atypicaPickId || undefined,
           atypicaAnalysis: analysis || undefined,
           atypicaAnalysisUrl: analysisUrl || undefined,
+          atypicaPodcastUrl: atypicaPodcastUrl || undefined,
           atypicaSummary: summary || undefined,
           accuracyScore,
+          archived,
           options: optionsPayload,
         }),
       });
 
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
-        throw new Error(data.error || '保存失败');
+        throw new Error(data.error || "保存失败");
       }
 
-      alert('Atypica 信息已保存');
-      router.push('/admin');
+      alert("Atypica 信息已保存");
+      router.push("/admin");
     } catch (error) {
-      console.error('保存失败:', error);
-      alert(error instanceof Error ? error.message : '保存失败');
+      console.error("保存失败:", error);
+      alert(error instanceof Error ? error.message : "保存失败");
     } finally {
       setSaving(false);
     }
@@ -109,7 +107,7 @@ export function MarketEditClient({ market }: MarketEditClientProps) {
     <div className="max-w-5xl mx-auto px-6 py-10">
       <button
         type="button"
-        onClick={() => router.push('/admin')}
+        onClick={() => router.push("/admin")}
         className="text-xs font-bold tracking-widest uppercase text-white/50 hover:text-white mb-6 flex items-center gap-1"
       >
         <span className="text-lg leading-none">←</span>
@@ -135,9 +133,7 @@ export function MarketEditClient({ market }: MarketEditClientProps) {
             <div className="space-y-3 text-sm text-white/80">
               <div>
                 <div className="text-[11px] text-white/50 mb-1">标题</div>
-                <div className="font-semibold leading-snug">
-                  {market.title}
-                </div>
+                <div className="font-semibold leading-snug">{market.title}</div>
               </div>
               <div>
                 <label className="text-[11px] text-white/50 mb-1 block">
@@ -159,14 +155,25 @@ export function MarketEditClient({ market }: MarketEditClientProps) {
               概览
             </h3>
             <div className="space-y-2 text-xs text-white/70">
-                <div className="flex items-center justify-between bg-black/40 rounded-lg px-3 py-2 border border-white/20">
+              <div className="flex items-center justify-between bg-black/40 rounded-lg px-3 py-2 border border-white/20">
                 <span className="text-white/60">状态</span>
-                <span className="font-semibold text-white">{market.status}</span>
+                <span className="font-semibold text-white">
+                  {market.status}
+                </span>
               </div>
+              <label className="flex items-center justify-between bg-black/40 rounded-lg px-3 py-2 border border-white/20 text-xs text-white/70">
+                <span className="text-white/60">éšè—åœ¨é¦–é¡µ</span>
+                <input
+                  type="checkbox"
+                  checked={archived}
+                  onChange={(e) => setArchived(e.target.checked)}
+                  className="h-4 w-4 rounded border-white/30 bg-black/60 text-primary focus:ring-primary/40"
+                />
+              </label>
               <div className="flex items-center justify-between bg-black/40 rounded-lg px-3 py-2 border border-white/20">
                 <span className="text-white/60">截止日期</span>
                 <span className="font-semibold text-white">
-                  {new Date(market.closeDate).toLocaleDateString('zh-CN')}
+                  {new Date(market.closeDate).toLocaleDateString("zh-CN")}
                 </span>
               </div>
               {market.externalSource && (
@@ -193,13 +200,13 @@ export function MarketEditClient({ market }: MarketEditClientProps) {
                 Atypica 选择的结果（Pick）
               </label>
               <select
-                value={atypicaPickId || ''}
-                onChange={(e) =>
-                  setAtypicaPickId(e.target.value || undefined)
-                }
+                value={atypicaPickId || ""}
+                onChange={(e) => setAtypicaPickId(e.target.value || undefined)}
                 className="w-full px-4 py-3 rounded-xl border border-white/20 bg-black/60 text-sm text-white focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/30 transition-all"
               >
-                <option value="" className="bg-gray-900">（未选择）</option>
+                <option value="" className="bg-gray-900">
+                  （未选择）
+                </option>
                 {market.options.map((o) => (
                   <option key={o.id} value={o.id} className="bg-gray-900">
                     {o.text}
@@ -252,6 +259,22 @@ export function MarketEditClient({ market }: MarketEditClientProps) {
 
             <div className="space-y-2">
               <label className="text-[11px] font-bold text-white/70">
+                Atypica Podcast链接（Analysis Podcast URL）
+              </label>
+              <input
+                type="url"
+                value={atypicaPodcastUrl}
+                onChange={(e) => setAtypicaPodcastUrl(e.target.value)}
+                placeholder="https://example.com/analysis-report"
+                className="w-full px-4 py-3 rounded-xl border border-white/20 bg-black/60 text-sm text-white placeholder:text-white/50 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/30 transition-all"
+              />
+              <p className="text-[10px] text-white/40">
+                输入 Atypica Podcast的完整 URL 链接
+              </p>
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-[11px] font-bold text-white/70">
                 准确度评分（0–100）
               </label>
               <input
@@ -273,7 +296,8 @@ export function MarketEditClient({ market }: MarketEditClientProps) {
             </h2>
             <div className="space-y-1 text-[11px] text-white/50">
               <p>
-                可为每个选项设置 Atypica 预测概率（百分比）。留空表示不设置 / 使用默认值。
+                可为每个选项设置 Atypica 预测概率（百分比）。留空表示不设置 /
+                使用默认值。
               </p>
             </div>
             <div className="space-y-2">
@@ -306,7 +330,7 @@ export function MarketEditClient({ market }: MarketEditClientProps) {
           <div className="pt-4 border-t border-white/10 flex justify-end gap-3">
             <button
               type="button"
-              onClick={() => router.push('/admin')}
+              onClick={() => router.push("/admin")}
               className="px-4 py-2 rounded-lg border border-white/15 text-xs md:text-sm text-white/70 hover:bg-white/5"
             >
               取消
@@ -316,7 +340,7 @@ export function MarketEditClient({ market }: MarketEditClientProps) {
               disabled={saving}
               className="px-5 py-2 rounded-lg bg-primary text-black text-xs md:text-sm font-bold tracking-wide hover:bg-primary/90 disabled:opacity-60"
             >
-              {saving ? '保存中...' : '保存 Atypica 信息'}
+              {saving ? "保存中..." : "保存 Atypica 信息"}
             </button>
           </div>
         </form>
@@ -324,5 +348,3 @@ export function MarketEditClient({ market }: MarketEditClientProps) {
     </div>
   );
 }
-
-

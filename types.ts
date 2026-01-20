@@ -1,26 +1,25 @@
-
 export enum Category {
-  TECH = 'TECH',
-  FINANCE = 'FINANCE',
-  SPORTS = 'SPORTS',
-  ENTERTAINMENT = 'ENTERTAINMENT',
-  CULTURE = 'CULTURE',
-  POLITICS = 'POLITICS',
-  CRYPTO = 'CRYPTO'
+  TECH = "TECH",
+  FINANCE = "FINANCE",
+  SPORTS = "SPORTS",
+  ENTERTAINMENT = "ENTERTAINMENT",
+  CULTURE = "CULTURE",
+  POLITICS = "POLITICS",
+  CRYPTO = "CRYPTO",
 }
 
 export enum PredictionStatus {
-  ACTIVE = 'ACTIVE',
-  CLOSED = 'CLOSED',
-  SUCCESSFUL = 'SUCCESSFUL',
-  FAILED = 'FAILED'
+  ACTIVE = "ACTIVE",
+  CLOSED = "CLOSED",
+  SUCCESSFUL = "SUCCESSFUL",
+  FAILED = "FAILED",
 }
 
 export interface PredictionOption {
   id: string;
   text: string;
   externalProb?: number; // 0-1
-  atypicaProb?: number;  // 0-1
+  atypicaProb?: number; // 0-1
   isWinner?: boolean;
 }
 
@@ -38,8 +37,10 @@ export interface PredictionMarket {
   atypicaPickId?: string;
   atypicaAnalysis?: string;
   atypicaAnalysisUrl?: string; // Atypica 分析报告链接
+  atypicaPodcastUrl?: string;
   atypicaSummary?: string;
   accuracyScore?: number; // 0-1
+  archived?: boolean;
   externalSource?: string;
   polyMarketUrl?: string;
   polyMarketIcon?: string;
@@ -54,7 +55,6 @@ export interface PredictionMarket {
   nftCurrentValue?: number; // 当前价值
   nftWinValue?: number; // Win value
   nftLastSynced?: string; // 最后同步时间
-  
 }
 
 // Polymarket API 响应类型
@@ -73,8 +73,8 @@ export interface PolymarketSubMarket {
   image: string;
   icon: string;
   description: string;
-  outcomes: string;  // JSON string: "[\"Yes\", \"No\"]"
-  outcomePrices: string;  // JSON string: "[\"0.45\", \"0.55\"]"
+  outcomes: string; // JSON string: "[\"Yes\", \"No\"]"
+  outcomePrices: string; // JSON string: "[\"0.45\", \"0.55\"]"
   volume: string;
   active: boolean;
   closed: boolean;
@@ -133,7 +133,7 @@ export interface PolymarketPosition {
 }
 
 // Twitter Trading Post Types
-export type TradeAction = 'BUY' | 'SELL' | 'UPDATE' | 'ANALYSIS';
+export type TradeAction = "BUY" | "SELL" | "UPDATE" | "ANALYSIS";
 
 export interface TwitterPost {
   id: string;

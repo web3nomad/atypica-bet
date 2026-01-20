@@ -32,6 +32,7 @@ export async function GET(request: NextRequest) {
       try {
         const recentMarkets = await prisma.market.findMany({
           where: {
+            archived: false,
             snapshots: {
               some: {},
             },
@@ -80,6 +81,7 @@ export async function GET(request: NextRequest) {
           id: {
             in: marketIds,
           },
+          archived: false,
         },
         select: {
           id: true,

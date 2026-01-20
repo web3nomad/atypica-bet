@@ -48,6 +48,7 @@ const getMarket = unstable_cache(
         atypicaPickId: market.atypicaPickId || undefined,
         atypicaAnalysis: market.atypicaAnalysis || undefined,
         atypicaAnalysisUrl: market.atypicaAnalysisUrl || undefined,
+        atypicaPodcastUrl: market.atypicaPodcastUrl || undefined,
         atypicaSummary: market.atypicaSummary || undefined,
         accuracyScore: market.accuracyScore || undefined,
         externalSource: market.externalSource || undefined,
