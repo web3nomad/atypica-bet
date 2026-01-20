@@ -1,6 +1,6 @@
-import { prisma } from '@/lib/prisma';
-import { MarketEditClient } from './MarketEditClient';
-import { PredictionMarket, Category, PredictionStatus } from '@/types';
+import { prisma } from "@/lib/prisma";
+import { MarketEditClient } from "./MarketEditClient";
+import { PredictionMarket, Category, PredictionStatus } from "@/types";
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -42,6 +42,7 @@ export default async function AdminMarketEditPage({ params }: PageProps) {
     atypicaPickId: market.atypicaPickId ?? undefined,
     atypicaAnalysis: market.atypicaAnalysis ?? undefined,
     atypicaAnalysisUrl: market.atypicaAnalysisUrl ?? undefined,
+    atypicaPodcastUrl: market.atypicaPodcastUrl ?? undefined,
     atypicaSummary: market.atypicaSummary ?? undefined,
     accuracyScore: market.accuracyScore ?? undefined,
     externalSource: market.externalSource ?? undefined,
@@ -49,9 +50,8 @@ export default async function AdminMarketEditPage({ params }: PageProps) {
     viewCount: market.viewCount,
     poolAmount: market.poolAmount ?? undefined,
     poolCurrency: market.poolCurrency ?? undefined,
+    archived: market.archived,
   };
 
   return <MarketEditClient market={predictionMarket} />;
 }
-
-

@@ -16,16 +16,20 @@ export async function PATCH(
       description,
       atypicaAnalysis,
       atypicaAnalysisUrl,
+      atypicaPodcastUrl,
       atypicaSummary,
       accuracyScore,
+      archived,
       options,
     }: {
       atypicaPickId?: string;
       description?: string;
       atypicaAnalysis?: string;
       atypicaAnalysisUrl?: string;
+      atypicaPodcastUrl?: string;
       atypicaSummary?: string;
       accuracyScore?: number;
+      archived?: boolean;
       options?: { id: string; atypicaProb?: number }[];
     } = body;
 
@@ -34,8 +38,10 @@ export async function PATCH(
       description,
       atypicaAnalysis,
       atypicaAnalysisUrl,
+      atypicaPodcastUrl,
       atypicaSummary,
       accuracyScore,
+      archived,
     };
 
     // 构造 options.updateMany 以更新每个选项的 atypicaProb
@@ -63,8 +69,10 @@ export async function PATCH(
       description: updated.description ?? undefined,
       atypicaAnalysis: updated.atypicaAnalysis ?? undefined,
       atypicaAnalysisUrl: updated.atypicaAnalysisUrl ?? undefined,
+      atypicaPodcastUrl: updated.atypicaPodcastUrl ?? undefined,
       atypicaSummary: updated.atypicaSummary ?? undefined,
       accuracyScore: updated.accuracyScore ?? undefined,
+      archived: updated.archived,
       options: updated.options.map((o) => ({
         id: o.id,
         atypicaProb: o.atypicaProb ?? undefined,
