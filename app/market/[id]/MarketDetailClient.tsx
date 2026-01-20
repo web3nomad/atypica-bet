@@ -33,6 +33,53 @@ interface MarketDetailClientProps {
   market: PredictionMarket;
 }
 
+const getYouTubeEmbedUrl = (url?: string) => {
+  if (!url) return "";
+  const trimmed = url.trim();
+  if (!trimmed) return "";
+  try {
+    if (trimmed.includes("youtube.com/embed/")) {
+      return trimmed;
+    }
+
+    const parsed = new URL(trimmed);
+    const host = parsed.hostname.replace(/^www\./, "");
+    let videoId = "";
+
+    if (host === "youtu.be") {
+      videoId = parsed.pathname.slice(1);
+    } else if (host === "youtube.com" || host === "m.youtube.com") {
+      if (parsed.pathname === "/watch") {
+        videoId = parsed.searchParams.get("v") || "";
+      } else if (parsed.pathname.startsWith("/embed/")) {
+        return url;
+      } else if (parsed.pathname.startsWith("/shorts/")) {
+        videoId = parsed.pathname.replace("/shorts/", "");
+      }
+    }
+
+    if (!videoId) {
+      const match = trimmed.match(/[?&]v=([^&]+)/);
+      videoId = match ? match[1] : "";
+    }
+
+    if (!videoId) return "";
+
+    const listId = parsed.searchParams.get("list");
+    const listParam = listId ? `?list=${listId}` : "";
+    return `https://www.youtube.com/embed/${videoId}${listParam}`;
+  } catch {
+    const fallbackVideoMatch = trimmed.match(
+      /(?:youtu\.be\/|youtube\.com\/watch\?v=|youtube\.com\/shorts\/)([^?&/]+)/,
+    );
+    const videoId = fallbackVideoMatch ? fallbackVideoMatch[1] : "";
+    if (!videoId) return "";
+    const listMatch = trimmed.match(/[?&]list=([^&]+)/);
+    const listParam = listMatch ? `?list=${listMatch[1]}` : "";
+    return `https://www.youtube.com/embed/${videoId}${listParam}`;
+  }
+};
+
 export default function MarketDetailClient({
   market,
 }: MarketDetailClientProps) {
@@ -46,6 +93,7 @@ export default function MarketDetailClient({
   const [countdown, setCountdown] = useState<string>("");
   const [isNearDeadline, setIsNearDeadline] = useState<boolean>(false);
   const [priceChange, setPriceChange] = useState<number>(0); // 波动比例（占位数据）
+  const podcastEmbedUrl = getYouTubeEmbedUrl(market.atypicaPodcastUrl);
 
   useEffect(() => {
     if (market.status !== PredictionStatus.ACTIVE) return;
@@ -198,7 +246,6 @@ export default function MarketDetailClient({
                 </span>
               </div>
             </div>
-
             <div className="space-y-4">
               <h1 className="text-4xl md:text-6xl font-black text-white tracking-tighter leading-[1.1] text-header">
                 {market.title}
@@ -236,6 +283,14 @@ export default function MarketDetailClient({
                 </a>
               </div>
             </div>
+            <iframe
+              width="560"
+              height="315"
+              src={podcastEmbedUrl}
+              allow="autoplay; encrypted-media; picture-in-picture"
+              allowFullScreen
+            ></iframe>
+
             {market.atypicaAnalysis && (
               <p className="text-muted text-lg font-medium leading-relaxed italic">
                 {market.atypicaAnalysis}

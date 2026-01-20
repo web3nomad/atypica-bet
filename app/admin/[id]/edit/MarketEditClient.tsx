@@ -259,6 +259,22 @@ export function MarketEditClient({ market }: MarketEditClientProps) {
 
             <div className="space-y-2">
               <label className="text-[11px] font-bold text-white/70">
+                Atypica Podcast链接（Analysis Podcast URL）
+              </label>
+              <input
+                type="url"
+                value={atypicaPodcastUrl}
+                onChange={(e) => setAtypicaPodcastUrl(e.target.value)}
+                placeholder="https://example.com/analysis-report"
+                className="w-full px-4 py-3 rounded-xl border border-white/20 bg-black/60 text-sm text-white placeholder:text-white/50 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/30 transition-all"
+              />
+              <p className="text-[10px] text-white/40">
+                输入 Atypica Podcast的完整 URL 链接
+              </p>
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-[11px] font-bold text-white/70">
                 准确度评分（0–100）
               </label>
               <input
