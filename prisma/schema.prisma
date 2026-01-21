@@ -90,6 +90,7 @@ model Tweet {
 
   type          PostType?
   rawJson       Json?
+  isVisible     Boolean  @default(false)
   mediaUrls     String[] @default([])
   outLinks      String[] @default([])
   likeCount     Int?

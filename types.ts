@@ -133,7 +133,7 @@ export interface PolymarketPosition {
 }
 
 // Twitter Trading Post Types
-export type TradeAction = "BUY" | "SELL" | "UPDATE" | "ANALYSIS";
+export type TradeAction = "BUY" | "SELL" | "REVENUE" | "ANALYSIS";
 
 export interface TwitterPost {
   id: string;

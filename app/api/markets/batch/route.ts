@@ -9,6 +9,14 @@ interface BatchImportBody {
   markets?: PredictionMarket[];
 }
 
+const OPEN_ENDED_DATE = new Date('2099-12-31T23:59:59.000Z');
+
+const parseDate = (value?: string | null) => {
+  if (!value) return null;
+  const date = new Date(value);
+  return Number.isFinite(date.getTime()) ? date : null;
+};
+
 // POST /api/markets/batch - 批量保存市场
 export async function POST(request: NextRequest) {
 
@@ -47,6 +55,12 @@ export async function POST(request: NextRequest) {
         let savedMarket;
 
         if (existingMarket) {
+          const parsedCloseDate = parseDate(market.closeDate);
+          const closeDate =
+            parsedCloseDate ?? existingMarket.closeDate ?? OPEN_ENDED_DATE;
+          const isOpenEnded =
+            closeDate.getTime() === OPEN_ENDED_DATE.getTime();
+          const resolveDate = parseDate(market.resolveDate);
           // 市场已存在，更新市场信息（保留已有的 atypica 相关字段，如果新数据没有提供）
           savedMarket = await prisma.market.update({
             where: { id: market.id },
@@ -55,8 +69,8 @@ export async function POST(request: NextRequest) {
               description: market.description,
               category: market.category,
               status: market.status,
-              closeDate: new Date(market.closeDate),
-              resolveDate: market.resolveDate ? new Date(market.resolveDate) : null,
+              closeDate,
+              resolveDate: resolveDate ?? null,
               atypicaPickId: market.atypicaPickId ?? existingMarket.atypicaPickId ?? null,
               atypicaAnalysis: market.atypicaAnalysis ?? existingMarket.atypicaAnalysis ?? null,
               accuracyScore: market.accuracyScore ?? existingMarket.accuracyScore ?? null,
@@ -65,6 +79,7 @@ export async function POST(request: NextRequest) {
                 ? {
                     source: market.externalSource,
                     originalId: market.id,
+                    openEnded: isOpenEnded,
                   }
                 : undefined,
               polyMarketIcon: market.polyMarketIcon,
@@ -93,6 +108,11 @@ export async function POST(request: NextRequest) {
             },
           });
         } else {
+          const parsedCloseDate = parseDate(market.closeDate);
+          const closeDate = parsedCloseDate ?? OPEN_ENDED_DATE;
+          const isOpenEnded =
+            closeDate.getTime() === OPEN_ENDED_DATE.getTime();
+          const resolveDate = parseDate(market.resolveDate);
           // 市场不存在，创建新市场
           savedMarket = await prisma.market.create({
             data: {
@@ -101,8 +121,8 @@ export async function POST(request: NextRequest) {
               description: market.description,
               category: market.category,
               status: market.status,
-              closeDate: new Date(market.closeDate),
-              resolveDate: market.resolveDate ? new Date(market.resolveDate) : null,
+              closeDate,
+              resolveDate: resolveDate ?? null,
               atypicaPickId: market.atypicaPickId,
               atypicaAnalysis: market.atypicaAnalysis,
               accuracyScore: market.accuracyScore,
@@ -111,6 +131,7 @@ export async function POST(request: NextRequest) {
                 ? {
                     source: market.externalSource,
                     originalId: market.id,
+                    openEnded: isOpenEnded,
                   }
                 : undefined,
               polyMarketUrl: market.polyMarketUrl,

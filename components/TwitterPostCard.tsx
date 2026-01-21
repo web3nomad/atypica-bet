@@ -45,11 +45,11 @@ export const TwitterPostCard: React.FC<TwitterPostCardProps> = ({ post }) => {
         bg: "bg-red-500/10",
         label: "SELL",
       },
-      UPDATE: {
+      REVENUE: {
         icon: <BarChart3 className="w-4 h-4" />,
         color: "text-amber-400",
         bg: "bg-amber-500/10",
-        label: "UPDATE",
+        label: "REVENUE",
       },
       ANALYSIS: {
         icon: <BarChart3 className="w-4 h-4" />,
