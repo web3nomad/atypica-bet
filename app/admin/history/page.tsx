@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { PredictionMarket } from "@/types";
-import { ArrowUpRight } from "lucide-react";
+import { ArrowUpRight, ChevronDown } from "lucide-react";
 
 type AdminTweet = {
   id: string;
@@ -146,6 +146,12 @@ export default function AdminHistoryPage() {
     return new Map(markets.map((market) => [market.id, market.title]));
   }, [markets]);
 
+  const selectClasses =
+    "w-full appearance-none rounded-xl bg-white/5 border border-white/10 px-3 py-2.5 pr-9 text-xs font-semibold text-white/90 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] transition-all hover:border-white/25 hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:border-primary/40 cursor-pointer";
+  const inputClasses =
+    "w-full bg-black/50 border border-white/10 rounded-lg px-3 py-2 text-xs text-white/80 placeholder:text-white/30 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:border-white/20";
+  const optionClasses = "bg-slate-950 text-white";
+
   const handleFieldChange = (
     tweetId: string,
     field: keyof AdminTweet["rawJson"],
@@ -261,7 +267,7 @@ export default function AdminHistoryPage() {
         <button
           onClick={handleSync}
           disabled={syncing}
-          className="bg-primary hover:bg-primary/90 text-black font-bold px-6 py-2.5 rounded-xl shadow-lg shadow-primary/20 transition-all disabled:opacity-60"
+          className="bg-primary hover:bg-primary/90 text-black font-bold px-6 py-2.5 rounded-xl shadow-lg shadow-primary/20 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 disabled:opacity-60"
         >
           {syncing ? "Syncing..." : "Sync Tweets"}
         </button>
@@ -359,14 +365,14 @@ export default function AdminHistoryPage() {
                 </div>
                 <div className="flex items-center gap-3">
                   {rowErrors[tweet.id] && (
-                    <div className="text-xs text-red-400">
+                    <div className="text-xs text-red-400" aria-live="polite">
                       {rowErrors[tweet.id]}
                     </div>
                   )}
                   <button
                     onClick={() => handleSave(tweet)}
                     disabled={savingId === tweet.id}
-                    className="bg-white/10 hover:bg-white/20 text-white text-xs font-semibold px-4 py-2 rounded-lg disabled:opacity-60"
+                    className="bg-white/10 hover:bg-white/20 text-white text-xs font-semibold px-4 py-2 rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 disabled:opacity-60"
                   >
                     {savingId === tweet.id ? "Saving..." : "Save"}
                   </button>
@@ -376,44 +382,62 @@ export default function AdminHistoryPage() {
               <div className="grid grid-cols-1 xl:grid-cols-[220px_1fr_360px] gap-6">
                 <div className="space-y-4">
                   <div>
-                    <label className="text-[11px] uppercase tracking-widest text-white/50">
+                    <label
+                      htmlFor={`type-${tweet.id}`}
+                      className="text-[11px] uppercase tracking-widest text-white/50"
+                    >
                       Type
                     </label>
-                    <select
-                      value={tweet.type ?? ""}
-                      onChange={(event) => {
-                        setRowErrors((prev) => ({
-                          ...prev,
-                          [tweet.id]: "",
-                        }));
-                        setTweets((prev) =>
-                          prev.map((item) =>
-                            item.id === tweet.id
-                              ? {
-                                  ...item,
-                                  type:
-                                    event.target.value === "BUY" ||
-                                    event.target.value === "SELL"
-                                      ? (event.target.value as "BUY" | "SELL")
-                                      : null,
-                                }
-                              : item
-                          )
-                        );
-                      }}
-                      className="mt-2 w-full bg-black/50 border border-white/10 rounded-lg px-3 py-2 text-xs text-white/70"
-                    >
-                      <option value="">Unclassified</option>
-                      <option value="BUY">BUY</option>
-                      <option value="SELL">SELL</option>
-                    </select>
+                    <div className="relative mt-2 group">
+                      <select
+                        id={`type-${tweet.id}`}
+                        name={`type-${tweet.id}`}
+                        value={tweet.type ?? ""}
+                        onChange={(event) => {
+                          setRowErrors((prev) => ({
+                            ...prev,
+                            [tweet.id]: "",
+                          }));
+                          setTweets((prev) =>
+                            prev.map((item) =>
+                              item.id === tweet.id
+                                ? {
+                                    ...item,
+                                    type:
+                                      event.target.value === "BUY" ||
+                                      event.target.value === "SELL"
+                                        ? (event.target.value as "BUY" | "SELL")
+                                        : null,
+                                  }
+                                : item
+                            )
+                          );
+                        }}
+                        className={selectClasses}
+                      >
+                        <option value="" className={optionClasses}>
+                          Unclassified
+                        </option>
+                        <option value="BUY" className={optionClasses}>
+                          BUY
+                        </option>
+                        <option value="SELL" className={optionClasses}>
+                          SELL
+                        </option>
+                      </select>
+                      <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white/40 transition-colors group-focus-within:text-primary/80 group-hover:text-white/70" />
+                    </div>
                   </div>
                   <div>
                     <label className="text-[11px] uppercase tracking-widest text-white/50">
                       Visibility
                     </label>
-                    <label className="mt-2 flex items-center gap-2 text-xs text-white/70">
+                    <label
+                      htmlFor={`visible-${tweet.id}`}
+                      className="mt-2 flex items-center gap-2 text-xs text-white/70 cursor-pointer"
+                    >
                       <input
+                        id={`visible-${tweet.id}`}
                         type="checkbox"
                         checked={tweet.isVisible}
                         onChange={(event) => {
@@ -428,39 +452,53 @@ export default function AdminHistoryPage() {
                                 : item
                             )
                           );
-                        }}
-                        className="h-4 w-4 rounded border-white/20 bg-black/40"
+                      }}
+                        className="h-4 w-4 rounded border-white/20 bg-black/40 text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
                       />
                       Show on history
                     </label>
                   </div>
                   <div>
-                    <label className="text-[11px] uppercase tracking-widest text-white/50">
+                    <label
+                      htmlFor={`market-${tweet.id}`}
+                      className="text-[11px] uppercase tracking-widest text-white/50"
+                    >
                       Market
                     </label>
-                    <select
-                      value={tweet.marketId ?? ""}
-                      onChange={(event) =>
-                        setTweets((prev) =>
-                          prev.map((item) =>
-                            item.id === tweet.id
-                              ? {
-                                  ...item,
-                                  marketId: event.target.value || null,
-                                }
-                              : item
+                    <div className="relative mt-2 group">
+                      <select
+                        id={`market-${tweet.id}`}
+                        name={`market-${tweet.id}`}
+                        value={tweet.marketId ?? ""}
+                        onChange={(event) =>
+                          setTweets((prev) =>
+                            prev.map((item) =>
+                              item.id === tweet.id
+                                ? {
+                                    ...item,
+                                    marketId: event.target.value || null,
+                                  }
+                                : item
+                            )
                           )
-                        )
-                      }
-                      className="mt-2 w-full bg-black/50 border border-white/10 rounded-lg px-3 py-2 text-xs text-white/70"
-                    >
-                      <option value="">No market</option>
-                      {markets.map((market) => (
-                        <option key={market.id} value={market.id}>
-                          {market.title}
+                        }
+                        className={selectClasses}
+                      >
+                        <option value="" className={optionClasses}>
+                          No market
                         </option>
-                      ))}
-                    </select>
+                        {markets.map((market) => (
+                          <option
+                            key={market.id}
+                            value={market.id}
+                            className={optionClasses}
+                          >
+                            {market.title}
+                          </option>
+                        ))}
+                      </select>
+                      <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white/40 transition-colors group-focus-within:text-primary/80 group-hover:text-white/70" />
+                    </div>
                   </div>
                 </div>
 
@@ -484,7 +522,10 @@ export default function AdminHistoryPage() {
                     }
                     rows={4}
                     placeholder="Text"
-                    className="w-full bg-black/50 border border-white/10 rounded-lg px-3 py-2 text-xs text-white/70"
+                    name={`tweet-${tweet.id}-text`}
+                    autoComplete="off"
+                    aria-label="Tweet text"
+                    className={inputClasses}
                   />
                   <input
                     value={tweet.rawJson.market}
@@ -492,7 +533,10 @@ export default function AdminHistoryPage() {
                       handleFieldChange(tweet.id, "market", event.target.value)
                     }
                     placeholder="Market"
-                    className="w-full bg-black/50 border border-white/10 rounded-lg px-3 py-2 text-xs text-white/70"
+                    name={`tweet-${tweet.id}-market`}
+                    autoComplete="off"
+                    aria-label="Market"
+                    className={inputClasses}
                   />
                   <div className="grid grid-cols-2 gap-2">
                     <input
@@ -505,7 +549,11 @@ export default function AdminHistoryPage() {
                         )
                       }
                       placeholder="Amount"
-                      className="w-full bg-black/50 border border-white/10 rounded-lg px-3 py-2 text-xs text-white/70"
+                      name={`tweet-${tweet.id}-amount`}
+                      autoComplete="off"
+                      inputMode="decimal"
+                      aria-label="Amount"
+                      className={inputClasses}
                     />
                     <input
                       value={tweet.rawJson.entry}
@@ -517,7 +565,11 @@ export default function AdminHistoryPage() {
                         )
                       }
                       placeholder="Entry"
-                      className="w-full bg-black/50 border border-white/10 rounded-lg px-3 py-2 text-xs text-white/70"
+                      name={`tweet-${tweet.id}-entry`}
+                      autoComplete="off"
+                      inputMode="decimal"
+                      aria-label="Entry"
+                      className={inputClasses}
                     />
                   </div>
                 </div>
