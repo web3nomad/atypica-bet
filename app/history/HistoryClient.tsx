@@ -50,7 +50,9 @@ export default function HistoryClient({
 
     // Calculate total revenue from latest portfolio update
     const latestPortfolioUpdate = posts.find(
-      (p) => p.tradeData?.action === "UPDATE" && p.tradeData?.market === "Portfolio"
+      (p) =>
+        p.tradeData?.action === "REVENUE" &&
+        p.tradeData?.market === "Portfolio"
     );
     const revenue = latestPortfolioUpdate?.tradeData?.revenueRate || 0;
 
@@ -267,14 +269,14 @@ export default function HistoryClient({
                 Sell
               </button>
               <button
-                onClick={() => setFilterAction("UPDATE")}
+                onClick={() => setFilterAction("REVENUE")}
                 className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                  filterAction === "UPDATE"
+                  filterAction === "REVENUE"
                     ? "bg-amber-500/20 text-amber-400 border border-amber-500/30"
                     : "bg-white/5 text-slate-400 border border-white/10 hover:bg-white/10"
                 }`}
               >
-                Update
+                Revenue
               </button>
               <button
                 onClick={() => setFilterAction("ANALYSIS")}

@@ -1,0 +1,4 @@
+-- AlterTable
+ALTER TABLE "Tweet" ADD COLUMN     "isVisible" BOOLEAN NOT NULL DEFAULT false,
+ALTER COLUMN "mediaUrls" SET DEFAULT ARRAY[]::TEXT[],
+ALTER COLUMN "outLinks" SET DEFAULT ARRAY[]::TEXT[];
