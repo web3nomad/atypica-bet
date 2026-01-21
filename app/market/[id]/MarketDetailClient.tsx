@@ -283,13 +283,15 @@ export default function MarketDetailClient({
                 </a>
               </div>
             </div>
-            <iframe
-              width="560"
-              height="315"
-              src={podcastEmbedUrl}
-              allow="autoplay; encrypted-media; picture-in-picture"
-              allowFullScreen
-            ></iframe>
+            {podcastEmbedUrl && (
+              <iframe
+                width="560"
+                height="315"
+                src={podcastEmbedUrl}
+                allow="autoplay; encrypted-media; picture-in-picture"
+                allowFullScreen
+              ></iframe>
+            )}
 
             {market.atypicaAnalysis && (
               <p className="text-muted text-lg font-medium leading-relaxed italic">
