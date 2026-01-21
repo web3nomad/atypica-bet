@@ -1,7 +1,9 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import Link from "next/link";
 import { PredictionMarket } from "@/types";
+import { ArrowUpRight } from "lucide-react";
 
 type AdminTweet = {
   id: string;
@@ -139,6 +141,10 @@ export default function AdminHistoryPage() {
     const incomplete = tweets.filter((tweet) => !hasCompleteFields(tweet)).length;
     return { total, visible, unclassified, incomplete };
   }, [tweets]);
+
+  const marketTitleById = React.useMemo(() => {
+    return new Map(markets.map((market) => [market.id, market.title]));
+  }, [markets]);
 
   const handleFieldChange = (
     tweetId: string,
@@ -322,6 +328,9 @@ export default function AdminHistoryPage() {
       <div className="space-y-4">
         {tweets.map((tweet) => {
           const complete = hasCompleteFields(tweet);
+          const marketTitle = tweet.marketId
+            ? marketTitleById.get(tweet.marketId)
+            : undefined;
           return (
             <div
               key={tweet.id}
@@ -513,6 +522,23 @@ export default function AdminHistoryPage() {
                   </div>
                 </div>
               </div>
+
+              {tweet.marketId && marketTitle && (
+                <div className="pt-4 border-t border-white/10 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                  <div className="text-[11px] uppercase tracking-widest text-white/50">
+                    Linked market
+                  </div>
+                  <Link
+                    href={`/market/${tweet.marketId}`}
+                    className="group inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-primary/80 hover:text-primary transition-colors"
+                  >
+                    <span className="max-w-[280px] truncate">
+                      {marketTitle}
+                    </span>
+                    <ArrowUpRight className="w-3.5 h-3.5" />
+                  </Link>
+                </div>
+              )}
             </div>
           );
         })}
