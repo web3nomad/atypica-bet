@@ -7,6 +7,7 @@ interface BatchImportBody {
   eventGroup?: PolymarketEventGroup;
   selectedIds?: string[];
   markets?: PredictionMarket[];
+  sourceUrl?: string;
 }
 
 const OPEN_ENDED_DATE = new Date('2099-12-31T23:59:59.000Z');
@@ -24,6 +25,8 @@ export async function POST(request: NextRequest) {
     const body = (await request.json()) as BatchImportBody;
 
     let markets: PredictionMarket[] | undefined = body.markets;
+    const sourceUrl =
+      typeof body.sourceUrl === 'string' ? body.sourceUrl.trim() : '';
 
     // 兼容 Admin Polymarket 导入：通过 eventGroup + selectedIds 生成 markets
     if (!markets && body.eventGroup) {
@@ -62,6 +65,7 @@ export async function POST(request: NextRequest) {
             closeDate.getTime() === OPEN_ENDED_DATE.getTime();
           const resolveDate = parseDate(market.resolveDate);
           // 市场已存在，更新市场信息（保留已有的 atypica 相关字段，如果新数据没有提供）
+          const polyMarketUrl = sourceUrl || market.polyMarketUrl;
           savedMarket = await prisma.market.update({
             where: { id: market.id },
             data: {
@@ -80,10 +84,11 @@ export async function POST(request: NextRequest) {
                     source: market.externalSource,
                     originalId: market.id,
                     openEnded: isOpenEnded,
+                    sourceUrl: sourceUrl || undefined,
                   }
                 : undefined,
               polyMarketIcon: market.polyMarketIcon,
-              polyMarketUrl: market.polyMarketUrl,
+              polyMarketUrl,
               viewCount: market.probability !== undefined ? Math.round(market.probability * 10000) : 0,
               shareCount: market.shareCount,
               poolAmount: market.poolAmount,
@@ -114,6 +119,7 @@ export async function POST(request: NextRequest) {
             closeDate.getTime() === OPEN_ENDED_DATE.getTime();
           const resolveDate = parseDate(market.resolveDate);
           // 市场不存在，创建新市场
+          const polyMarketUrl = sourceUrl || market.polyMarketUrl;
           savedMarket = await prisma.market.create({
             data: {
               id: market.id,
@@ -132,9 +138,10 @@ export async function POST(request: NextRequest) {
                     source: market.externalSource,
                     originalId: market.id,
                     openEnded: isOpenEnded,
+                    sourceUrl: sourceUrl || undefined,
                   }
                 : undefined,
-              polyMarketUrl: market.polyMarketUrl,
+              polyMarketUrl,
               polyMarketIcon: market.polyMarketIcon,
               viewCount: market.probability !== undefined ? Math.round(market.probability * 10000) : 0,
               shareCount: market.shareCount,

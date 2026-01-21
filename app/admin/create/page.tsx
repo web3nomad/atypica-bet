@@ -176,6 +176,13 @@ export default function AdminCreatePage() {
     }
   };
 
+  const getSourceUrl = (input: string) => {
+    const trimmed = input.trim();
+    if (!trimmed) return '';
+    if (/^https?:\/\//i.test(trimmed)) return trimmed;
+    return `https://polymarket.com/event/${trimmed}`;
+  };
+
   const handleBatchImport = async () => {
     if (!eventGroup || selectedMarkets.size === 0) {
       setImportError('请至少选择一个市场');
@@ -192,6 +199,7 @@ export default function AdminCreatePage() {
         body: JSON.stringify({
           eventGroup,
           selectedIds: Array.from(selectedMarkets),
+          sourceUrl: getSourceUrl(slugInput),
         }),
       });
 
