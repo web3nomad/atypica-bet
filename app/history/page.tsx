@@ -30,6 +30,13 @@ export default async function HistoryPage() {
       postedAt: true,
       rawJson: true,
       type: true,
+      marketId: true,
+      market: {
+        select: {
+          id: true,
+          title: true,
+        },
+      },
     },
   });
 
@@ -40,10 +47,18 @@ export default async function HistoryPage() {
     const amount = typeof raw.amount === "number" ? raw.amount : undefined;
     const entry = typeof raw.entry === "number" ? raw.entry : undefined;
 
+    const relatedMarket = tweet.market
+      ? {
+          id: tweet.market.id,
+          title: tweet.market.title,
+        }
+      : undefined;
+
     return {
       id: tweet.id,
       tweetId: tweet.tweetId,
       content: buyText || tweet.text,
+      relatedMarket,
       author: {
         handle: "@ioiiobet",
         name: "ioiio.bet",

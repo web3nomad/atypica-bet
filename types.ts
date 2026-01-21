@@ -139,6 +139,10 @@ export interface TwitterPost {
   id: string;
   tweetId: string; // Original Twitter ID
   content: string; // Tweet text
+  relatedMarket?: {
+    id: string;
+    title: string;
+  };
   author: {
     handle: string; // @ioiiobet
     name: string;
