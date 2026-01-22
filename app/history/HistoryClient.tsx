@@ -19,9 +19,10 @@ interface HistoryClientProps {
 }
 
 export default function HistoryClient({
-  posts,
+  posts: initialPosts,
   revenueData,
 }: HistoryClientProps) {
+  const [posts, setPosts] = useState(initialPosts);
   const [filterAction, setFilterAction] = useState<TradeAction | "ALL">("ALL");
   const [isMobile, setIsMobile] = useState(false);
   const [totalRevenue, setTotalRevenue] = useState(0);
@@ -36,6 +37,83 @@ export default function HistoryClient({
     checkMobile();
     window.addEventListener("resize", checkMobile);
     return () => window.removeEventListener("resize", checkMobile);
+  }, []);
+
+  // Refresh posts when updated in admin
+  useEffect(() => {
+    let broadcastChannel: BroadcastChannel | null = null;
+
+    const refreshPosts = async () => {
+      try {
+        const res = await fetch("/api/tweets");
+        if (!res.ok) return;
+        const data = await res.json();
+        if (!data?.tweets) return;
+
+        const visibleTweets = data.tweets.filter(
+          (t: any) => t.isVisible && (t.type === "BUY" || t.type === "SELL")
+        );
+
+        const updatedPosts: TwitterPost[] = visibleTweets.map((tweet: any) => {
+          const raw = (tweet.rawJson ?? {}) as Record<string, unknown>;
+          const buyText = typeof raw.buyText === "string" ? raw.buyText : "";
+          const market = typeof raw.market === "string" ? raw.market : "";
+          const amount = typeof raw.amount === "number" ? raw.amount : undefined;
+          const entry = typeof raw.entry === "number" ? raw.entry : undefined;
+
+          return {
+            id: tweet.id,
+            tweetId: tweet.tweetId,
+            content: buyText || tweet.text,
+            author: {
+              handle: "@ioiiobet",
+              name: "ioiio.bet",
+              avatar: "/images/logoicon.jpg",
+            },
+            publishedAt: tweet.postedAt,
+            tradeData: market
+              ? {
+                  action: tweet.type === "SELL" ? "SELL" : "BUY",
+                  market,
+                  amount,
+                  price: entry,
+                }
+              : undefined,
+            media: {
+              images: [],
+              videos: [],
+              links: [],
+            },
+            engagement: {
+              likes: 0,
+              retweets: 0,
+              replies: 0,
+            },
+          };
+        });
+
+        setPosts(updatedPosts);
+      } catch (e) {
+        console.error("[HistoryClient] Failed to refresh posts:", e);
+      }
+    };
+
+    try {
+      broadcastChannel = new BroadcastChannel("tweets-update");
+      broadcastChannel.onmessage = (event) => {
+        if (event.data?.type === "tweet-updated") {
+          refreshPosts();
+        }
+      };
+    } catch (e) {
+      // BroadcastChannel not supported, ignore
+    }
+
+    return () => {
+      if (broadcastChannel) {
+        broadcastChannel.close();
+      }
+    };
   }, []);
 
   // Calculate statistics
@@ -183,10 +261,10 @@ export default function HistoryClient({
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-4xl font-bold text-white mb-2">
-            Trading History
+            Signal Tape
           </h1>
           <p className="text-slate-400">
-            Track all trading activities from our Twitter account
+            Live and historical trading signals from our Twitter account
           </p>
         </div>
 

@@ -224,6 +224,15 @@ export default function AdminHistoryPage() {
             : item
         )
       );
+
+      // Notify other tabs to refresh tweets data
+      try {
+        const channel = new BroadcastChannel("tweets-update");
+        channel.postMessage({ type: "tweet-updated", tweetId: tweet.id });
+        channel.close();
+      } catch (e) {
+        // BroadcastChannel not supported, ignore
+      }
     } catch (error) {
       setRowErrors((prev) => ({
         ...prev,

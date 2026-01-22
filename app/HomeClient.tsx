@@ -19,6 +19,7 @@ import {
 import ReactECharts from "echarts-for-react";
 import * as echarts from "echarts";
 import { useLightCard } from "@/hooks/useLightCard";
+import SignalStream from "@/components/SignalStream";
 
 interface HomeClientProps {
   initialMarkets: PredictionMarket[];
@@ -1038,6 +1039,11 @@ export default function HomeClient({ initialMarkets }: HomeClientProps) {
           )}
         </div>
 
+        {/* Live Stream Signals - 移动端 */}
+        <div className="mt-8 mb-16">
+          <SignalStream />
+        </div>
+
         {/* Featured Analysis - 移动端简化 */}
         <div className="mt-16 mb-24">
           <div className="flex items-center gap-2 mb-4">
@@ -1360,6 +1366,11 @@ export default function HomeClient({ initialMarkets }: HomeClientProps) {
             </p>
           </div>
         )}
+      </div>
+
+      {/* Live Stream Signals - 桌面端 */}
+      <div className="mt-24">
+        <SignalStream />
       </div>
 
       {/* Verified Results Section */}

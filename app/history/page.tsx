@@ -5,8 +5,8 @@ import { prisma } from "@/lib/prisma";
 import { TwitterPost } from "@/types";
 
 export const metadata: Metadata = {
-  title: "Trading History",
-  description: "Track all trading activities and performance history from ioiio.bet",
+  title: "Signal Tape",
+  description: "Signal tape view of all trading activities and performance history from ioiio.bet",
 };
 
 export const dynamic = "force-dynamic";
