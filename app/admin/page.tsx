@@ -12,6 +12,7 @@ import {
   ChevronDown,
   ChevronUp,
   Archive,
+  History,
 } from "lucide-react";
 
 export default function AdminPage() {
@@ -122,13 +123,22 @@ export default function AdminPage() {
           <h1 className="text-3xl font-black text-white">预测管理后台</h1>
           <p className="text-white/60 mt-1">管理、分析并结算预测市场</p>
         </div>
-        <button
-          onClick={() => router.push("/admin/create")}
-          className="bg-primary hover:bg-primary/90 text-black font-bold px-6 py-2.5 rounded-xl shadow-lg shadow-primary/20 transition-all flex items-center gap-2"
-        >
-          <Plus className="w-5 h-5" />
-          创建预测
-        </button>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => router.push("/admin/history")}
+            className="bg-white/10 hover:bg-white/20 text-white font-semibold px-4 py-2.5 rounded-xl transition-colors flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
+          >
+            <History className="w-4 h-4" />
+            Tweet Admin
+          </button>
+          <button
+            onClick={() => router.push("/admin/create")}
+            className="bg-primary hover:bg-primary/90 text-black font-bold px-6 py-2.5 rounded-xl shadow-lg shadow-primary/20 transition-all flex items-center gap-2"
+          >
+            <Plus className="w-5 h-5" />
+            创建预测
+          </button>
+        </div>
       </div>
 
       <div className="glass-panel rounded-2xl overflow-hidden">

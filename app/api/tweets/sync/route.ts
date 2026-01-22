@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { PostType } from '@prisma/client';
 import { setProxy } from '@/lib/proxy';
 import fixturePayload from '@/lib/fixtures/x-tweets.json';
 
@@ -134,7 +135,7 @@ export async function POST(request: NextRequest) {
       const parsedBuy = parseTradeTemplate(tweet.text, 'BUY');
       const parsedSell = parsedBuy ? null : parseTradeTemplate(tweet.text, 'SELL');
       const parsed = parsedBuy ?? parsedSell;
-      const matchedType = parsedBuy ? 'BUY' : parsedSell ? 'SELL' : null;
+      const matchedType = parsedBuy ? PostType.BUY : parsedSell ? PostType.SELL : null;
       const matched = Boolean(parsed);
 
       if (matched) {

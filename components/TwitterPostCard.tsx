@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import Link from "next/link";
 import { TwitterPost } from "@/types";
 import {
   TrendingUp,
@@ -13,6 +14,7 @@ import {
   Heart,
   ExternalLink,
   Image as ImageIcon,
+  ArrowUpRight,
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 
@@ -21,7 +23,16 @@ interface TwitterPostCardProps {
 }
 
 export const TwitterPostCard: React.FC<TwitterPostCardProps> = ({ post }) => {
-  const { author, content, publishedAt, tradeData, media, engagement, tweetId } = post;
+  const {
+    author,
+    content,
+    publishedAt,
+    tradeData,
+    media,
+    engagement,
+    relatedMarket,
+    tweetId,
+  } = post;
 
   // Format time ago
   const timeAgo = formatDistanceToNow(new Date(publishedAt), {
@@ -212,6 +223,20 @@ export const TwitterPostCard: React.FC<TwitterPostCardProps> = ({ post }) => {
               />
             </div>
           ))}
+        </div>
+      )}
+
+      {relatedMarket && (
+        <div className="mb-4">
+          <Link
+            href={`/market/${relatedMarket.id}`}
+            className="group inline-flex items-center gap-2 text-sm font-semibold text-purple-400 hover:text-purple-300 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400/60 rounded-md"
+          >
+            <span className="min-w-0 max-w-[420px] truncate">
+              {relatedMarket.title}
+            </span>
+            <ArrowUpRight className="w-4 h-4" aria-hidden="true" />
+          </Link>
         </div>
       )}
 
