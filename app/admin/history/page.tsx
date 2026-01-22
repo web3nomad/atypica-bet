@@ -9,7 +9,7 @@ type AdminTweet = {
   id: string;
   tweetId: string;
   text: string;
-  type: "BUY" | "SELL" | null;
+  type: "BUY" | "SELL" | "ANALYSIS" | "REVENUE" | null;
   postedAt: string;
   marketId: string | null;
   isVisible: boolean;
@@ -61,7 +61,7 @@ export default function AdminHistoryPage() {
               : {};
             return {
               ...tweet,
-              type: tweet.type === "BUY" || tweet.type === "SELL" ? tweet.type : null,
+              type: tweet.type === "BUY" || tweet.type === "SELL" || tweet.type === "ANALYSIS" || tweet.type === "REVENUE" ? tweet.type : null,
               isVisible: Boolean(tweet.isVisible),
               rawJson: {
                 buyText: typeof raw.buyText === "string" ? raw.buyText : "",
@@ -124,6 +124,7 @@ export default function AdminHistoryPage() {
   };
 
   const hasCompleteFields = (tweet: AdminTweet) => {
+    if (tweet.type === "ANALYSIS" || tweet.type === "REVENUE") return true;
     const amount = parseNumber(tweet.rawJson.amount);
     const entry = parseNumber(tweet.rawJson.entry);
     return (
@@ -209,7 +210,7 @@ export default function AdminHistoryPage() {
           item.id === tweet.id
             ? {
                 ...item,
-                type: data.type === "BUY" || data.type === "SELL" ? data.type : null,
+                type: data.type === "BUY" || data.type === "SELL" || data.type === "ANALYSIS" || data.type === "REVENUE" ? data.type : null,
                 isVisible: Boolean(data.isVisible),
                 marketId: data.marketId ?? null,
                 rawJson: {
@@ -405,8 +406,10 @@ export default function AdminHistoryPage() {
                                     ...item,
                                     type:
                                       event.target.value === "BUY" ||
-                                      event.target.value === "SELL"
-                                        ? (event.target.value as "BUY" | "SELL")
+                                      event.target.value === "SELL" ||
+                                      event.target.value === "ANALYSIS" ||
+                                      event.target.value === "REVENUE"
+                                        ? (event.target.value as "BUY" | "SELL" | "ANALYSIS" | "REVENUE")
                                         : null,
                                   }
                                 : item
@@ -423,6 +426,12 @@ export default function AdminHistoryPage() {
                         </option>
                         <option value="SELL" className={optionClasses}>
                           SELL
+                        </option>
+                        <option value="ANALYSIS" className={optionClasses}>
+                          ANALYSIS
+                        </option>
+                        <option value="REVENUE" className={optionClasses}>
+                          REVENUE
                         </option>
                       </select>
                       <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white/40 transition-colors group-focus-within:text-primary/80 group-hover:text-white/70" />

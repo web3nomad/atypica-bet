@@ -27,6 +27,75 @@ const parseNumber = (value: string | null): number | null => {
   return Number.isFinite(parsed) ? parsed : null;
 };
 
+const parsePercent = (value: string | null): number | null => {
+  if (!value) return null;
+  const match = value.match(/([+-]?\d+(?:\.\d+)?)\s*%/);
+  if (!match) return null;
+  const parsed = Number.parseFloat(match[1]);
+  return Number.isFinite(parsed) ? parsed : null;
+};
+
+const parseSignedNumber = (
+  value: string | null,
+  signHint: number | null
+): number | null => {
+  if (!value) return null;
+  const parsed = parseNumber(value);
+  if (parsed === null) return null;
+  const hasNegative = /-/.test(value);
+  const sign = hasNegative || (signHint !== null && signHint < 0) ? -1 : 1;
+  return sign * Math.abs(parsed);
+};
+
+const parseRevenueTemplate = (text: string) => {
+  const normalized = text.replace(/\r\n/g, '\n').trim();
+  const headerMatch = normalized.match(
+    /(?:^|\n)\s*[^a-zA-Z0-9]*revenue\s*[:\uFF1A]\s*([^\n]+)/i
+  );
+  if (!headerMatch) return null;
+  const headerText = headerMatch[1].trim();
+  const period =
+    normalized.match(/(?:^|\n)\s*period\s*[:\uFF1A]\s*([^\n]+)/i)?.[1]?.trim() ??
+    '';
+  const portfolioLine =
+    normalized.match(/(?:^|\n)\s*portfolio\s*[:\uFF1A]\s*([^\n]+)/i)?.[1]?.trim() ??
+    '';
+  const percentSource = portfolioLine || headerText;
+  const revenueRate = parsePercent(percentSource);
+  if (revenueRate === null) return null;
+  const pnlMatch = (portfolioLine || headerText).match(/\(([^)]+)\)/);
+  const profitLoss = pnlMatch
+    ? parseSignedNumber(pnlMatch[1], revenueRate)
+    : null;
+  const labelMatch = headerText.match(/^(.+?)\s+(?:up|down|over|in|for)\b/i);
+  const portfolioLabel = labelMatch ? labelMatch[1].trim() : 'Portfolio';
+
+  return {
+    headerText,
+    period,
+    portfolioLine,
+    revenueRate,
+    profitLoss,
+    portfolioLabel,
+  };
+};
+
+const parseAnalysisTemplate = (text: string) => {
+  const normalized = text.replace(/\r\n/g, '\n').trim();
+  const match = normalized.match(
+    /(?:^|\n)\s*[^a-zA-Z0-9]*analysis\s*[:\uFF1A]\s*([\s\S]+)/i
+  );
+  if (!match) return null;
+  const analysisText = match[1].trim();
+  if (!analysisText) return null;
+  const analysisTitle = analysisText.split('\n')[0]?.trim() ?? '';
+
+  return {
+    analysisText,
+    analysisTitle,
+  };
+};
+
 const parseTradeTemplate = (text: string, template: 'BUY' | 'SELL') => {
   const normalized = text.replace(/\r\n/g, '\n').trim();
   const label = template.toLowerCase();
@@ -134,9 +203,23 @@ export async function POST(request: NextRequest) {
 
       const parsedBuy = parseTradeTemplate(tweet.text, 'BUY');
       const parsedSell = parsedBuy ? null : parseTradeTemplate(tweet.text, 'SELL');
-      const parsed = parsedBuy ?? parsedSell;
-      const matchedType = parsedBuy ? PostType.BUY : parsedSell ? PostType.SELL : null;
-      const matched = Boolean(parsed);
+      const parsedTrade = parsedBuy ?? parsedSell;
+      const parsedAnalysis = parsedTrade
+        ? null
+        : parseAnalysisTemplate(tweet.text);
+      const parsedRevenue = parsedTrade || parsedAnalysis
+        ? null
+        : parseRevenueTemplate(tweet.text);
+      const matchedType = parsedBuy
+        ? 'BUY'
+        : parsedSell
+          ? 'SELL'
+          : parsedAnalysis
+            ? 'ANALYSIS'
+            : parsedRevenue
+              ? 'REVENUE'
+              : null;
+      const matched = Boolean(parsedTrade ?? parsedAnalysis ?? parsedRevenue);
 
       if (matched) {
         addedCount += 1;
@@ -145,14 +228,32 @@ export async function POST(request: NextRequest) {
       }
 
       const rawJson = matched
-        ? {
-            parsed: true,
-            template: matchedType,
-            buyText: parsed?.buyText,
-            market: parsed?.market,
-            amount: parsed?.amount,
-            entry: parsed?.entry,
-          }
+        ? matchedType === 'ANALYSIS'
+          ? {
+              parsed: true,
+              template: matchedType,
+              analysisText: parsedAnalysis?.analysisText,
+              analysisTitle: parsedAnalysis?.analysisTitle,
+            }
+          : matchedType === 'REVENUE'
+            ? {
+                parsed: true,
+                template: matchedType,
+                headerText: parsedRevenue?.headerText,
+                period: parsedRevenue?.period,
+                portfolioLine: parsedRevenue?.portfolioLine,
+                revenueRate: parsedRevenue?.revenueRate,
+                profitLoss: parsedRevenue?.profitLoss,
+                portfolioLabel: parsedRevenue?.portfolioLabel,
+              }
+            : {
+                parsed: true,
+                template: matchedType,
+                buyText: parsedTrade?.buyText,
+                market: parsedTrade?.market,
+                amount: parsedTrade?.amount,
+                entry: parsedTrade?.entry,
+              }
         : { parsed: false };
 
       return [

@@ -22,7 +22,14 @@ export async function PATCH(
       typeof body.marketId === 'string' && body.marketId.length > 0
         ? body.marketId
         : null;
-    const type = body.type === 'BUY' || body.type === 'SELL' ? body.type : null;
+    const type =
+      body.type === 'BUY' ||
+      body.type === 'SELL' ||
+      body.type === 'ANALYSIS' ||
+      body.type === 'REVENUE'
+        ? body.type
+        : null;
+    const isTrade = type === 'BUY' || type === 'SELL';
     const isVisible = body.isVisible === true;
     const rawJsonInput =
       body.rawJson && typeof body.rawJson === 'object' ? body.rawJson : null;
@@ -42,7 +49,7 @@ export async function PATCH(
       amount !== null &&
       entry !== null;
 
-    if (isVisible && (!type || !hasFields)) {
+    if (isVisible && (!type || (isTrade && !hasFields))) {
       return NextResponse.json(
         {
           error: 'Visible tweets require type and complete fields.',
@@ -55,7 +62,7 @@ export async function PATCH(
     if ('marketId' in body) updateData.marketId = marketId;
     if ('type' in body) updateData.type = type;
     if ('isVisible' in body) updateData.isVisible = isVisible;
-    if ('rawJson' in body) {
+    if ('rawJson' in body && isTrade) {
       updateData.rawJson = {
         parsed: hasFields && Boolean(type),
         template: type ?? undefined,
