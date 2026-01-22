@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { PostType } from '@prisma/client';
 import { setProxy } from '@/lib/proxy';
 import fixturePayload from '@/lib/fixtures/x-tweets.json';
 
