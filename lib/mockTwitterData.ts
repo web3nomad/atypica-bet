@@ -45,7 +45,7 @@ export const mockTwitterPosts: TwitterPost[] = [
     },
     publishedAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(), // 1 day ago
     tradeData: {
-      action: 'UPDATE',
+      action: 'REVENUE',
       market: 'Portfolio',
       revenueRate: 22.8,
       profitLoss: 3845,
@@ -213,7 +213,7 @@ export const mockTwitterPosts: TwitterPost[] = [
     },
     publishedAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(), // 7 days ago
     tradeData: {
-      action: 'UPDATE',
+      action: 'REVENUE',
       market: 'S&P500 ATH Jan',
       amount: 2100,
       price: 0.89,
@@ -271,7 +271,7 @@ export const mockTwitterPosts: TwitterPost[] = [
     },
     publishedAt: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString(), // 10 days ago
     tradeData: {
-      action: 'UPDATE',
+      action: 'REVENUE',
       market: 'Portfolio',
       revenueRate: 34.7,
       profitLoss: 5849.5,

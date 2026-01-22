@@ -21,14 +21,14 @@ if (!handle || !twitterUserId) {
 
 async function seedAccount() {
   const account = await prisma.twitterAccount.upsert({
-    where: { handle },
+    where: { handle: handle! },
     update: {
-      twitterUserId,
+      twitterUserId: twitterUserId!,
       isActive: true,
     },
     create: {
-      handle,
-      twitterUserId,
+      handle: handle!,
+      twitterUserId: twitterUserId!,
       isActive: true,
     },
   });
