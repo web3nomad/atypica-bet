@@ -19,7 +19,7 @@ export const dynamic = "force-dynamic";
 export default async function HistoryPage() {
   const tweets = await prisma.tweet.findMany({
     where: {
-      type: { in: ["BUY", "SELL"] },
+      type: { in: ["BUY", "SELL", "ANALYSIS", "REVENUE"] },
       isVisible: true,
     },
     orderBy: { postedAt: "desc" },
@@ -46,6 +46,18 @@ export default async function HistoryPage() {
     const market = typeof raw.market === "string" ? raw.market : "";
     const amount = typeof raw.amount === "number" ? raw.amount : undefined;
     const entry = typeof raw.entry === "number" ? raw.entry : undefined;
+    const analysisText =
+      typeof raw.analysisText === "string" ? raw.analysisText : "";
+    const analysisTitle =
+      typeof raw.analysisTitle === "string" ? raw.analysisTitle : "";
+    const analysisHeadline =
+      analysisTitle || (analysisText ? analysisText.split("\n")[0].trim() : "");
+    const revenueRate =
+      typeof raw.revenueRate === "number" ? raw.revenueRate : undefined;
+    const profitLoss =
+      typeof raw.profitLoss === "number" ? raw.profitLoss : undefined;
+    const portfolioLabel =
+      typeof raw.portfolioLabel === "string" ? raw.portfolioLabel : "Portfolio";
 
     const relatedMarket = tweet.market
       ? {
@@ -57,7 +69,10 @@ export default async function HistoryPage() {
     return {
       id: tweet.id,
       tweetId: tweet.tweetId,
-      content: buyText || tweet.text,
+      content:
+        tweet.type === "ANALYSIS" && analysisText
+          ? analysisText
+          : buyText || tweet.text,
       relatedMarket,
       author: {
         handle: "@ioiiobet",
@@ -65,14 +80,27 @@ export default async function HistoryPage() {
         avatar: "/images/logoicon.jpg",
       },
       publishedAt: tweet.postedAt.toISOString(),
-      tradeData: market
-        ? {
-            action: tweet.type === "SELL" ? "SELL" : "BUY",
-            market,
-            amount,
-            price: entry,
-          }
-        : undefined,
+      tradeData:
+        tweet.type === "ANALYSIS"
+          ? {
+              action: "ANALYSIS",
+              market: analysisHeadline || "Analysis",
+            }
+          : tweet.type === "REVENUE"
+            ? {
+                action: "REVENUE",
+                market: portfolioLabel,
+                revenueRate,
+                profitLoss,
+              }
+            : market
+              ? {
+                  action: tweet.type === "SELL" ? "SELL" : "BUY",
+                  market,
+                  amount,
+                  price: entry,
+                }
+              : undefined,
       media: {
         images: [],
         videos: [],

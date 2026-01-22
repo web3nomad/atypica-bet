@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import Link from "next/link";
 import { TwitterPost } from "@/types";
 import {
@@ -32,6 +32,32 @@ export const TwitterPostCard: React.FC<TwitterPostCardProps> = ({ post }) => {
     engagement,
     relatedMarket,
   } = post;
+  const isAnalysis = tradeData?.action === "ANALYSIS";
+  const marketTitle = relatedMarket?.title ?? tradeData?.market ?? "Market";
+  const showTradeCard = Boolean(tradeData || relatedMarket);
+  const [isExpanded, setIsExpanded] = useState(false);
+  const analysisMaxChars = 280;
+  const analysisMaxLines = 4;
+  const contentLines = content.split("\n");
+  const isLongAnalysis =
+    isAnalysis &&
+    (content.length > analysisMaxChars || contentLines.length > analysisMaxLines);
+
+  let displayedContent = content;
+  if (isLongAnalysis && !isExpanded) {
+    const truncatedLines =
+      contentLines.length > analysisMaxLines
+        ? contentLines.slice(0, analysisMaxLines).join("\n")
+        : content;
+    const truncatedChars =
+      truncatedLines.length > analysisMaxChars
+        ? truncatedLines.slice(0, analysisMaxChars)
+        : truncatedLines;
+    displayedContent = truncatedChars.replace(/\s+$/, "");
+    if (displayedContent.length < content.length) {
+      displayedContent = `${displayedContent}...`;
+    }
+  }
 
   // Format time ago
   const timeAgo = formatDistanceToNow(new Date(publishedAt), {
@@ -119,24 +145,47 @@ export const TwitterPostCard: React.FC<TwitterPostCardProps> = ({ post }) => {
       </div>
 
       {/* Content */}
-      <p className="text-slate-200 text-[15px] leading-relaxed mb-4 whitespace-pre-wrap">
-        {content}
+      <p
+        className={`text-slate-200 text-[15px] leading-relaxed ${isLongAnalysis ? "mb-2" : "mb-4"} whitespace-pre-wrap`}
+      >
+        {displayedContent}
       </p>
+      {isLongAnalysis && (
+        <button
+          type="button"
+          onClick={() => setIsExpanded((prev) => !prev)}
+          className="mb-4 text-xs font-semibold text-purple-400 hover:text-purple-300 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400/60 rounded-md"
+          aria-expanded={isExpanded}
+        >
+          {isExpanded ? "Show less" : "Show full"}
+        </button>
+      )}
 
       {/* Trade Data Card */}
-      {tradeData && (
+      {showTradeCard && (
         <div className="bg-black/30 border border-white/5 rounded-xl p-4 mb-4 space-y-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2 text-slate-300">
               <ShoppingCart className="w-4 h-4" />
               <span className="text-sm font-medium">Market</span>
             </div>
-            <span className="text-white font-semibold text-sm">
-              {tradeData.market}
-            </span>
+            {relatedMarket ? (
+              <Link
+                href={`/market/${relatedMarket.id}`}
+                className="flex items-center gap-2 text-white font-semibold text-sm hover:text-purple-300 transition-colors"
+              >
+                <span className="truncate max-w-[420px]">{marketTitle}</span>
+                <ArrowUpRight className="w-4 h-4" aria-hidden="true" />
+              </Link>
+            ) : (
+              <span className="text-white font-semibold text-sm">
+                {marketTitle}
+              </span>
+            )}
           </div>
 
-          {tradeData.amount !== undefined && (
+          {/* 
+          {tradeData?.amount !== undefined && (
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2 text-slate-300">
                 <DollarSign className="w-4 h-4" />
@@ -147,8 +196,9 @@ export const TwitterPostCard: React.FC<TwitterPostCardProps> = ({ post }) => {
               </span>
             </div>
           )}
+           */}
 
-          {tradeData.price !== undefined && (
+          {tradeData?.price !== undefined && (
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2 text-slate-300">
                 <BarChart3 className="w-4 h-4" />
@@ -160,7 +210,7 @@ export const TwitterPostCard: React.FC<TwitterPostCardProps> = ({ post }) => {
             </div>
           )}
 
-          {tradeData.revenueRate !== undefined &&
+          {tradeData?.revenueRate !== undefined &&
             tradeData.revenueRate !== 0 && (
               <div className="flex items-center justify-between pt-2 border-t border-white/5">
                 <div className="flex items-center gap-2 text-slate-300">
@@ -222,21 +272,7 @@ export const TwitterPostCard: React.FC<TwitterPostCardProps> = ({ post }) => {
         </div>
       )}
 
-      {relatedMarket && (
-        <div className="mb-4">
-          <Link
-            href={`/market/${relatedMarket.id}`}
-            className="group inline-flex items-center gap-2 text-sm font-semibold text-purple-400 hover:text-purple-300 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400/60 rounded-md"
-          >
-            <span className="min-w-0 max-w-[420px] truncate">
-              {relatedMarket.title}
-            </span>
-            <ArrowUpRight className="w-4 h-4" aria-hidden="true" />
-          </Link>
-        </div>
-      )}
-
-      {/* Engagement Stats */}
+            {/* Engagement Stats */}
       <div className="flex items-center gap-6 pt-4 border-t border-white/5">
         <div className="flex items-center gap-2 text-slate-400 hover:text-purple-400 transition-colors cursor-pointer">
           <MessageCircle className="w-4 h-4" />
