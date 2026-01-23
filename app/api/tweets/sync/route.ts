@@ -263,7 +263,7 @@ export async function POST(request: NextRequest) {
           text: tweet.text,
           url: `https://x.com/${X_HANDLE}/status/${tweet.id}`,
           postedAt: tweet.created_at ? new Date(tweet.created_at) : new Date(),
-          type: matchedType,
+          type: matchedType as PostType | null,
           isVisible: matched,
           rawJson,
         },
