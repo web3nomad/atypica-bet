@@ -31,6 +31,7 @@ export const TwitterPostCard: React.FC<TwitterPostCardProps> = ({ post }) => {
     media,
     engagement,
     relatedMarket,
+    tweetId,
   } = post;
   const isAnalysis = tradeData?.action === "ANALYSIS";
   const marketTitle = relatedMarket?.title ?? tradeData?.market ?? "Market";
@@ -71,14 +72,14 @@ export const TwitterPostCard: React.FC<TwitterPostCardProps> = ({ post }) => {
     const actionConfig = {
       BUY: {
         icon: <TrendingUp className="w-4 h-4" />,
-        color: "text-emerald-400",
-        bg: "bg-emerald-500/10",
+        color: "text-red-400",
+        bg: "bg-red-500/10",
         label: "BUY",
       },
       SELL: {
-        icon: <TrendingDown className="w-4 h-4" />,
-        color: "text-red-400",
-        bg: "bg-red-500/10",
+        icon: <TrendingUp className="w-4 h-4" />,
+        color: "text-emerald-400",
+        bg: "bg-emerald-500/10",
         label: "SELL",
       },
       REVENUE: {
@@ -99,6 +100,9 @@ export const TwitterPostCard: React.FC<TwitterPostCardProps> = ({ post }) => {
   };
 
   const actionDisplay = getActionDisplay();
+
+  // 所有 View on X 统一跳转到主账号页面
+  const xUrl = "https://x.com/ioiio_eth";
 
   // Format revenue rate
   const formatRevenue = (rate: number | undefined) => {
@@ -293,6 +297,26 @@ export const TwitterPostCard: React.FC<TwitterPostCardProps> = ({ post }) => {
           </span>
         </div>
       </div>
+
+      {xUrl && (
+        <div className="mt-4 flex items-center justify-between text-xs text-slate-400">
+          <div className="flex items-center gap-2">
+            <div className="w-4 h-4 rounded-[4px] bg-black text-white flex items-center justify-center text-[9px] font-black">
+              X
+            </div>
+            <span>Posted on X</span>
+          </div>
+          <a
+            href={xUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1 text-xs font-medium text-white hover:text-slate-200"
+          >
+            View on X
+            <ExternalLink className="w-3 h-3" />
+          </a>
+        </div>
+      )}
     </div>
   );
 };

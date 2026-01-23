@@ -35,7 +35,7 @@ export const Header: React.FC = () => {
             href="/history"
             className="text-[11px] font-bold uppercase tracking-widest text-muted hover:text-white transition-colors"
           >
-            History
+            SIGNAL TAPE
           </Link>
         </nav>
 
