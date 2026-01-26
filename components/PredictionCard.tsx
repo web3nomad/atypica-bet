@@ -245,12 +245,14 @@ export const PredictionCard: React.FC<PredictionCardProps> = ({ market, onClick,
                     <div className="text-[10.5px] font-semibold text-white/70">Prediction confidence</div>
                   </div>
                   {/* Market Move / Since Signal 标签，与 Prediction confidence 同一行 */}
+                  {/*
                   {market.nftPercentRealizedPnl !== undefined && (
                     <div className="text-[9.5px] font-semibold text-white/70 ml-auto text-right">
                       <div>Market Move</div>
                       <div>Since Signal</div>
                     </div>
                   )}
+                   */}
                 </div>
                 {/* 第二行：三个横线，左对齐 */}
                 {(() => {
