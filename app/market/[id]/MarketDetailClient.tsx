@@ -141,6 +141,15 @@ export default function MarketDetailClient({
     isAtypicaPick: opt.id === market.atypicaPickId,
   }));
 
+  const takeaways = (market.atypicaAnalysis ?? "")
+    .split(/\r?\n/)
+    .map((line) =>
+      line
+        .replace(/^[•\-\–\s]+/, "")
+        .trim(),
+    )
+    .filter(Boolean);
+
   const handleCopyLink = () => {
     if (typeof window !== "undefined") {
       navigator.clipboard.writeText(window.location.href);
@@ -293,15 +302,25 @@ export default function MarketDetailClient({
               ></iframe>
             )}
 
-            {market.atypicaAnalysis && (
-              <p className="text-muted text-lg font-medium leading-relaxed italic">
-                {market.atypicaAnalysis}
-              </p>
-            )}
             {market.atypicaSummary && (
-              <p className="text-muted text-lg font-medium leading-relaxed mt-[3px] whitespace-pre-line">
+              <p className="text-muted text-lg font-medium leading-relaxed italic">
                 {market.atypicaSummary}
               </p>
+            )}
+            {takeaways.length > 0 && (
+              <div className="mt-4 space-y-2">
+                <div className="text-[10px] font-bold uppercase tracking-[0.3em] text-white/60">
+                  Key Takeaways
+                </div>
+                <ul className="space-y-2 text-[14px] text-muted">
+                  {takeaways.map((point, index) => (
+                    <li key={index} className="flex gap-2">
+                      <span className="text-primary">•</span>
+                      <span>{point}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
             )}
           </div>
 

@@ -44,11 +44,41 @@ export function MarketEditClient({ market }: MarketEditClientProps) {
     })),
   );
   const [saving, setSaving] = useState(false);
+  const [isRegenerating, setIsRegenerating] = useState(false);
+  const [regenerateError, setRegenerateError] = useState<string | null>(null);
 
   const handleChangeOptionProb = (id: string, value: string) => {
     setOptionProbs((prev) =>
       prev.map((p) => (p.id === id ? { ...p, value } : p)),
     );
+  };
+
+  const canRegenerate = analysisUrl.trim().length > 0;
+
+  const handleRegenerate = async () => {
+    if (!canRegenerate) return;
+    setRegenerateError(null);
+    setIsRegenerating(true);
+
+    try {
+      const response = await fetch(`/api/markets/${market.id}/regenerate`, {
+        method: "POST",
+      });
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "重新生成摘要失败");
+      }
+
+      setSummary(data.atypicaSummary ?? "");
+      setAnalysis(data.atypicaAnalysis ?? "");
+    } catch (error) {
+      setRegenerateError(
+        error instanceof Error ? error.message : "重新生成摘要失败",
+      );
+    } finally {
+      setIsRegenerating(false);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -213,6 +243,25 @@ export function MarketEditClient({ market }: MarketEditClientProps) {
                   </option>
                 ))}
               </select>
+            </div>
+
+            <div className="space-y-2">
+              <button
+                type="button"
+                disabled={isRegenerating || !canRegenerate}
+                onClick={handleRegenerate}
+                className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl border border-white/30 font-semibold text-xs uppercase tracking-[0.3em] hover:border-primary transition-colors disabled:opacity-50"
+              >
+                {isRegenerating
+                  ? "重新生成中..."
+                  : "重新生成 Summary & Takeaway"}
+              </button>
+              <p className="text-[10px] text-white/40">
+                请在保存分析报告链接后再点击，以重新调用 AI 生成摘要/要点。
+              </p>
+              {regenerateError && (
+                <p className="text-[10px] text-rose-400">{regenerateError}</p>
+              )}
             </div>
 
             <div className="space-y-2">
