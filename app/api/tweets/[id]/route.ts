@@ -48,6 +48,30 @@ export async function PATCH(
       market.length > 0 &&
       amount !== null &&
       entry !== null;
+    const analysisText =
+      typeof rawJsonInput?.analysisText === 'string'
+        ? rawJsonInput.analysisText.trim()
+        : '';
+    const analysisTitle =
+      typeof rawJsonInput?.analysisTitle === 'string'
+        ? rawJsonInput.analysisTitle.trim()
+        : '';
+    const headerText =
+      typeof rawJsonInput?.headerText === 'string'
+        ? rawJsonInput.headerText.trim()
+        : '';
+    const period =
+      typeof rawJsonInput?.period === 'string' ? rawJsonInput.period.trim() : '';
+    const portfolioLine =
+      typeof rawJsonInput?.portfolioLine === 'string'
+        ? rawJsonInput.portfolioLine.trim()
+        : '';
+    const portfolioLabel =
+      typeof rawJsonInput?.portfolioLabel === 'string'
+        ? rawJsonInput.portfolioLabel.trim()
+        : '';
+    const revenueRate = parseNumber(rawJsonInput?.revenueRate);
+    const profitLoss = parseNumber(rawJsonInput?.profitLoss);
 
     if (isVisible && (!type || (isTrade && !hasFields))) {
       return NextResponse.json(
@@ -62,15 +86,35 @@ export async function PATCH(
     if ('marketId' in body) updateData.marketId = marketId;
     if ('type' in body) updateData.type = type;
     if ('isVisible' in body) updateData.isVisible = isVisible;
-    if ('rawJson' in body && isTrade) {
-      updateData.rawJson = {
-        parsed: hasFields && Boolean(type),
-        template: type ?? undefined,
-        buyText,
-        market,
-        amount,
-        entry,
-      };
+    if ('rawJson' in body) {
+      if (isTrade) {
+        updateData.rawJson = {
+          parsed: hasFields && Boolean(type),
+          template: type ?? undefined,
+          buyText,
+          market,
+          amount,
+          entry,
+        };
+      } else if (type === 'ANALYSIS') {
+        updateData.rawJson = {
+          parsed: Boolean(analysisText),
+          template: type,
+          analysisText,
+          analysisTitle,
+        };
+      } else if (type === 'REVENUE') {
+        updateData.rawJson = {
+          parsed: Boolean(headerText),
+          template: type,
+          headerText,
+          period,
+          portfolioLine,
+          portfolioLabel,
+          revenueRate,
+          profitLoss,
+        };
+      }
     }
 
     const updated = await prisma.tweet.update({

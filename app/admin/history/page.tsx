@@ -18,6 +18,14 @@ type AdminTweet = {
     market: string;
     amount: string;
     entry: string;
+    analysisText?: string;
+    analysisTitle?: string;
+    headerText?: string;
+    period?: string;
+    portfolioLine?: string;
+    portfolioLabel?: string;
+    revenueRate?: number | null;
+    profitLoss?: number | null;
   };
 };
 
@@ -33,6 +41,7 @@ export default function AdminHistoryPage() {
   const [loading, setLoading] = useState(true);
   const [syncing, setSyncing] = useState(false);
   const [savingId, setSavingId] = useState<string | null>(null);
+  const [parsingId, setParsingId] = useState<string | null>(null);
   const [syncResult, setSyncResult] = useState<SyncResult | null>(null);
   const [rowErrors, setRowErrors] = useState<Record<string, string>>({});
 
@@ -74,6 +83,25 @@ export default function AdminHistoryPage() {
                   raw.entry !== undefined && raw.entry !== null
                     ? String(raw.entry)
                     : "",
+                analysisText:
+                  typeof raw.analysisText === "string" ? raw.analysisText : "",
+                analysisTitle:
+                  typeof raw.analysisTitle === "string" ? raw.analysisTitle : "",
+                headerText:
+                  typeof raw.headerText === "string" ? raw.headerText : "",
+                period: typeof raw.period === "string" ? raw.period : "",
+                portfolioLine:
+                  typeof raw.portfolioLine === "string"
+                    ? raw.portfolioLine
+                    : "",
+                portfolioLabel:
+                  typeof raw.portfolioLabel === "string"
+                    ? raw.portfolioLabel
+                    : "",
+                revenueRate:
+                  typeof raw.revenueRate === "number" ? raw.revenueRate : null,
+                profitLoss:
+                  typeof raw.profitLoss === "number" ? raw.profitLoss : null,
               },
             } as AdminTweet;
           })
@@ -168,6 +196,91 @@ export default function AdminHistoryPage() {
     setRowErrors((prev) => ({ ...prev, [tweetId]: "" }));
   };
 
+  const getTextFieldKey = (
+    type: AdminTweet["type"]
+  ): keyof AdminTweet["rawJson"] => {
+    if (type === "ANALYSIS") return "analysisText";
+    if (type === "REVENUE") return "headerText";
+    return "buyText";
+  };
+
+  const getParsedTextValue = (tweet: AdminTweet) => {
+    if (tweet.type === "ANALYSIS") return tweet.rawJson.analysisText ?? "";
+    if (tweet.type === "REVENUE") return tweet.rawJson.headerText ?? "";
+    return tweet.rawJson.buyText;
+  };
+
+  const isTradeType = (type: AdminTweet["type"]) =>
+    type === "BUY" || type === "SELL";
+
+  const handleAutoParse = async (tweet: AdminTweet) => {
+    try {
+      setParsingId(tweet.id);
+      setRowErrors((prev) => ({ ...prev, [tweet.id]: "" }));
+
+      const response = await fetch("/api/tweets/parse", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text: tweet.text }),
+      });
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data?.error || "Failed to extract fields");
+      }
+
+      setTweets((prev) =>
+        prev.map((item) => {
+          if (item.id !== tweet.id) return item;
+
+          const newRawJson =
+            data.type === "BUY" || data.type === "SELL"
+              ? {
+                  ...item.rawJson,
+                  buyText:
+                    typeof data.rawJson?.buyText === "string"
+                      ? data.rawJson.buyText
+                      : item.rawJson.buyText,
+                  market:
+                    typeof data.rawJson?.market === "string"
+                      ? data.rawJson.market
+                      : item.rawJson.market,
+                  amount:
+                    data.rawJson?.amount !== undefined &&
+                    data.rawJson?.amount !== null
+                      ? String(data.rawJson.amount)
+                      : item.rawJson.amount,
+                  entry:
+                    data.rawJson?.entry !== undefined &&
+                    data.rawJson?.entry !== null
+                      ? String(data.rawJson.entry)
+                      : item.rawJson.entry,
+                }
+              : {
+                  ...item.rawJson,
+                  ...data.rawJson,
+                };
+
+          return {
+            ...item,
+            type: data.type ?? item.type,
+            rawJson: newRawJson,
+          };
+        })
+      );
+    } catch (error) {
+      setRowErrors((prev) => ({
+        ...prev,
+        [tweet.id]:
+          error instanceof Error
+            ? error.message
+            : "Automatic extraction failed, please edit manually.",
+      }));
+    } finally {
+      setParsingId(null);
+    }
+  };
+
   const handleSave = async (tweet: AdminTweet) => {
     const amount = parseNumber(tweet.rawJson.amount);
     const entry = parseNumber(tweet.rawJson.entry);
@@ -184,6 +297,30 @@ export default function AdminHistoryPage() {
     try {
       setSavingId(tweet.id);
       setRowErrors((prev) => ({ ...prev, [tweet.id]: "" }));
+      const rawJsonPayload: Record<string, unknown> =
+        tweet.type === "BUY" || tweet.type === "SELL"
+          ? {
+              buyText: tweet.rawJson.buyText,
+              market: tweet.rawJson.market,
+              amount,
+              entry,
+            }
+          : tweet.type === "ANALYSIS"
+          ? {
+              analysisText: tweet.rawJson.analysisText ?? "",
+              analysisTitle: tweet.rawJson.analysisTitle ?? "",
+            }
+          : tweet.type === "REVENUE"
+          ? {
+              headerText: tweet.rawJson.headerText ?? "",
+              period: tweet.rawJson.period ?? "",
+              portfolioLine: tweet.rawJson.portfolioLine ?? "",
+              portfolioLabel: tweet.rawJson.portfolioLabel ?? "",
+              revenueRate: tweet.rawJson.revenueRate,
+              profitLoss: tweet.rawJson.profitLoss,
+            }
+          : {};
+
       const response = await fetch(`/api/tweets/${tweet.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
@@ -191,12 +328,7 @@ export default function AdminHistoryPage() {
           marketId: tweet.marketId,
           type: tweet.type,
           isVisible: tweet.isVisible,
-          rawJson: {
-            buyText: tweet.rawJson.buyText,
-            market: tweet.rawJson.market,
-            amount,
-            entry,
-          },
+          rawJson: rawJsonPayload,
         }),
       });
 
@@ -232,6 +364,38 @@ export default function AdminHistoryPage() {
                     data.rawJson?.entry !== null
                       ? String(data.rawJson.entry)
                       : "",
+                  analysisText:
+                    typeof data.rawJson?.analysisText === "string"
+                      ? data.rawJson.analysisText
+                      : "",
+                  analysisTitle:
+                    typeof data.rawJson?.analysisTitle === "string"
+                      ? data.rawJson.analysisTitle
+                      : "",
+                  headerText:
+                    typeof data.rawJson?.headerText === "string"
+                      ? data.rawJson.headerText
+                      : "",
+                  period:
+                    typeof data.rawJson?.period === "string"
+                      ? data.rawJson.period
+                      : "",
+                  portfolioLine:
+                    typeof data.rawJson?.portfolioLine === "string"
+                      ? data.rawJson.portfolioLine
+                      : "",
+                  portfolioLabel:
+                    typeof data.rawJson?.portfolioLabel === "string"
+                      ? data.rawJson.portfolioLabel
+                      : "",
+                  revenueRate:
+                    typeof data.rawJson?.revenueRate === "number"
+                      ? data.rawJson.revenueRate
+                      : null,
+                  profitLoss:
+                    typeof data.rawJson?.profitLoss === "number"
+                      ? data.rawJson.profitLoss
+                      : null,
                 },
               }
             : item
@@ -529,68 +693,98 @@ export default function AdminHistoryPage() {
                   </div>
                 </div>
 
-                <div className="space-y-3">
-                  <div className="text-[11px] uppercase tracking-widest text-white/50">
-                    Parsed fields
-                  </div>
-                  <textarea
-                    value={tweet.rawJson.buyText}
-                    onChange={(event) =>
-                      handleFieldChange(tweet.id, "buyText", event.target.value)
-                    }
-                    rows={4}
-                    placeholder="Text"
-                    name={`tweet-${tweet.id}-text`}
-                    autoComplete="off"
-                    aria-label="Tweet text"
-                    className={inputClasses}
-                  />
-                  <input
-                    value={tweet.rawJson.market}
-                    onChange={(event) =>
-                      handleFieldChange(tweet.id, "market", event.target.value)
-                    }
-                    placeholder="Market"
-                    name={`tweet-${tweet.id}-market`}
-                    autoComplete="off"
-                    aria-label="Market"
-                    className={inputClasses}
-                  />
-                  <div className="grid grid-cols-2 gap-2">
-                    <input
-                      value={tweet.rawJson.amount}
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="text-[11px] uppercase tracking-widest text-white/50">
+                        Parsed fields
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => handleAutoParse(tweet)}
+                        disabled={parsingId === tweet.id}
+                        className="text-[11px] font-semibold uppercase tracking-[0.2em] text-primary/80 hover:text-primary transition-colors disabled:cursor-not-allowed disabled:text-white/40"
+                      >
+                        {parsingId === tweet.id
+                          ? "Parsing..."
+                          : "Auto extract fields"}
+                      </button>
+                    </div>
+                    <textarea
+                      value={getParsedTextValue(tweet)}
                       onChange={(event) =>
                         handleFieldChange(
                           tweet.id,
-                          "amount",
+                          getTextFieldKey(tweet.type),
                           event.target.value
                         )
                       }
-                      placeholder="Amount"
-                      name={`tweet-${tweet.id}-amount`}
-                      autoComplete="off"
-                      inputMode="decimal"
-                      aria-label="Amount"
-                      className={inputClasses}
-                    />
-                    <input
-                      value={tweet.rawJson.entry}
-                      onChange={(event) =>
-                        handleFieldChange(
-                          tweet.id,
-                          "entry",
-                          event.target.value
-                        )
+                      rows={4}
+                      placeholder={
+                        tweet.type === "ANALYSIS"
+                          ? "Analysis text"
+                          : tweet.type === "REVENUE"
+                          ? "Revenue headline"
+                          : "Text"
                       }
-                      placeholder="Entry"
-                      name={`tweet-${tweet.id}-entry`}
+                      name={`tweet-${tweet.id}-text`}
                       autoComplete="off"
-                      inputMode="decimal"
-                      aria-label="Entry"
+                      aria-label="Tweet text"
                       className={inputClasses}
                     />
+                    {isTradeType(tweet.type) && (
+                      <>
+                        <input
+                          value={tweet.rawJson.market}
+                          onChange={(event) =>
+                            handleFieldChange(
+                              tweet.id,
+                              "market",
+                              event.target.value
+                            )
+                          }
+                          placeholder="Market"
+                          name={`tweet-${tweet.id}-market`}
+                          autoComplete="off"
+                          aria-label="Market"
+                          className={inputClasses}
+                        />
+                        <div className="grid grid-cols-2 gap-2">
+                          <input
+                            value={tweet.rawJson.amount}
+                            onChange={(event) =>
+                              handleFieldChange(
+                                tweet.id,
+                                "amount",
+                                event.target.value
+                              )
+                            }
+                            placeholder="Amount"
+                            name={`tweet-${tweet.id}-amount`}
+                            autoComplete="off"
+                            inputMode="decimal"
+                            aria-label="Amount"
+                            className={inputClasses}
+                          />
+                          <input
+                            value={tweet.rawJson.entry}
+                            onChange={(event) =>
+                              handleFieldChange(
+                                tweet.id,
+                                "entry",
+                                event.target.value
+                              )
+                            }
+                            placeholder="Entry"
+                            name={`tweet-${tweet.id}-entry`}
+                            autoComplete="off"
+                            inputMode="decimal"
+                            aria-label="Entry"
+                            className={inputClasses}
+                          />
+                        </div>
+                      </>
+                    )}
                   </div>
-                </div>
               </div>
 
               {tweet.marketId && marketTitle && (
