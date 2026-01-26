@@ -74,3 +74,103 @@ export function parseAnalysis(text: string) {
 
   return sections;
 }
+
+export interface ReportSummary {
+  summary: string;
+  takeaways: string[];
+}
+
+const SUMMARY_PROMPT = `You are an expert analyst. Read the report carefully and output a JSON object with the following format:
+{
+  "summary": "A concise English overview (max 120 characters) of the entire report.",
+  "takeaways": [
+    "Critical insight #1",
+    "Critical insight #2",
+    "Critical insight #3"
+  ]
+}
+Do not add any additional text. Start the response directly with the JSON object.`;
+
+export async function summarizeReportContent(text: string): Promise<ReportSummary> {
+  const trimmedText = text.trim().slice(0, 20_000);
+
+  const responseText = await retryWithBackoff(async () => {
+    const response = await ai.models.generateContent({
+      model: 'gemini-3-flash-preview',
+      contents: `${SUMMARY_PROMPT}
+Report:
+${trimmedText}`,
+      config: {
+        temperature: 0.55,
+        topP: 0.9,
+        candidateCount: 1,
+      },
+    });
+
+    if (!response.text) {
+      throw new Error('Gemini 未返回结果');
+    }
+
+    return response.text;
+  }, 3, 600);
+
+  return parseReportSummary(responseText);
+}
+
+function parseReportSummary(text: string): ReportSummary {
+  const trimmed = text.trim();
+  let candidate = trimmed;
+  if (!trimmed.startsWith('{')) {
+    const start = trimmed.indexOf('{');
+    const end = trimmed.lastIndexOf('}');
+    if (start !== -1 && end !== -1 && end > start) {
+      candidate = trimmed.slice(start, end + 1);
+    }
+  }
+
+  let parsed: any;
+  try {
+    parsed = JSON.parse(candidate);
+  } catch (error) {
+    throw new Error('Gemini 返回的内容无法解析为 JSON');
+  }
+  const summary =
+    typeof parsed.summary === 'string' ? parsed.summary.trim() : '';
+  const rawTakeaways = Array.isArray(parsed.takeaways)
+    ? parsed.takeaways
+    : [];
+
+  const takeaways = rawTakeaways
+    .map((item) => (typeof item === 'string' ? item.trim() : ''))
+    .filter(Boolean);
+
+  if (!summary && takeaways.length === 0) {
+    throw new Error('未能从 Gemini 响应中解析出摘要或要点');
+  }
+
+  return {
+    summary,
+    takeaways,
+  };
+}
+
+async function retryWithBackoff<T>(
+  fn: () => Promise<T>,
+  attempts: number,
+  delayMs: number,
+) {
+  let lastError: unknown = null;
+
+  for (let attempt = 0; attempt < attempts; attempt += 1) {
+    try {
+      return await fn();
+    } catch (error) {
+      lastError = error;
+      if (attempt === attempts - 1) break;
+      const wait = delayMs * (attempt + 1);
+      await new Promise((resolve) => setTimeout(resolve, wait));
+    }
+  }
+
+  throw lastError;
+}
