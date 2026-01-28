@@ -33,3 +33,36 @@ export function extractSlugFromUrl(input: string): string {
 
   return trimmed;
 }
+
+type ClassValue =
+  | string
+  | number
+  | null
+  | undefined
+  | false
+  | ClassValue[]
+  | Record<string, boolean>;
+
+export function cn(...inputs: ClassValue[]) {
+  const classes: string[] = [];
+
+  const pushClass = (value: ClassValue) => {
+    if (!value) return;
+    if (typeof value === "string" || typeof value === "number") {
+      classes.push(String(value));
+      return;
+    }
+    if (Array.isArray(value)) {
+      value.forEach(pushClass);
+      return;
+    }
+    if (typeof value === "object") {
+      Object.entries(value).forEach(([key, enabled]) => {
+        if (enabled) classes.push(key);
+      });
+    }
+  };
+
+  inputs.forEach(pushClass);
+  return classes.join(" ");
+}

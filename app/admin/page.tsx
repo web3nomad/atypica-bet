@@ -5,6 +5,16 @@ import { useRouter } from "next/navigation";
 import { PredictionMarket, PredictionStatus } from "@/types";
 import { CATEGORY_LABELS, STATUS_LABELS } from "@/constants";
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import {
   Plus,
   Edit2,
   Trash2,
@@ -20,6 +30,10 @@ export default function AdminPage() {
   const [markets, setMarkets] = useState<PredictionMarket[]>([]);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [archiveOpen, setArchiveOpen] = useState(false);
+  const [archiveTarget, setArchiveTarget] = useState<PredictionMarket | null>(null);
+  const [archiveSaving, setArchiveSaving] = useState(false);
+  const [archiveError, setArchiveError] = useState<string | null>(null);
 
   useEffect(() => {
     loadMarkets();
@@ -55,24 +69,54 @@ export default function AdminPage() {
     }
   };
 
-  const handleArchive = async (id: string) => {
-    if (!confirm("ç¡®å®šè¦å°†è¿™ä¸ªå¸‚åœºè®¾ä¸ºéšè—å�—ï¼Ÿ")) return;
+  const handleArchive = (market: PredictionMarket) => {
+    setArchiveTarget(market);
+    setArchiveError(null);
+    setArchiveOpen(true);
+  };
+
+  const handleArchiveConfirm = async () => {
+    if (!archiveTarget) return;
+    const nextArchived = !archiveTarget.archived;
+    setArchiveSaving(true);
+    setArchiveError(null);
 
     try {
-      const response = await fetch(`/api/markets/${id}`, {
+      const response = await fetch(`/api/markets/${archiveTarget.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ archived: true }),
+        body: JSON.stringify({ archived: nextArchived }),
       });
 
-      if (!response.ok) throw new Error("Failed to archive market");
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        throw new Error(data.error || "\u8bbe\u7f6e\u9690\u85cf\u72b6\u6001\u5931\u8d25");
+      }
 
       setMarkets((prev) =>
-        prev.map((m) => (m.id === id ? { ...m, archived: true } : m)),
+        prev.map((m) =>
+          m.id === archiveTarget.id ? { ...m, archived: nextArchived } : m,
+        ),
       );
+      setArchiveOpen(false);
+      setArchiveTarget(null);
     } catch (error) {
       console.error("Error archiving market:", error);
-      alert("è®¾ä¸ºéšè—å¤±è´¥");
+      setArchiveError(
+        error instanceof Error
+          ? error.message
+          : "\u8bbe\u7f6e\u9690\u85cf\u72b6\u6001\u5931\u8d25",
+      );
+    } finally {
+      setArchiveSaving(false);
+    }
+  };
+
+  const handleArchiveOpenChange = (open: boolean) => {
+    setArchiveOpen(open);
+    if (!open) {
+      setArchiveError(null);
+      setArchiveTarget(null);
     }
   };
 
@@ -107,6 +151,14 @@ export default function AdminPage() {
         return "text-white/50 bg-white/5";
     }
   };
+
+  const archiveTitle = archiveTarget?.archived
+    ? "\u53d6\u6d88\u9690\u85cf\u8be5\u5e02\u573a\uff1f"
+    : "\u9690\u85cf\u8be5\u5e02\u573a\uff1f";
+  const archiveActionLabel = archiveTarget?.archived
+    ? "\u53d6\u6d88\u9690\u85cf"
+    : "\u9690\u85cf";
+
 
   if (loading) {
     return (
@@ -212,7 +264,7 @@ export default function AdminPage() {
                         <Edit2 className="w-5 h-5" />
                       </button>
                       <button
-                        onClick={() => handleArchive(m.id)}
+                        onClick={() => handleArchive(m)}
                         className="p-2 text-white/40 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-all"
                       >
                         <Archive className="w-5 h-5" />
@@ -297,6 +349,36 @@ export default function AdminPage() {
           </tbody>
         </table>
       </div>
+
+      <AlertDialog open={archiveOpen} onOpenChange={handleArchiveOpenChange}>
+        <AlertDialogContent className="glass-panel">
+          <AlertDialogHeader>
+            <AlertDialogTitle>{archiveTitle}</AlertDialogTitle>
+            {archiveTarget?.title && (
+              <AlertDialogDescription>
+                {archiveTarget.title}
+              </AlertDialogDescription>
+            )}
+          </AlertDialogHeader>
+          {archiveError && (
+            <div className="text-xs text-rose-400">{archiveError}</div>
+          )}
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={archiveSaving}>
+              {"\u53d6\u6d88"}
+            </AlertDialogCancel>
+            <AlertDialogAction
+              disabled={!archiveTarget || archiveSaving}
+              onClick={(event) => {
+                event.preventDefault();
+                void handleArchiveConfirm();
+              }}
+            >
+              {archiveSaving ? "\u5904\u7406\u4e2d..." : archiveActionLabel}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
