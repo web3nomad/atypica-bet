@@ -128,20 +128,23 @@ function parseReportSummary(text: string): ReportSummary {
     }
   }
 
-  let parsed: any;
+  let parsed: unknown;
   try {
     parsed = JSON.parse(candidate);
   } catch (error) {
     throw new Error('Gemini 返回的内容无法解析为 JSON');
   }
   const summary =
-    typeof parsed.summary === 'string' ? parsed.summary.trim() : '';
-  const rawTakeaways = Array.isArray(parsed.takeaways)
-    ? parsed.takeaways
+    typeof (parsed as Record<string, unknown>).summary === 'string'
+      ? ((parsed as Record<string, unknown>).summary as string).trim()
+      : '';
+  const takeawaysValue = (parsed as Record<string, unknown>).takeaways;
+  const rawTakeaways: unknown[] = Array.isArray(takeawaysValue)
+    ? takeawaysValue
     : [];
 
   const takeaways = rawTakeaways
-    .map((item) => (typeof item === 'string' ? item.trim() : ''))
+    .map((item: unknown) => (typeof item === 'string' ? item.trim() : ''))
     .filter(Boolean);
 
   if (!summary && takeaways.length === 0) {

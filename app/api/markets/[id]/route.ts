@@ -54,9 +54,10 @@ export async function PATCH(
       atypicaAnalysisUrl.trim().length > 0
         ? atypicaAnalysisUrl.trim()
         : undefined;
+    const trimmedPrevious = existingMarket.atypicaAnalysisUrl?.trim();
     const previousUrl =
-      existingMarket.atypicaAnalysisUrl?.trim().length > 0
-        ? existingMarket.atypicaAnalysisUrl.trim()
+      trimmedPrevious && trimmedPrevious.length > 0
+        ? trimmedPrevious
         : undefined;
 
     const shouldAutoGenerate =

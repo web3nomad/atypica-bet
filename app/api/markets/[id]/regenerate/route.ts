@@ -21,10 +21,9 @@ export async function POST(
       );
     }
 
+    const trimmed = market.atypicaAnalysisUrl?.trim();
     const normalizedUrl =
-      market.atypicaAnalysisUrl?.trim().length > 0
-        ? market.atypicaAnalysisUrl.trim()
-        : undefined;
+      trimmed && trimmed.length > 0 ? trimmed : undefined;
 
     if (!normalizedUrl) {
       return NextResponse.json(
