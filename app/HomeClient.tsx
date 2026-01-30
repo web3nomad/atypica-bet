@@ -1082,7 +1082,7 @@ export default function HomeClient({ initialMarkets }: HomeClientProps) {
                 <div className="text-xs font-black text-primary">AI Pick</div>
               </div>
               <div className="text-lg font-black text-primary mb-2">
-                Kevin Hassett
+                Kevin Warsh
               </div>
               <div className="flex items-center justify-between text-xs">
                 <span className="text-white/50">Confidence</span>
@@ -1097,17 +1097,17 @@ export default function HomeClient({ initialMarkets }: HomeClientProps) {
             <div className="space-y-2">
               <div className="flex items-center justify-between p-2 rounded bg-primary/10 border border-primary/20">
                 <span className="text-xs font-black text-primary">
-                  Kevin Hassett
+                  Kevin Warsh
                 </span>
-                <span className="text-xs font-bold text-white">37%</span>
+                <span className="text-xs font-bold text-white">45%</span>
               </div>
               <div className="flex items-center justify-between p-2 rounded bg-white/5">
                 <span className="text-xs text-white">Christopher Waller</span>
-                <span className="text-xs font-bold text-white">12%</span>
+                <span className="text-xs font-bold text-white">15%</span>
               </div>
               <div className="flex items-center justify-between p-2 rounded bg-white/5">
-                <span className="text-xs text-white">Kevin Warsh</span>
-                <span className="text-xs font-bold text-white">42%</span>
+                <span className="text-xs text-white">Kevin Hassett</span>
+                <span className="text-xs font-bold text-white">30%</span>
               </div>
             </div>
           </div>
@@ -1415,11 +1415,10 @@ export default function HomeClient({ initialMarkets }: HomeClientProps) {
 
                 <p className="text-sm text-white/70 mb-4">
                   Comprehensive competitive analysis across five
-                  dimensions—economic philosophy, political alignment, market
-                  recognition, central bank operational experience, and policy
-                  credibility—evaluating the nomination probability and market
-                  impact of three candidates: Kevin Hassett, Kevin Warsh, and
-                  Christopher Waller. Analysis conducted January 2026.
+                  dimensions—personal loyalty, monetary policy alignment, Senate
+                  confirmation feasibility, Fed experience, and market reaction—evaluating
+                  the nomination probability and market impact of three candidates: Kevin Warsh,
+                  Kevin Hassett, and Christopher Waller. Analysis conducted January 2026.
                 </p>
               </div>
             </div>
@@ -1436,21 +1435,19 @@ export default function HomeClient({ initialMarkets }: HomeClientProps) {
 
                 <div className="mb-4">
                   <p className="text-sm text-white/80 italic mb-3">
-                    &quot;Through a five-dimensional competitive scoring matrix,
-                    integration of market prediction data, and expert simulation
-                    interviews, our model indicates Kevin Hassett is most likely
-                    to be nominated (70-80% probability). His close relationship
-                    with the president and shared focus on economic growth
-                    constitute a significant 'political premium,' making him the
-                    political first choice. However, this choice carries core
-                    risks: Hassett is a staunch dove advocate, has zero monetary
-                    policy operational experience, and his independence is
-                    questionable. If inflation rekindles, market skepticism
-                    about his independence could trigger a 'political-market'
-                    negative feedback spiral. In contrast, while Christopher
-                    Waller lacks political capital, his data-driven, stable
-                    approach has won the highest market recognition, viewed as
-                    the 'safe bet' that best provides certainty.&quot;
+                    &quot;Through a Multi-Criteria Decision Analysis framework integrating
+                    expert insights from four personas (MAGA Insider, Capitol Observer,
+                    Monetary Sage, Policy Watcher), our model indicates Kevin Warsh is most likely
+                    to be nominated (45% probability). Warsh uniquely achieves perfect scores on
+                    the two most heavily weighted criteria—personal loyalty (40% weight) and monetary
+                    policy alignment (30% weight)—while maintaining sufficient institutional
+                    credentials to survive Senate confirmation. He represents the optimal balance:
+                    a trusted longtime ally who will execute the president's vision without institutional
+                    resistance, combined with prior Fed Governor experience (2006-2011) that provides
+                    baseline Senate defensibility. The critical risk factor is Senate confirmation
+                    feasibility—moderate Republican opposition could force a strategic pivot to Kevin
+                    Hassett or Christopher Waller. However, Warsh's unique combination of loyalty,
+                    policy alignment, and institutional credibility makes him the frontrunner.&quot;
                   </p>
                 </div>
 
@@ -1461,7 +1458,7 @@ export default function HomeClient({ initialMarkets }: HomeClientProps) {
                     </div>
                     <div className="flex items-end gap-3">
                       <div className="text-2xl font-black text-primary">
-                        Kevin Hassett
+                        Kevin Warsh
                       </div>
                       <div className="flex flex-col">
                         <div className="text-xs text-white/70 mb-1">
@@ -1481,7 +1478,7 @@ export default function HomeClient({ initialMarkets }: HomeClientProps) {
                       Polymarket
                     </div>
                     <div className="text-base font-medium text-white flex items-center gap-2">
-                      37%
+                      45%
                     </div>
                   </div>
                 </div>
@@ -1496,28 +1493,33 @@ export default function HomeClient({ initialMarkets }: HomeClientProps) {
                 <div className="space-y-3">
                   <div className="border-l-2 border-primary/30 pl-3">
                     <div className="text-[10px] font-black text-primary mb-1">
-                      Competitive Scoring Matrix
+                      Multi-Criteria Decision Analysis Framework
                     </div>
                     <ul className="text-xs text-white/70 space-y-1 list-disc list-inside">
                       <li>
-                        Kevin Hassett: Political alignment 5/5 (core White House
-                        decision-maker), economic philosophy clarity 4/5 (clear
-                        dovish stance), but central bank operational experience
-                        only 1/5, policy credibility 2/5 (independence
-                        questionable)
+                        Kevin Warsh: Personal loyalty 5/5 (longtime Trump ally
+                        with established relationship), monetary policy alignment
+                        5/5 (publicly advocates for lower rates and Fed regime
+                        change), Fed experience 4/5 (former Governor 2006-2011),
+                        Senate confirmation 3/5 (feasible but contested), market
+                        reaction 3/5 (initial volatility likely). Total score:
+                        4.45/5.0 ≈ 45% probability.
                       </li>
                       <li>
-                        Christopher Waller: Market recognition 5/5 (most trusted
-                        &apos;safe bet&apos;), central bank operational
-                        experience 5/5 (current board member), policy
-                        credibility 5/5 (rule-based transparent approach), but
-                        political alignment only 2/5
+                        Kevin Hassett: Personal loyalty 5/5 (current National
+                        Economic Council Director with daily access), monetary
+                        policy alignment 5/5 (strong growth advocate), but Fed
+                        experience 2/5 (zero operational experience), Senate
+                        confirmation 2/5 (significant concerns about
+                        independence), market reaction 2/5. Total score: 4.10/5.0
+                        ≈ 30% probability.
                       </li>
                       <li>
-                        Kevin Warsh: Central bank operational experience 4/5
-                        (board member 2006-2011), but economic philosophy
-                        clarity 2/5 (position swing), policy credibility 2/5
-                        (recent shift from hawkish to dovish raises concerns)
+                        Christopher Waller: Senate confirmation 5/5 (most
+                        confirmable), Fed experience 5/5 (current board member),
+                        market reaction 4/5 (highest market trust), but personal
+                        loyalty 2/5 (lacks political capital), monetary policy
+                        alignment 3/5. Total score: 3.15/5.0 ≈ 15% probability.
                       </li>
                     </ul>
                   </div>
@@ -1527,17 +1529,22 @@ export default function HomeClient({ initialMarkets }: HomeClientProps) {
                       Scenario Analysis & Risk Pathways
                     </div>
                     <p className="text-xs text-white/70">
-                      If Kevin Hassett is nominated: Short-term stock market
-                      rises on expected rate cuts, but long-term faces
-                      &apos;political-market&apos; negative feedback spiral
-                      risk. If inflation rekindles, market skepticism about his
-                      independence will trigger dollar and bond sell-offs. If
-                      Christopher Waller is nominated: Market views as major
-                      positive, expects 6-12 months of policy certainty premium,
-                      but must overcome political capital disadvantage. If Kevin
-                      Warsh is nominated: Must prioritize resolving credibility
-                      issues from policy position swings, otherwise faces policy
-                      anchoring failure risk.
+                      If Kevin Warsh is nominated: Initial market volatility as
+                      markets assess commitment to independence, but recovery
+                      likely within 30 days post-confirmation. Senate
+                      confirmation process will be contested—moderate Republican
+                      opposition represents the single greatest risk factor. If
+                      confirmation appears untenable, strategic pivot to Kevin
+                      Hassett (backup plan) or Christopher Waller (compromise
+                      candidate). Warsh&apos;s unique combination of loyalty,
+                      policy alignment, and institutional credibility positions
+                      him as the optimal balance candidate. If Kevin Hassett is
+                      nominated: Short-term market gains on rate cut expectations,
+                      but faces long-term &apos;political-market&apos; negative
+                      feedback spiral if inflation rekindles. If Christopher
+                      Waller is nominated: Major market positive, 6-12 months
+                      policy certainty premium, but must overcome political
+                      resistance disadvantage.
                     </p>
                   </div>
 
@@ -1546,19 +1553,21 @@ export default function HomeClient({ initialMarkets }: HomeClientProps) {
                       Core Strategic Assessment
                     </div>
                     <p className="text-xs text-white/70">
-                      Nomination decision essentially represents a trade-off
-                      between &apos;political loyalty&apos; and &apos;policy
-                      credibility.&apos; Kevin Hassett maximizes political
-                      loyalty but sacrifices policy independence; Christopher
-                      Waller maximizes policy credibility but needs to overcome
-                      political resistance; Kevin Warsh attempts to balance both
-                      but position swings weaken effectiveness. Model shows that
-                      in current political environment, Hassett is most likely
-                      to be nominated (70-80%) due to political advantages, but
-                      Waller, if nominated, would provide the most stable anchor
-                      for financial markets. Key insight: Regardless of choice,
-                      the real challenge lies in finding a sustainable balance
-                      point between political pressure and market expectations.
+                      The 70/30 Rule: Personal loyalty (40%) and monetary policy
+                      alignment (30%) together constitute 70% of the decision
+                      calculus. Warsh achieves perfect scores on both, making him
+                      irreplaceable within the current candidate pool. The
+                      fundamental tension is the inverse relationship between
+                      loyalty and confirmability—Warsh is the only candidate who
+                      achieves both high loyalty scores and plausible (though
+                      difficult) confirmation. This positioning makes him the
+                      frontrunner despite confirmation risks. Key insight: Senate
+                      confirmation feasibility represents the single greatest
+                      threat. Early indicators of moderate Senator opposition
+                      could force a strategic pivot, but Warsh&apos;s unique
+                      profile—a &apos;soldier, not a saboteur&apos; with Fed
+                      experience—makes him the optimal choice for balancing
+                      political demands with institutional credibility.
                     </p>
                   </div>
                 </div>
@@ -1578,7 +1587,7 @@ export default function HomeClient({ initialMarkets }: HomeClientProps) {
               <div className="flex items-center justify-between p-2 rounded bg-primary/10 border border-primary/20">
                 <div className="flex items-center gap-2">
                   <span className="text-sm font-black text-primary">
-                    Kevin Hassett
+                    Kevin Warsh
                   </span>
                   <span className="text-[9px] bg-primary/20 text-primary px-1.5 py-0.5 rounded font-bold">
                     AI Pick
@@ -1594,7 +1603,7 @@ export default function HomeClient({ initialMarkets }: HomeClientProps) {
                           </div> */}
                   <div className="flex items-center">
                     <span className="text-[9px] mr-1 text-muted">Market:</span>
-                    <span className="text-xs font-bold text-white">37%</span>
+                    <span className="text-xs font-bold text-white">45%</span>
                   </div>
                 </div>
               </div>
@@ -1609,7 +1618,7 @@ export default function HomeClient({ initialMarkets }: HomeClientProps) {
                 <div className="flex items-center gap-3 text-sm">
                   <div className="flex items-center">
                     <span className="text-[9px] mr-1 text-muted">Market:</span>
-                    <span className="text-xs font-bold text-white">12%</span>
+                    <span className="text-xs font-bold text-white">15%</span>
                   </div>
                 </div>
               </div>
@@ -1617,14 +1626,14 @@ export default function HomeClient({ initialMarkets }: HomeClientProps) {
               <div className="flex items-center justify-between p-2 rounded bg-white/5">
                 <div className="flex items-center gap-2">
                   <span className="text-sm font-medium text-white">
-                    Kevin Warsh
+                    Kevin Hassett
                   </span>
                 </div>
 
                 <div className="flex items-center gap-3 text-sm">
                   <div className="flex items-center">
                     <span className="text-[9px] mr-1 text-muted">Market:</span>
-                    <span className="text-xs font-bold text-white">42%</span>
+                    <span className="text-xs font-bold text-white">30%</span>
                   </div>
                 </div>
               </div>
